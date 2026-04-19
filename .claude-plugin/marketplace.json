@@ -1,0 +1,60 @@
+{
+    "name": "xve-claude-marketplace",
+    "owner": {
+        "name": "XVE",
+        "contact": "github.com/jonasvanderhaegen-xve"
+    },
+    "metadata": {
+        "description": "XVE time tracking marketplace: Kimai timesheet management, ActivityWatch passive analysis, and XVE customer config. Bridges local activity data to billable hours."
+    },
+    "plugins": [
+        {
+            "name": "kimai",
+            "source": "./plugins/kimai",
+            "description": "Kimai time tracking agent with slash commands for logging time, starting/stopping timers, and viewing timesheet entries. Supports 15-min rounding, multi-timer disambiguation, JIRA+PR description format, and one-entry-per-issue discipline.",
+            "version": "1.0.0",
+            "author": {
+                "name": "XVE"
+            },
+            "tags": [
+                "kimai",
+                "timesheet",
+                "time-tracking",
+                "billing",
+                "clockit"
+            ]
+        },
+        {
+            "name": "activitywatch",
+            "source": "./plugins/activitywatch",
+            "description": "ActivityWatch analysis agent with slash commands for querying time per project from window, browser, editor, and terminal watchers. Includes setup audit command and Kimai gap analysis.",
+            "version": "1.0.0",
+            "author": {
+                "name": "XVE"
+            },
+            "tags": [
+                "activitywatch",
+                "time-tracking",
+                "productivity",
+                "analysis",
+                "watchers"
+            ]
+        },
+        {
+            "name": "xve",
+            "source": "./plugins/xve",
+            "description": "XVE-specific config: customer/project mapping (DWB, Nassau, BTB, AUWS, Edumatch, Anno), combined AW+Kimai status, install command, and shared customer reference skill.",
+            "version": "1.0.0",
+            "author": {
+                "name": "XVE"
+            },
+            "tags": [
+                "xve",
+                "customers",
+                "config",
+                "setup",
+                "gap-analysis"
+            ]
+        }
+    ]
+}

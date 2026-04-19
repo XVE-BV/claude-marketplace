@@ -1,0 +1,31 @@
+{
+    "name": "xve-claude-marketplace",
+    "version": "1.0.0",
+    "description": "XVE Claude Code marketplace — Kimai, ActivityWatch, and XVE machine setup.",
+    "author": {
+        "name": "XVE"
+    },
+    "license": "MIT",
+    "keywords": [
+        "kimai",
+        "activitywatch",
+        "time-tracking",
+        "timesheet",
+        "billing",
+        "productivity",
+        "xve"
+    ],
+    "commands": [
+        "./plugins/kimai/commands/k.md",
+        "./plugins/kimai/commands/ks.md",
+        "./plugins/kimai/commands/ke.md",
+        "./plugins/activitywatch/commands/aw.md",
+        "./plugins/activitywatch/commands/aw-week.md",
+        "./plugins/activitywatch/commands/aw-setup.md",
+        "./plugins/xve/commands/xve-setup.md"
+    ],
+    "agents": [
+        "./plugins/kimai/agents/clockit.md",
+        "./plugins/activitywatch/agents/activitywatch.md"
+    ]
+}
