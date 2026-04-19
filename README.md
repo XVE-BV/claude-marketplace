@@ -22,7 +22,7 @@ claude plugin install activitywatch@xve-claude-marketplace
 
 Get the values from Bitwarden: **"xve claude marketplace env vars"** and add them to `~/.zshrc`.
 
-**Step 4 — Run setup:**
+**Step 4 — Run setup** ([read what this does first](docs/xve-setup.md))**:**
 
 ```
 /xve-setup
