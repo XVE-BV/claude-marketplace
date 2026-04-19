@@ -27,7 +27,7 @@ claude plugin install activitywatch@xve-claude-marketplace
 
 **Step 3 — Set your env vars:**
 
-Get the values from Bitwarden: **"xve claude marketplace env vars"** and add them to `~/.zshrc`. Ask claude do it for you, after that you edit api key value and have it search in kimai for your desired projects. Then claude will be able to identify things smoother.
+Get the values from Bitwarden: **"xve claude marketplace env vars"** and add them to `~/.zshrc`. Ask claude do it for you, after that you edit api key value manually. Close claude, re-open claude and have it search in kimai api for your desired projects, or just ask claude to check the time entry hotspots and have those projects be mapped as env variables. Then claude will be able to time track smoother for you.
 
 **Step 4 — Run setup** ([read what this does first](docs/xve-setup.md))**:**
 
