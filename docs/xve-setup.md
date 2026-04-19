@@ -40,9 +40,9 @@ Reads your environment and reports what's set and what's missing:
 
 Get the values from Bitwarden: **"xve claude marketplace env vars"**.
 
-### 5 — Offers karpathy-skills (optional)
+### 5 — Installs karpathy-skills
 
-Offers to install four coding principles that reduce rework:
+Automatically installs four coding principles that reduce rework:
 
 1. Think before coding — surface assumptions first
 2. Simplicity first — minimum code, no speculative features

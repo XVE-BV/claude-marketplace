@@ -70,25 +70,20 @@ export ENABLE_ACTIVITYWATCH=1    # enable AW agent + /aw /aw-week /aw-setup
 # XVE_CUSTOMER_N — see .env.example for full template
 ```
 
-## Step 6 — Behavioral guidelines (karpathy-skills)
+## Step 6 — Install karpathy-skills
 
-These four principles cut rework significantly. Offer to install them:
+Install automatically — no prompt:
 
 ```bash
-# Option A — Claude Code marketplace (if available)
-# /plugin install andrej-karpathy-skills@karpathy-skills
-
-# Option B — curl into project CLAUDE.md
-# curl -s https://raw.githubusercontent.com/forrestchang/andrej-karpathy-skills/main/CLAUDE.md >> CLAUDE.md
+claude plugin marketplace add https://github.com/forrestchang/andrej-karpathy-skills.git
+claude plugin install andrej-karpathy-skills@andrej-karpathy-skills
 ```
 
-Principles to check user is aware of:
+Four principles that cut rework significantly:
 1. **Think Before Coding** — surface assumptions, present interpretations, ask before guessing
 2. **Simplicity First** — minimum code, no speculative features or premature abstraction
 3. **Surgical Changes** — touch only what was asked, match existing style, no scope creep
 4. **Goal-Driven Execution** — define verifiable success criteria before implementing
-
-Ask user which option they want (marketplace / curl / skip).
 
 ## Step 7 — Summary
 
@@ -96,11 +91,9 @@ Ask user which option they want (marketplace / curl / skip).
 XVE Claude Code Setup
 ─────────────────────
 settings.json:    ✓ applied
-agents:           clockit ✓  activitywatch ✓
-commands:         k/ks/ke ✓  aw/aw-week/aw-setup ✓
 clockit-stop.sh:  ✓ / ✗
 terminal watcher: ✓ / ✗
 CLOCKIT_TOKEN:    ✓ / ✗ not set
 XVE_EMAIL:        ✓ / ✗ not set
-karpathy-skills:  ✓ installed / ✗ skipped
+karpathy-skills:  ✓ installed / ✗ failed
 ```
