@@ -32,7 +32,9 @@ That's it. Claude will guide you through the rest.
 
 ---
 
-- [Plugins & commands](docs/plugins.md)
-- [Configuration & env vars](docs/configuration.md)
-- [Time tracking guide — Kimai token, ActivityWatch setup, troubleshooting](docs/time-tracking.md)
-- [Repository structure](docs/structure.md)
+| Doc | What's in it |
+|-----|-------------|
+| [Plugins & commands](docs/plugins.md) | All slash commands and what they do |
+| [Time tracking guide](docs/time-tracking.md) | How to get your Kimai API token, what ActivityWatch is, troubleshooting |
+| [Configuration & env vars](docs/configuration.md) | Env var reference, model/advisor strategy, feature toggles |
+| [Repository structure](docs/structure.md) | File layout and what each file does |
