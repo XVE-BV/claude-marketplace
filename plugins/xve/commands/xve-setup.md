@@ -30,27 +30,7 @@ Call advisor: before writing code, when stuck, before declaring done. Not after 
 
 **Note:** The Stop hook path is hardcoded to `~/.claude/clockit-stop.sh`. Confirm this path exists before writing.
 
-## Step 3 — Install global agents
-
-Copy these agents to `~/.claude/agents/` (skip if already newer):
-```bash
-cp -n "$REPO_DIR/plugins/kimai/agents/clockit.md" ~/.claude/agents/
-cp -n "$REPO_DIR/plugins/activitywatch/agents/activitywatch.md" ~/.claude/agents/
-```
-
-## Step 4 — Install global commands
-
-Copy commands to `~/.claude/commands/`:
-```bash
-for f in k.md ks.md ke.md; do
-  cp -n "$REPO_DIR/plugins/kimai/commands/$f" ~/.claude/commands/
-done
-for f in aw.md aw-week.md aw-setup.md; do
-  cp -n "$REPO_DIR/plugins/activitywatch/commands/$f" ~/.claude/commands/
-done
-```
-
-## Step 5 — Install hooks
+## Step 3 — Install hooks
 
 ```bash
 cp -n "$REPO_DIR/hooks/clockit-stop.sh" ~/.claude/clockit-stop.sh
@@ -65,11 +45,11 @@ chmod +x ~/.claude/session-start.sh
 - `ENABLE_KIMAI=1` → enables Kimai agent (default: off)
 - `ENABLE_ACTIVITYWATCH=1` → enables ActivityWatch agent (default: off)
 
-## Step 6 — Install terminal watcher
+## Step 4 — Install terminal watcher
 
 Check `~/.config/aw-watcher-terminal.zsh`. If missing, copy from `$REPO_DIR/hooks/aw-watcher-terminal.zsh` and add source line to `~/.zshrc`.
 
-## Step 7 — Check env vars
+## Step 5 — Check env vars
 
 ```bash
 echo "CLOCKIT_TOKEN:      ${CLOCKIT_TOKEN:-(not set ⚠)}"
@@ -90,7 +70,7 @@ export ENABLE_ACTIVITYWATCH=1    # enable AW agent + /aw /aw-week /aw-setup
 # XVE_CUSTOMER_N — see .env.example for full template
 ```
 
-## Step 8 — Behavioral guidelines (karpathy-skills)
+## Step 6 — Behavioral guidelines (karpathy-skills)
 
 These four principles cut rework significantly. Offer to install them:
 
@@ -110,7 +90,7 @@ Principles to check user is aware of:
 
 Ask user which option they want (marketplace / curl / skip).
 
-## Step 9 — Summary
+## Step 7 — Summary
 
 ```
 XVE Claude Code Setup
