@@ -23,7 +23,11 @@ Say any of these to Claude:
 
 Claude reads your context (workspace, memory, anything you've shared) and writes a clear version of the decision you're facing. If it's too vague, it asks one clarifying question.
 
-### 2 — Five advisors weigh in simultaneously
+### 2 — Web research
+
+Before any advisor speaks, Claude searches for real-world signal: best practices for this type of decision, known failure modes, relevant benchmarks or case studies. The findings are summarised and handed to every advisor — so their responses are grounded in what's actually known, not just reasoning in a vacuum.
+
+### 3 — Five advisors weigh in simultaneously (parallel)
 
 Five AI advisors each respond independently — they can't see each other's answers. Each has a distinct lens:
 
@@ -35,13 +39,13 @@ Five AI advisors each respond independently — they can't see each other's answ
 | **The Outsider** | What looks confusing or wrong to someone with zero context |
 | **The Executor** | Whether this can actually be done, and what the first step is |
 
-### 3 — Peer review
+### 4 — Peer review
 
 The five responses are anonymised (A through E) and handed to five reviewers. Each reviewer identifies: which response was strongest, which had the biggest blind spot, and what all five missed.
 
 This is what separates the Council from a single AI answer — the weak spots get called out.
 
-### 4 — The Chairman delivers a verdict
+### 5 — The Chairman delivers a verdict
 
 One final agent reads everything: all five advisor responses, all five peer reviews. It produces:
 
@@ -53,7 +57,7 @@ One final agent reads everything: all five advisor responses, all five peer revi
 
 The Chairman can disagree with the majority if the reasoning supports it.
 
-### 5 — You get a report
+### 6 — You get a report
 
 Claude saves an HTML report (opens automatically) and a full transcript. The report shows the verdict prominently, with all advisor responses and reviews available to expand if you want the detail.
 

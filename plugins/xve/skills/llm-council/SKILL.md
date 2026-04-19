@@ -27,15 +27,16 @@ These descriptions are injected verbatim into each subagent prompt — they driv
 
 ```mermaid
 flowchart LR
-    Q["Framed question"] --> A1 & A2 & A3 & A4 & A5
-    subgraph P1["Step 2 — 5 advisors (parallel)"]
+    Q["Framed question"] --> WS["Step 2 — Web research"]
+    WS --> A1 & A2 & A3 & A4 & A5
+    subgraph P1["Step 3 — 5 advisors (parallel)"]
         A1[Contrarian] & A2[First Principles] & A3[Expansionist] & A4[Outsider] & A5[Executor]
     end
     A1 & A2 & A3 & A4 & A5 --> R1 & R2 & R3 & R4 & R5
-    subgraph P2["Step 3 — 5 reviewers (parallel, anonymized)"]
+    subgraph P2["Step 4 — 5 reviewers (parallel, anonymized)"]
         R1[Reviewer A] & R2[Reviewer B] & R3[Reviewer C] & R4[Reviewer D] & R5[Reviewer E]
     end
-    R1 & R2 & R3 & R4 & R5 --> CH["Step 4 — Chairman\nverdict + recommendation"]
+    R1 & R2 & R3 & R4 & R5 --> CH["Step 5 — Chairman\nverdict + recommendation"]
     CH --> OUT["HTML report\n+ transcript"]
 ```
 
@@ -45,7 +46,18 @@ flowchart LR
 
 Scan workspace for context (`CLAUDE.md`, `memory/`, referenced files, past transcripts) — 30 seconds max. Frame includes: core decision, user context, workspace context, what's at stake. If too vague, ask **one** clarifying question.
 
-### Step 2 — Convene the Council (parallel)
+### Step 2 — Web Research
+
+Before convening advisors, search for real-world signal on the decision. Run 2–3 targeted searches:
+- Best practices or common outcomes for this type of decision
+- Known failure modes or pitfalls others have hit
+- Any recent data, benchmarks, or case studies relevant to the stakes
+
+Summarise findings in 3–5 bullet points. This context is appended to the framed question given to every advisor — grounding them in what's actually known rather than reasoning in a vacuum.
+
+Skip only if the question is purely personal/values-based with no meaningful external signal (e.g. "should I quit my job").
+
+### Step 3 — Convene the Council (parallel)
 
 Issue all 5 Agent calls in a **single message** (subagent_type: `general-purpose`). Sequential spawning lets earlier responses bleed into later ones — independence is the point.
 
@@ -58,7 +70,7 @@ Question: [framed question]
 Respond from your perspective. Be direct. Don't hedge. 150-300 words. No preamble.
 ```
 
-### Step 3 — Peer Review (parallel)
+### Step 4 — Peer Review (parallel)
 
 Anonymize responses as A–E (randomize mapping). Issue all 5 reviewer Agent calls in a **single message**. Each reviewer sees all 5 responses:
 1. Which is strongest and why? (pick one)
@@ -71,7 +83,7 @@ You are reviewing an LLM Council. Five advisors answered: [framed question]
 Answer the 3 questions. Reference by letter. Under 200 words. Be direct.
 ```
 
-### Step 4 — Chairman Synthesis
+### Step 5 — Chairman Synthesis
 
 One agent gets: original question + all 5 de-anonymized responses + all 5 peer reviews.
 
@@ -84,7 +96,7 @@ Output structure (mandatory):
 
 Chairman can disagree with majority if reasoning supports it.
 
-### Step 5 — HTML Report
+### Step 6 — HTML Report
 
 Save `council-report-[YYYY-MM-DD-HHMMSS].html` (self-contained, inline CSS):
 - Chairman verdict prominent
@@ -95,7 +107,7 @@ Save `council-report-[YYYY-MM-DD-HHMMSS].html` (self-contained, inline CSS):
 
 Open after generating.
 
-### Step 6 — Transcript
+### Step 7 — Transcript
 
 Save `council-transcript-[YYYY-MM-DD-HHMMSS].md` alongside: original question, framed question, all advisor responses, all peer reviews (with anonymization mapping), full chairman synthesis.
 
