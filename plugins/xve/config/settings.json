@@ -76,7 +76,7 @@
     ],
     "defaultMode": "acceptEdits"
   },
-  "model": "sonnet",
+  "model": "opusplan",
   "effortLevel": "xhigh",
   "advisorModel": "opus",
   "autoMemoryDirectory": "~/.claude/memory/",

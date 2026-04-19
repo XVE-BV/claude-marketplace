@@ -7,15 +7,15 @@ Claude Code plugins for time tracking and machine setup.
 **Step 1 — Open Claude Code and add this marketplace:**
 
 ```
-/plugin marketplace add https://github.com/jonasvanderhaegen-xve/xve-claude-marketplace.git
+claude plugin marketplace add https://github.com/jonasvanderhaegen-xve/xve-claude-marketplace.git
 ```
 
 **Step 2 — Install the plugins:**
 
 ```
-/plugin install xve@xve-claude-marketplace
-/plugin install kimai@xve-claude-marketplace
-/plugin install activitywatch@xve-claude-marketplace
+claude plugin install xve@xve-claude-marketplace
+claude plugin install kimai@xve-claude-marketplace
+claude plugin install activitywatch@xve-claude-marketplace
 ```
 
 **Step 3 — Set your env vars:**
