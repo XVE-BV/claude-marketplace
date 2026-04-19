@@ -40,9 +40,21 @@ Bootstrap Claude Code on a new machine to match the XVE standard config.
 
 ### 1. Install via Claude Code marketplace
 
+Add the marketplace (one-time):
+
 ```
-/plugin install xve-claude-marketplace@https://github.com/jonasvanderhaegen-xve/xve-claude-marketplace
+/plugin marketplace add https://github.com/jonasvanderhaegen-xve/xve-claude-marketplace.git
 ```
+
+Install plugins:
+
+```
+/plugin install xve@xve-claude-marketplace
+/plugin install kimai@xve-claude-marketplace
+/plugin install activitywatch@xve-claude-marketplace
+```
+
+`kimai` and `activitywatch` are installed but inactive by default — enable via env vars (see step 2).
 
 ### 2. Set env vars
 
