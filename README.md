@@ -39,3 +39,4 @@ That's it. Claude will guide you through the rest.
 | [Configuration & env vars](docs/configuration.md) | Env var reference, model/advisor strategy, feature toggles |
 | [Repository structure](docs/structure.md) | File layout and what each file does |
 | [LLM Council](docs/llm-council.md) | Multi-advisor decision framework — when and how to use it |
+| [xve-setup guide](docs/xve-setup.md) | What `/xve-setup` does, step by step |
