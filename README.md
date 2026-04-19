@@ -38,10 +38,10 @@ Bootstrap Claude Code on a new machine to match the XVE standard config.
 
 ## Setup
 
-### 1. Clone
+### 1. Install via Claude Code marketplace
 
-```bash
-git clone git@github.com:jonasvanderhaegen-xve/xve-claude-marketplace.git
+```
+/plugin install xve-claude-marketplace@https://github.com/jonasvanderhaegen-xve/xve-claude-marketplace
 ```
 
 ### 2. Set env vars
@@ -51,8 +51,6 @@ Actual values are in Bitwarden: **"xve claude marketplace env vars"**.
 Copy them to `~/.zshrc` (or a sourced `.env`). See `.env.example` for the full list of keys and format docs.
 
 ### 3. Run setup
-
-Open Claude Code in this repo and run:
 
 ```
 /xve-setup
