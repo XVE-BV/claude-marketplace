@@ -4,6 +4,8 @@ Claude Code plugins for time tracking and machine setup.
 
 ## Getting started
 
+> New to terminals? See [how to open a terminal and paste commands](docs/open-terminal.md).
+
 **Step 1 — Open Claude Code and add this marketplace:**
 
 ```
