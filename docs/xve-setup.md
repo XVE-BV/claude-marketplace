@@ -14,16 +14,16 @@ Merges `plugins/xve/config/settings.json` into `~/.claude/settings.json`. This c
 - **Permissions:** pre-approved allow/deny lists so Claude doesn't prompt for common commands
 - **Token and timeout limits**
 
-### 2 — Installs hooks
+### 2 — Installs hooks (asks first)
 
-Two background scripts wired into Claude's lifecycle:
+Claude asks whether you want these before installing:
 
 - **`session-start.sh`** — runs at session start, reads your env vars and injects context (enables/disables Kimai, ActivityWatch, advisor based on flags)
 - **`clockit-stop.sh`** — runs when Claude stops, prompts you to log time if a timer is running
 
-### 3 — Installs terminal watcher
+### 3 — Installs terminal watcher (asks first)
 
-Adds `aw-watcher-terminal.zsh` to `~/.config/` and sources it from `~/.zshrc`. This lets ActivityWatch track time spent in the terminal per project.
+Claude asks before touching `~/.zshrc`. If you confirm, adds `aw-watcher-terminal.zsh` to `~/.config/` and sources it from `~/.zshrc`. This lets ActivityWatch track time spent in the terminal per project.
 
 ### 4 — Checks env vars
 

@@ -30,8 +30,16 @@ Call advisor: before writing code, when stuck, before declaring done. Not after 
 
 **Note:** The Stop hook path is hardcoded to `~/.claude/clockit-stop.sh`. Confirm this path exists before writing.
 
-## Step 3 — Install hooks
+## Step 3 — Install hooks (confirm first)
 
+Ask the user:
+> "Install session hooks? These run automatically on every Claude session:
+> - **session-start.sh** — injects context at session start (enables/disables Kimai, ActivityWatch, advisor via env vars)
+> - **clockit-stop.sh** — prompts to log time when Claude stops
+>
+> Install? [Y/n]"
+
+If yes:
 ```bash
 cp -n "$REPO_DIR/hooks/clockit-stop.sh" ~/.claude/clockit-stop.sh
 chmod +x ~/.claude/clockit-stop.sh
@@ -45,9 +53,14 @@ chmod +x ~/.claude/session-start.sh
 - `ENABLE_KIMAI=1` → enables Kimai agent (default: off)
 - `ENABLE_ACTIVITYWATCH=1` → enables ActivityWatch agent (default: off)
 
-## Step 4 — Install terminal watcher
+## Step 4 — Install terminal watcher (confirm first)
 
-Check `~/.config/aw-watcher-terminal.zsh`. If missing, copy from `$REPO_DIR/hooks/aw-watcher-terminal.zsh` and add source line to `~/.zshrc`.
+Ask the user:
+> "Install terminal watcher? This adds a zsh hook that tracks time per project in ActivityWatch. It modifies ~/.zshrc.
+>
+> Install? [Y/n]"
+
+If yes: check `~/.config/aw-watcher-terminal.zsh`. If missing, copy from `$REPO_DIR/hooks/aw-watcher-terminal.zsh` and add source line to `~/.zshrc`.
 
 ## Step 5 — Check env vars
 
