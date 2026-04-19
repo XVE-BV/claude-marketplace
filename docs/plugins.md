@@ -34,3 +34,5 @@ Trigger: say "council this", "war room this", "pressure-test this", or present a
 
 **Use:** genuine uncertainty, high cost of wrong call.
 **Skip:** factual lookups, creation tasks, already-decided things.
+
+Full guide: [llm-council.md](llm-council.md)
