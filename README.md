@@ -14,6 +14,11 @@ claude plugin marketplace add https://github.com/jonasvanderhaegen-xve/xve-claud
 
 ```
 claude plugin install xve@xve-claude-marketplace
+```
+
+Optionally, install the time tracking plugins:
+
+```
 claude plugin install kimai@xve-claude-marketplace
 claude plugin install activitywatch@xve-claude-marketplace
 ```

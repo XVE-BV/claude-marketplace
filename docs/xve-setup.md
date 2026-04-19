@@ -4,6 +4,22 @@ Run this once on a new machine after installing the plugins. It wires up Claude 
 
 > **Note on commands and agents:** When you run `claude plugin install kimai@xve-claude-marketplace` and `claude plugin install activitywatch@xve-claude-marketplace`, Claude Code automatically discovers and loads all commands, agents, and skills from those plugins. No manual copying needed — `/xve-setup` skips that.
 
+## Flow
+
+```mermaid
+flowchart TD
+    A["Step 1 — Apply settings.json"] --> B
+    B["Step 2 — Install hooks?\nsession-start.sh + clockit-stop.sh"] -->|"Yes"| B1["Hooks installed"]
+    B -->|"No"| C
+    B1 --> C
+    C["Step 3 — Install terminal watcher?\naw-watcher-terminal.zsh → ~/.zshrc"] -->|"Yes"| C1["Watcher installed"]
+    C -->|"No"| D
+    C1 --> D
+    D["Step 4 — Check env vars\nCLOCKIT_TOKEN, XVE_EMAIL, ..."] --> E
+    E["Step 5 — Install karpathy-skills\nauto, no prompt"] --> F
+    F["Step 6 — Summary"]
+```
+
 ## What it does
 
 ### 1 — Applies settings
