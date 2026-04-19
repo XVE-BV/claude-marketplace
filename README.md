@@ -46,29 +46,9 @@ git clone git@github.com:jonasvanderhaegen-xve/xve-claude-marketplace.git
 
 ### 2. Set env vars
 
-Copy `.env.example` to `~/.zshrc` (or a sourced `.env`) and fill in values:
+Actual values are in Bitwarden: **"xve claude marketplace env vars"**.
 
-```zsh
-export XVE_EMAIL=your@email.com
-export CLOCKIT_TOKEN=your_kimai_bearer_token
-export CLOCKIT_BASE=https://clockit.xve-web.eu/api  # optional, this is the default
-
-# Customer mappings — format: "path_hint|kimai_project_id|display_label|aw_pattern"
-# Order matters: more specific hints before broader ones
-export XVE_CUSTOMER_1="..."
-export XVE_CUSTOMER_2="..."
-
-# Regex matched against AW window titles/URLs to exclude from all billing
-export AW_EXCLUDE="(?i)your-internal-tool"
-
-# Kimai project ID for internal/non-billable work
-export KIMAI_INTERNAL_ID=0
-
-# Optional: set to 1 to disable Opus advisor for this session (faster, less strategic oversight)
-# export DISABLE_ADVISOR=1
-```
-
-See `.env.example` for full template with comments.
+Copy them to `~/.zshrc` (or a sourced `.env`). See `.env.example` for the full list of keys and format docs.
 
 ### 3. Run setup
 
