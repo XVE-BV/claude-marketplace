@@ -34,4 +34,5 @@ That's it. Claude will guide you through the rest.
 
 - [Plugins & commands](docs/plugins.md)
 - [Configuration & env vars](docs/configuration.md)
+- [Time tracking guide — Kimai token, ActivityWatch setup, troubleshooting](docs/time-tracking.md)
 - [Repository structure](docs/structure.md)
