@@ -4,6 +4,7 @@
 .env.example                    Env var template — never commit actual values
 hooks/
   session-start.sh              Injects session context from env vars
+  env-guard.sh                  PreToolUse hook — blocks .env file access via any tool
 plugins/
   xve/
     commands/xve-setup.md       Bootstrap command

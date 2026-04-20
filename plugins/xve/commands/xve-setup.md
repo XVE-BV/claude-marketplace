@@ -30,8 +30,9 @@ Call advisor: before writing code, when stuck, before declaring done. Not after 
 ## Step 3 — Install session-start hook (confirm first)
 
 Ask the user:
-> "Install session hook? This runs automatically on every Claude session:
+> "Install session hooks? These run automatically on every Claude session:
 > - **session-start.sh** — injects context at session start (enables/disables advisor via env vars)
+> - **env-guard.sh** — blocks Claude from reading/executing .env files via any tool
 >
 > Install? [Y/n]"
 
@@ -39,10 +40,16 @@ If yes:
 ```bash
 cp "$REPO_DIR/hooks/session-start.sh" ~/.claude/session-start.sh
 chmod +x ~/.claude/session-start.sh
+
+curl -fsSL https://raw.githubusercontent.com/XVE-BV/claude-marketplace/main/hooks/env-guard.sh \
+  -o ~/.claude/env-guard.sh 2>/dev/null || cp "$REPO_DIR/hooks/env-guard.sh" ~/.claude/env-guard.sh
+chmod +x ~/.claude/env-guard.sh
 ```
 
 `session-start.sh` injects context at session start based on env vars:
 - `DISABLE_ADVISOR=1` → blocks advisor() calls
+
+`env-guard.sh` is a PreToolUse hook that blocks access to `.env` files via `Read`/`Edit`/`Write` and any bash command referencing `.env`. Deny rules in settings.json alone are insufficient — this hook is the actual gate.
 
 ## Step 4 — Check env vars
 

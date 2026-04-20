@@ -82,6 +82,18 @@
   "autoMemoryDirectory": "~/.claude/memory/",
   "skipDangerousModePermissionPrompt": true,
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Read|Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/env-guard.sh",
+            "statusMessage": "Checking .env access..."
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "hooks": [
@@ -93,7 +105,7 @@
         ]
       }
     ],
-"UserPromptSubmit": [
+    "UserPromptSubmit": [
       {
         "hooks": [
           {
