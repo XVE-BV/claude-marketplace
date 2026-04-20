@@ -1,6 +1,6 @@
 ---
 name: xve-customers
-description: Customer config loaded from XVE_CUSTOMER_N env vars. Reference for kimai and activitywatch plugins.
+description: Customer config loaded from XVE_CUSTOMER_N env vars.
 ---
 
 # Customer Configuration
@@ -11,7 +11,7 @@ All customer data lives in env vars — never in committed files.
 
 ```bash
 # In ~/.zshrc — see .env.example for full template
-export XVE_CUSTOMER_1="path_hint|kimai_project_id|display_label|aw_pattern"
+export XVE_CUSTOMER_1="path_hint|project_id|display_label"
 export XVE_CUSTOMER_2="..."
 # Order matters: more specific path hints before broader ones
 ```
@@ -26,21 +26,6 @@ for i in $(seq 1 20); do
     PATH_HINT=$(echo "$ENTRY" | cut -d'|' -f1)
     PROJ_ID=$(echo "$ENTRY"   | cut -d'|' -f2)
     LABEL=$(echo "$ENTRY"     | cut -d'|' -f3)
-    AW_PAT=$(echo "$ENTRY"    | cut -d'|' -f4)
-    echo "$LABEL: path=$PATH_HINT project=$PROJ_ID aw=$AW_PAT"
+    echo "$LABEL: path=$PATH_HINT project=$PROJ_ID"
 done
-```
-
-## ActivityWatch exclusions
-
-```bash
-echo "${AW_EXCLUDE:-(not set)}"
-```
-
-Patterns matching `$AW_EXCLUDE` are never counted or billed.
-
-## Internal project fallback
-
-```bash
-echo "${KIMAI_INTERNAL_ID:-(not set)}"
 ```

@@ -93,19 +93,7 @@
         ]
       }
     ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash /Users/xve/.claude/clockit-stop.sh",
-            "asyncRewake": true,
-            "statusMessage": "ClockIt check..."
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
+"UserPromptSubmit": [
       {
         "hooks": [
           {

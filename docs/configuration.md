@@ -13,12 +13,8 @@ Advisor fires before writing code, before major decisions, when stuck, and befor
 
 ## Env var toggles
 
-All features disabled by default. Enable by setting to `1` in `~/.zshrc`:
-
 | Env var | Default | Effect |
 |---------|---------|--------|
-| `ENABLE_KIMAI` | `0` | Kimai agent + `/k` `/ks` `/ke` |
-| `ENABLE_ACTIVITYWATCH` | `0` | ActivityWatch agent + `/aw` `/aw-week` `/aw-setup` |
 | `DISABLE_ADVISOR` | `0` | Set to `1` to disable Opus advisor |
 
 Controlled at session start by `~/.claude/session-start.sh` (installed by `/xve-setup`).
@@ -30,11 +26,7 @@ All values from Bitwarden: **"xve claude marketplace env vars"**. See `.env.exam
 | Var | Purpose |
 |-----|---------|
 | `XVE_EMAIL` | Your email, used by Claude when needed |
-| `CLOCKIT_TOKEN` | Kimai API bearer token |
-| `CLOCKIT_BASE` | Kimai base URL (default: `https://clockit.xve-web.eu/api`) |
-| `XVE_CUSTOMER_N` | Customer mapping: `path_hint\|project_id\|label\|aw_pattern` |
-| `AW_EXCLUDE` | Regex for titles/URLs never billed |
-| `KIMAI_INTERNAL_ID` | Kimai project ID for internal work |
+| `XVE_CUSTOMER_N` | Customer mapping: `path_hint\|project_id\|label` |
 
 ## Behavioral guidelines
 

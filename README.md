@@ -1,6 +1,6 @@
 # xve-claude-marketplace
 
-Claude Code plugins for time tracking and machine setup.
+Claude Code plugins for machine setup and configuration.
 
 ## Getting started
 
@@ -12,17 +12,10 @@ Claude Code plugins for time tracking and machine setup.
 claude plugin marketplace add https://github.com/XVE-BV/claude-marketplace.git
 ```
 
-**Step 2 — Install the plugins:**
+**Step 2 — Install the plugin:**
 
 ```
 claude plugin install xve@xve-claude-marketplace
-```
-
-Optionally, install the time tracking plugins:
-
-```
-claude plugin install kimai@xve-claude-marketplace
-claude plugin install activitywatch@xve-claude-marketplace
 ```
 
 **Step 3 — Set your env vars:**
@@ -32,15 +25,7 @@ claude plugin install activitywatch@xve-claude-marketplace
    then paste the contents of the **"xve claude marketplace env vars"** note from Bitwarden.
    Claude adds them to `~/.zshrc` (Mac/Linux) or the Windows equivalent automatically.
 
-2. Ask Claude to open that file for you, then **edit the API key value manually** and save.
-
-3. Close Claude, re-open it (so the new env vars are loaded).
-
-4. Ask Claude to **map your Kimai projects as env variables** — either:
-   - _"Search the Kimai API and list my projects"_ — pick the ones you want, Claude sets the vars, or
-   - _"Check my time entry hotspots and map those projects as env variables"_ — Claude figures out your most-used projects automatically.
-
-   With projects mapped, time tracking works without looking up IDs each time.
+2. Close Claude, re-open it (so the new env vars are loaded).
 
 **Step 4 — Run setup** ([read what this does first](docs/xve-setup.md))**:**
 
@@ -55,8 +40,7 @@ That's it. Claude will guide you through the rest.
 | Doc | What's in it |
 |-----|-------------|
 | [Plugins & commands](docs/plugins.md) | All slash commands and what they do |
-| [Time tracking guide](docs/time-tracking.md) | How to get your Kimai API token, what ActivityWatch is, troubleshooting |
-| [Configuration & env vars](docs/configuration.md) | Env var reference, model/advisor strategy, feature toggles |
+| [Configuration & env vars](docs/configuration.md) | Env var reference, model/advisor strategy |
 | [Repository structure](docs/structure.md) | File layout and what each file does |
 | [LLM Council](docs/llm-council.md) | Multi-advisor decision framework — when and how to use it |
 | [xve-setup guide](docs/xve-setup.md) | What `/xve-setup` does, step by step |
