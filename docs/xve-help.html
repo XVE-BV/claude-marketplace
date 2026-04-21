@@ -18,7 +18,7 @@
                 tertiaryColor: '#161b27',
                 clusterBkg: '#161b27'
             },
-            flowchart: { htmlLabels: true, curve: 'basis' }
+            flowchart: { curve: 'basis' }
         });
     </script>
     <style>
@@ -199,26 +199,26 @@
         <div class="box">
             <div class="mermaid">
 flowchart TD
-    START([Start a new chat]) --> CTX[Check how full the whiteboard is<br/>Type /context]
-    CTX --> PLAN[Tell Claude your plan first<br/>What do you want to achieve today?]
-    PLAN --> WORK[Get to work<br/>&#9989; Fresh start — Claude is at its best here]
+    START([New chat]) --> CTX["Run /context — see how full the whiteboard is"]
+    CTX --> PLAN["Tell Claude your plan before starting"]
+    PLAN --> WORK["Do the work — Claude is freshest here"]
 
-    WORK --> CHECK{How full is<br/>the whiteboard?}
+    WORK --> CHECK{"How full is the whiteboard?"}
 
-    CHECK -->|Less than 60% — keep going| WORK
-    CHECK -->|Claude gave a wrong answer| REWIND[/rewind<br/>Go back to before the mistake<br/>Don't chat over a bad answer]
+    CHECK -->|Under 60 percent — keep going| WORK
+    CHECK -->|Claude made a mistake| REWIND["Use /rewind — go back before the mistake"]
     REWIND --> WORK
-    CHECK -->|Big task that needs lots of reading| AGENT[Let a helper do it<br/>A fresh assistant handles it<br/>You only get the answer]
+    CHECK -->|Heavy task or lots of reading| AGENT["Delegate to a helper — fresh context, returns only the result"]
     AGENT --> WORK
-    CHECK -->|Whiteboard is ~60% full| DONE{Are you done<br/>for today?}
+    CHECK -->|Around 60 percent full| DONE{"Done for today?"}
 
-    DONE -->|Yes| CLEAR[/clear<br/>Wipe the whiteboard<br/>Start fresh next time]
-    DONE -->|No — still more to do| HANDOFF[/session-handoff<br/>Claude writes a summary<br/>of everything important]
-    HANDOFF --> CLEAR2[/clear — wipe the whiteboard]
-    CLEAR2 --> PASTE[Paste the summary<br/>Claude is back up to speed<br/>Whiteboard is clean]
+    DONE -->|Yes| CLEAR["Use /clear — fresh whiteboard"]
+    DONE -->|Not done yet| HANDOFF["Use /session-handoff — Claude writes a full summary"]
+    HANDOFF --> CLEAR2["Use /clear"]
+    CLEAR2 --> PASTE["Paste the summary — Claude is back up to speed"]
     PASTE --> WORK
 
-    CHECK -->|90%+ &#9888; avoid this| AUTO[Claude summarises itself<br/>But loses most of the detail<br/>This is what we want to avoid]
+    CHECK -->|90 percent or more — avoid!| AUTO["Auto-compaction — Claude loses most of the detail"]
 
     style START   fill:#14532d,stroke:#22c55e,color:#86efac
     style WORK    fill:#172554,stroke:#3b82f6,color:#93c5fd
