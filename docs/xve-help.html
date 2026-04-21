@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XVE Claude Code Guide</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f1117;
+            color: #e2e8f0;
+            padding: 48px 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 6px; }
+        .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 8px; }
+        .intro {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            background: #161b27;
+            border: 1px solid #1e2840;
+            border-left: 3px solid #3b82f6;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 40px;
+        }
+
+        section { margin-bottom: 40px; }
+
+        section > h2 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #475569;
+            margin-bottom: 14px;
+        }
+
+        .box {
+            background: #161b27;
+            border: 1px solid #1e2840;
+            border-radius: 10px;
+            padding: 28px;
+        }
+
+        .mermaid { text-align: center; }
+
+        /* ── Token bar ── */
+        .token-bar {
+            display: flex;
+            height: 16px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .token-bar .z-prime   { background: #22c55e; flex: 20; }
+        .token-bar .z-work    { background: #3b82f6; flex: 40; }
+        .token-bar .z-compact { background: #f59e0b; flex: 35; }
+        .token-bar .z-danger  { background: #ef4444; flex:  5; }
+
+        .token-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            color: #475569;
+            margin-bottom: 20px;
+        }
+
+        /* ── Zone cards ── */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+        }
+
+        .card {
+            background: #0f1117;
+            border: 1px solid #1e2840;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .card h3 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 6px;
+        }
+        .card .tagline {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        .card ul { list-style: none; }
+        .card li {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            padding: 3px 0;
+            display: flex;
+            gap: 8px;
+        }
+        .card li::before { content: '→'; color: #334155; flex-shrink: 0; }
+
+        .card.green { border-left: 3px solid #22c55e; }
+        .card.green h3 { color: #22c55e; }
+        .card.blue  { border-left: 3px solid #3b82f6; }
+        .card.blue  h3 { color: #3b82f6; }
+        .card.amber { border-left: 3px solid #f59e0b; }
+        .card.amber h3 { color: #f59e0b; }
+        .card.red   { border-left: 3px solid #ef4444; }
+        .card.red   h3 { color: #ef4444; }
+
+        /* ── Command table ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+        thead th {
+            text-align: left;
+            padding: 10px 16px;
+            background: #1e2840;
+            color: #64748b;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        tbody td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #1e2840;
+            color: #cbd5e1;
+            vertical-align: top;
+        }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: #161b27; }
+
+        code {
+            background: #1e2840;
+            color: #93c5fd;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+
+        .avoid { color: #f87171; }
+
+        .tip {
+            background: #0f1117;
+            border: 1px solid #1e2840;
+            border-left: 3px solid #22c55e;
+            border-radius: 8px;
+            padding: 14px 16px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 16px;
+        }
+        .tip strong { color: #22c55e; }
+    </style>
+</head>
+<body>
+
+    <h1>Claude Code — Getting Started Guide</h1>
+    <p class="subtitle">XVE · How to work with Claude without running into limits or getting bad results</p>
+    <p class="intro">
+        Claude can only see a limited amount of conversation at once — think of it as a whiteboard that fills up as you chat.
+        Once it's full, Claude starts forgetting things and making more mistakes.
+        This guide shows you how to keep the whiteboard clean so Claude stays sharp all day.
+    </p>
+
+    <!-- ── Diagram ── -->
+    <section>
+        <h2>The Ideal Session Flow</h2>
+        <div class="box">
+            <div class="mermaid">
+%%{init: {
+  "theme": "dark",
+  "themeVariables": {
+    "primaryColor": "#1e2840",
+    "primaryTextColor": "#e2e8f0",
+    "primaryBorderColor": "#2d4060",
+    "lineColor": "#334155",
+    "edgeLabelBackground": "#0f1117",
+    "tertiaryColor": "#161b27"
+  }
+}}%%
+flowchart TD
+    START([Start a new chat]) --> CTX["Check how full the whiteboard is\nType: /context"]
+    CTX --> PLAN["Tell Claude your plan first\nWhat do you want to achieve today?"]
+    PLAN --> WORK["Get to work\n✅ Fresh start — Claude is at its best here"]
+
+    WORK --> CHECK{"How full\nis the whiteboard?"}
+
+    CHECK -->|"Less than 60 % — keep going"| WORK
+    CHECK -->|"Claude gave a wrong or bad answer"| REWIND["/rewind\nGo back to before the mistake\nDon't keep chatting over a bad answer — it pollutes everything after"]
+    REWIND --> WORK
+    CHECK -->|"Big task that needs lots of reading"| AGENT["Let a helper do it\nClaude sends a fresh assistant to do the heavy lifting\nYou only get the answer, not all the noise"]
+    AGENT --> WORK
+    CHECK -->|"Whiteboard is ~60 % full"| DONE{"Are you done\nfor today?"}
+
+    DONE -->|"Yes"| CLEAR["/clear\nWipe the whiteboard\nStart fresh next time"]
+    DONE -->|"No — still have more to do"| HANDOFF["/xve-session-handoff\nAsk Claude to write a summary of everything important so far"]
+    HANDOFF --> CLEAR2["/clear — wipe the whiteboard"]
+    CLEAR2 --> PASTE["Paste the summary\nClaude remembers everything again\nWhiteboard is clean"]
+    PASTE --> WORK
+
+    CHECK -->|"90 %+ — too late, avoid this"| AUTO["Claude summarises itself automatically\nBut it's at its worst point and loses most of the detail\nThis is what we're trying to avoid"]
+
+    style START   fill:#14532d,stroke:#22c55e,color:#86efac
+    style WORK    fill:#172554,stroke:#3b82f6,color:#93c5fd
+    style REWIND  fill:#1e1b4b,stroke:#8b5cf6,color:#c4b5fd
+    style AGENT   fill:#1e1b4b,stroke:#8b5cf6,color:#c4b5fd
+    style HANDOFF fill:#451a03,stroke:#f59e0b,color:#fcd34d
+    style CLEAR   fill:#14532d,stroke:#22c55e,color:#86efac
+    style CLEAR2  fill:#14532d,stroke:#22c55e,color:#86efac
+    style PASTE   fill:#14532d,stroke:#22c55e,color:#86efac
+    style AUTO    fill:#450a0a,stroke:#ef4444,color:#fca5a5
+    style CHECK   fill:#161b27,stroke:#334155,color:#94a3b8
+    style DONE    fill:#161b27,stroke:#334155,color:#94a3b8
+            </div>
+            <div class="tip">
+                <strong>The key habit:</strong> Don't wait until Claude starts making mistakes. At around 60 % full, pause — ask for a summary, clear the whiteboard, paste it back. It takes 30 seconds and Claude stays sharp.
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Token zones ── -->
+    <section>
+        <h2>How Full Is The Whiteboard?</h2>
+        <div class="box">
+            <div class="token-bar">
+                <div class="z-prime"></div>
+                <div class="z-work"></div>
+                <div class="z-compact"></div>
+                <div class="z-danger"></div>
+            </div>
+            <div class="token-labels">
+                <span>Empty</span>
+                <span>20 % — still fresh</span>
+                <span>60 % — act now</span>
+                <span>95 %</span>
+                <span>Full</span>
+            </div>
+            <div class="cards">
+                <div class="card green">
+                    <h3>0–20 % — Best quality</h3>
+                    <p class="tagline">Claude is at its sharpest</p>
+                    <ul>
+                        <li>This is the time to explain what you want</li>
+                        <li>Claude follows instructions best here</li>
+                        <li>Don't skip planning — it pays off</li>
+                    </ul>
+                </div>
+                <div class="card blue">
+                    <h3>20–60 % — Working zone</h3>
+                    <p class="tagline">Claude is doing well, stay aware</p>
+                    <ul>
+                        <li>Normal back-and-forth works great</li>
+                        <li>If Claude makes a mistake, go back — don't push through</li>
+                        <li>For big tasks, let a helper handle it</li>
+                    </ul>
+                </div>
+                <div class="card amber">
+                    <h3>60 % — Time to reset</h3>
+                    <p class="tagline">Don't wait any longer</p>
+                    <ul>
+                        <li>Ask Claude for a summary of what you've done</li>
+                        <li>Type /clear to wipe the whiteboard</li>
+                        <li>Paste the summary — you lose nothing</li>
+                    </ul>
+                </div>
+                <div class="card red">
+                    <h3>90 %+ — Avoid this zone</h3>
+                    <p class="tagline">Claude forgets most things here</p>
+                    <ul>
+                        <li>Claude starts making more mistakes</li>
+                        <li>It forgets what you told it earlier</li>
+                        <li>Automatic reset happens but loses most detail</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Command reference ── -->
+    <section>
+        <h2>Quick Command Reference</h2>
+        <div class="box" style="padding: 0; overflow: hidden;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Command</th>
+                        <th>When to use it</th>
+                        <th>What it does in plain English</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>/context</code></td>
+                        <td>Start of every session</td>
+                        <td>Shows you how full the whiteboard is before you start</td>
+                    </tr>
+                    <tr>
+                        <td><code>/rewind</code></td>
+                        <td>Claude gives a wrong answer</td>
+                        <td>Go back to before the mistake — the bad answer disappears and won't affect what comes next</td>
+                    </tr>
+                    <tr>
+                        <td><code>/xve-session-handoff</code></td>
+                        <td>Whiteboard is ~60 % full</td>
+                        <td>Claude writes a structured summary of everything important — decisions made, what was done, what's next</td>
+                    </tr>
+                    <tr>
+                        <td><code>/clear</code></td>
+                        <td>After the handoff summary</td>
+                        <td>Wipes the whiteboard completely clean. Paste your handoff summary right after and Claude is back up to speed</td>
+                    </tr>
+                    <tr>
+                        <td><code class="avoid">/compact</code></td>
+                        <td class="avoid">Try to avoid</td>
+                        <td>Claude summarises itself but it happens when Claude is already struggling — the summary is lower quality than doing it manually</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="tip" style="margin-top:14px">
+            <strong>Think of it like browser tabs:</strong> /clear closes all tabs. Your handoff summary is your bookmarks. You lose the tabs but keep everything that mattered.
+        </div>
+    </section>
+
+</body>
+</html>

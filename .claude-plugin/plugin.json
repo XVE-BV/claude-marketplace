@@ -12,7 +12,8 @@
         "config"
     ],
     "commands": [
-        "./plugins/xve/commands/xve-setup.md"
+        "./plugins/xve/commands/xve-setup.md",
+        "./plugins/xve/commands/xve-help.md"
     ],
     "agents": []
 }
