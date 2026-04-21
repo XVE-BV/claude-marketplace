@@ -13,7 +13,8 @@
     ],
     "commands": [
         "./plugins/xve/commands/xve-setup.md",
-        "./plugins/xve/commands/xve-help.md"
+        "./plugins/xve/commands/xve-help.md",
+        "./plugins/xve/commands/xve-docs.md"
     ],
     "agents": []
 }
