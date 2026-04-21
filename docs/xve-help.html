@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XVE Claude Code Guide</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#1e2840',
+                primaryTextColor: '#e2e8f0',
+                primaryBorderColor: '#2d4060',
+                lineColor: '#475569',
+                edgeLabelBackground: '#0f1117',
+                tertiaryColor: '#161b27',
+                clusterBkg: '#161b27'
+            },
+            flowchart: { htmlLabels: true, curve: 'basis' }
+        });
+    </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -182,38 +198,27 @@
         <h2>The Ideal Session Flow</h2>
         <div class="box">
             <div class="mermaid">
-%%{init: {
-  "theme": "dark",
-  "themeVariables": {
-    "primaryColor": "#1e2840",
-    "primaryTextColor": "#e2e8f0",
-    "primaryBorderColor": "#2d4060",
-    "lineColor": "#334155",
-    "edgeLabelBackground": "#0f1117",
-    "tertiaryColor": "#161b27"
-  }
-}}%%
 flowchart TD
-    START([Start a new chat]) --> CTX["Check how full the whiteboard is\nType: /context"]
-    CTX --> PLAN["Tell Claude your plan first\nWhat do you want to achieve today?"]
-    PLAN --> WORK["Get to work\n✅ Fresh start — Claude is at its best here"]
+    START([Start a new chat]) --> CTX[Check how full the whiteboard is<br/>Type /context]
+    CTX --> PLAN[Tell Claude your plan first<br/>What do you want to achieve today?]
+    PLAN --> WORK[Get to work<br/>&#9989; Fresh start — Claude is at its best here]
 
-    WORK --> CHECK{"How full\nis the whiteboard?"}
+    WORK --> CHECK{How full is<br/>the whiteboard?}
 
-    CHECK -->|"Less than 60 % — keep going"| WORK
-    CHECK -->|"Claude gave a wrong or bad answer"| REWIND["/rewind\nGo back to before the mistake\nDon't keep chatting over a bad answer — it pollutes everything after"]
+    CHECK -->|Less than 60% — keep going| WORK
+    CHECK -->|Claude gave a wrong answer| REWIND[/rewind<br/>Go back to before the mistake<br/>Don't chat over a bad answer]
     REWIND --> WORK
-    CHECK -->|"Big task that needs lots of reading"| AGENT["Let a helper do it\nClaude sends a fresh assistant to do the heavy lifting\nYou only get the answer, not all the noise"]
+    CHECK -->|Big task that needs lots of reading| AGENT[Let a helper do it<br/>A fresh assistant handles it<br/>You only get the answer]
     AGENT --> WORK
-    CHECK -->|"Whiteboard is ~60 % full"| DONE{"Are you done\nfor today?"}
+    CHECK -->|Whiteboard is ~60% full| DONE{Are you done<br/>for today?}
 
-    DONE -->|"Yes"| CLEAR["/clear\nWipe the whiteboard\nStart fresh next time"]
-    DONE -->|"No — still have more to do"| HANDOFF["/session-handoff\nAsk Claude to write a summary of everything important so far"]
-    HANDOFF --> CLEAR2["/clear — wipe the whiteboard"]
-    CLEAR2 --> PASTE["Paste the summary\nClaude remembers everything again\nWhiteboard is clean"]
+    DONE -->|Yes| CLEAR[/clear<br/>Wipe the whiteboard<br/>Start fresh next time]
+    DONE -->|No — still more to do| HANDOFF[/session-handoff<br/>Claude writes a summary<br/>of everything important]
+    HANDOFF --> CLEAR2[/clear — wipe the whiteboard]
+    CLEAR2 --> PASTE[Paste the summary<br/>Claude is back up to speed<br/>Whiteboard is clean]
     PASTE --> WORK
 
-    CHECK -->|"90 %+ — too late, avoid this"| AUTO["Claude summarises itself automatically\nBut it's at its worst point and loses most of the detail\nThis is what we're trying to avoid"]
+    CHECK -->|90%+ &#9888; avoid this| AUTO[Claude summarises itself<br/>But loses most of the detail<br/>This is what we want to avoid]
 
     style START   fill:#14532d,stroke:#22c55e,color:#86efac
     style WORK    fill:#172554,stroke:#3b82f6,color:#93c5fd
@@ -228,7 +233,7 @@ flowchart TD
     style DONE    fill:#161b27,stroke:#334155,color:#94a3b8
             </div>
             <div class="tip">
-                <strong>The key habit:</strong> Don't wait until Claude starts making mistakes. At around 60 % full, pause — ask for a summary, clear the whiteboard, paste it back. It takes 30 seconds and Claude stays sharp.
+                <strong>The key habit:</strong> Don't wait until Claude starts making mistakes. At around 60% full, pause — ask for a summary, clear the whiteboard, paste it back. It takes 30 seconds and Claude stays sharp.
             </div>
         </div>
     </section>
@@ -245,14 +250,14 @@ flowchart TD
             </div>
             <div class="token-labels">
                 <span>Empty</span>
-                <span>20 % — still fresh</span>
-                <span>60 % — act now</span>
-                <span>95 %</span>
+                <span>20% — still fresh</span>
+                <span>60% — act now</span>
+                <span>95%</span>
                 <span>Full</span>
             </div>
             <div class="cards">
                 <div class="card green">
-                    <h3>0–20 % — Best quality</h3>
+                    <h3>0–20% — Best quality</h3>
                     <p class="tagline">Claude is at its sharpest</p>
                     <ul>
                         <li>This is the time to explain what you want</li>
@@ -261,7 +266,7 @@ flowchart TD
                     </ul>
                 </div>
                 <div class="card blue">
-                    <h3>20–60 % — Working zone</h3>
+                    <h3>20–60% — Working zone</h3>
                     <p class="tagline">Claude is doing well, stay aware</p>
                     <ul>
                         <li>Normal back-and-forth works great</li>
@@ -270,7 +275,7 @@ flowchart TD
                     </ul>
                 </div>
                 <div class="card amber">
-                    <h3>60 % — Time to reset</h3>
+                    <h3>60% — Time to reset</h3>
                     <p class="tagline">Don't wait any longer</p>
                     <ul>
                         <li>Ask Claude for a summary of what you've done</li>
@@ -279,7 +284,7 @@ flowchart TD
                     </ul>
                 </div>
                 <div class="card red">
-                    <h3>90 %+ — Avoid this zone</h3>
+                    <h3>90%+ — Avoid this zone</h3>
                     <p class="tagline">Claude forgets most things here</p>
                     <ul>
                         <li>Claude starts making more mistakes</li>
@@ -316,7 +321,7 @@ flowchart TD
                     </tr>
                     <tr>
                         <td><code>/session-handoff</code></td>
-                        <td>Whiteboard is ~60 % full</td>
+                        <td>Whiteboard is ~60% full</td>
                         <td>Claude writes a structured summary of everything important — decisions made, what was done, what's next</td>
                     </tr>
                     <tr>
@@ -332,7 +337,7 @@ flowchart TD
                 </tbody>
             </table>
         </div>
-        <div class="tip" style="margin-top:14px">
+        <div class="tip" style="margin-top: 14px;">
             <strong>Think of it like browser tabs:</strong> /clear closes all tabs. Your handoff summary is your bookmarks. You lose the tabs but keep everything that mattered.
         </div>
     </section>
