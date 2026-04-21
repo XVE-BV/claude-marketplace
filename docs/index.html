@@ -577,6 +577,9 @@
                                 <p style="margin-top:12px;font-size:0.8rem;color:#94a3b8;">
                                     Scope: <strong style="color:#d97706">user level</strong> — works across all your projects
                                 </p>
+                                <p style="margin-top:6px;font-size:0.8rem;color:#94a3b8;">
+                                    Model: <strong style="color:#d97706">inherits session</strong> — or pin to <code style="font-size:0.75rem;">haiku</code> for simple rules
+                                </p>
                             </div>
                             <div class="card purple">
                                 <h3>Command — steps Claude executes</h3>
@@ -590,7 +593,22 @@
                                 <p style="margin-top:12px;font-size:0.8rem;color:#94a3b8;">
                                     Scope: <strong style="color:#7c3aed">user level</strong> — works across all your projects
                                 </p>
+                                <p style="margin-top:6px;font-size:0.8rem;color:#94a3b8;">
+                                    Model: <strong style="color:#7c3aed">inherits session</strong> — or pin to <code style="font-size:0.75rem;">haiku</code> for short, mechanical steps
+                                </p>
                             </div>
+                        </div>
+
+                        <div class="tip" style="margin-top:16px;">
+                            <strong>Pick the right model for the job:</strong> Add a <code>model</code> field to the frontmatter to override the session model for that skill or command.<br><br>
+                            <strong>Use Haiku</strong> — quick transformations, formatting rules, simple lookups, short status checks<br>
+                            <strong>Use Sonnet</strong> (default) — anything requiring reasoning, code generation, or multi-step logic<br><br>
+                            <code style="display:block;background:#f1f5f9;padding:10px 12px;border-radius:6px;margin-top:10px;font-size:0.8rem;white-space:pre;">---
+description: Format commit messages
+model: haiku
+---
+
+Always use conventional commits: type(scope): message</code>
                         </div>
 
                         <div class="tip">
