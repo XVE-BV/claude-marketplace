@@ -2,22 +2,17 @@
 
 Run this once on a new machine after installing the plugins. It wires up Claude Code with the full XVE configuration.
 
-> **Note on commands and agents:** When you run `claude plugin install kimai@xve-claude-marketplace` and `claude plugin install activitywatch@xve-claude-marketplace`, Claude Code automatically discovers and loads all commands, agents, and skills from those plugins. No manual copying needed — `/xve-setup` skips that.
-
 ## Flow
 
 ```mermaid
 flowchart TD
     A["Step 1 — Apply settings.json"] --> B
-    B["Step 2 — Install hooks?\nsession-start.sh + clockit-stop.sh"] -->|"Yes"| B1["Hooks installed"]
+    B["Step 2 — Install hooks?\nsession-start.sh"] -->|"Yes"| B1["Hooks installed"]
     B -->|"No"| C
     B1 --> C
-    C["Step 3 — Install terminal watcher?\naw-watcher-terminal.zsh → ~/.zshrc"] -->|"Yes"| C1["Watcher installed"]
-    C -->|"No"| D
-    C1 --> D
-    D["Step 4 — Check env vars\nCLOCKIT_TOKEN, XVE_EMAIL, ..."] --> E
-    E["Step 5 — Install karpathy-skills\nauto, no prompt"] --> F
-    F["Step 6 — Summary"]
+    C["Step 3 — Check env vars\nXVE_EMAIL, ..."] --> D
+    D["Step 4 — Install karpathy-skills\nauto, no prompt"] --> E
+    E["Step 5 — Summary"]
 ```
 
 ## What it does
@@ -34,29 +29,20 @@ Merges `plugins/xve/config/settings.json` into `~/.claude/settings.json`. This c
 
 Claude asks whether you want these before installing:
 
-- **`session-start.sh`** — runs at session start, reads your env vars and injects context (enables/disables Kimai, ActivityWatch, advisor based on flags)
-- **`clockit-stop.sh`** — runs when Claude stops, prompts you to log time if a timer is running
+- **`session-start.sh`** — runs at session start, reads your env vars and injects context (enables/disables advisor based on flags)
 
-### 3 — Installs terminal watcher (asks first)
-
-Claude asks before touching `~/.zshrc`. If you confirm, adds `aw-watcher-terminal.zsh` to `~/.config/` and sources it from `~/.zshrc`. This lets ActivityWatch track time spent in the terminal per project.
-
-### 4 — Checks env vars
+### 3 — Checks env vars
 
 Reads your environment and reports what's set and what's missing:
 
 | Var | Purpose |
 |-----|---------|
-| `CLOCKIT_TOKEN` | Kimai API token — required for `/k`, `/ks`, `/ke` |
-| `CLOCKIT_BASE` | Kimai base URL (defaults to `clockit.xve-web.eu`) |
 | `XVE_EMAIL` | Your email, used by Claude to identify your account |
-| `ENABLE_KIMAI` | Set to `1` to activate Kimai agent and commands |
-| `ENABLE_ACTIVITYWATCH` | Set to `1` to activate ActivityWatch agent and commands |
 | `DISABLE_ADVISOR` | Set to `1` to turn off Opus advisor calls |
 
 Get the values from Bitwarden: **"xve claude marketplace env vars"**.
 
-### 5 — Installs karpathy-skills
+### 4 — Installs karpathy-skills
 
 Automatically installs four coding principles that reduce rework:
 
@@ -65,7 +51,7 @@ Automatically installs four coding principles that reduce rework:
 3. Surgical changes — touch only what was asked
 4. Goal-driven execution — define success criteria before implementing
 
-### 6 — Summary
+### 5 — Summary
 
 Prints a checklist at the end showing what was applied, what was skipped, and what still needs attention.
 
