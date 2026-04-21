@@ -1,8 +1,8 @@
 ---
-description: Open all XVE HTML guides in the browser — session flow, setup walkthrough, and LLM council reference.
+description: Open the XVE docs in the browser — Getting Started, Setup, and LLM Council in one page.
 ---
 
-Open all three XVE HTML guides in the default browser.
+Open `docs/index.html` from this marketplace repo in the default browser.
 
 ## Step 1 — Find the repo
 
@@ -12,27 +12,21 @@ REPO_DIR="$(git -C "$(dirname "${BASH_SOURCE[0]:-$0}")" rev-parse --show-topleve
 
 If empty, check common locations or ask the user.
 
-## Step 2 — Open all guides
+## Step 2 — Open the docs
 
 **Windows:**
 ```bash
-start "" "$REPO_DIR/docs/xve-help.html"
-start "" "$REPO_DIR/docs/xve-setup.html"
-start "" "$REPO_DIR/docs/xve-llm-council.html"
+start "" "$REPO_DIR/docs/index.html"
 ```
 
 **macOS:**
 ```bash
-open "$REPO_DIR/docs/xve-help.html"
-open "$REPO_DIR/docs/xve-setup.html"
-open "$REPO_DIR/docs/xve-llm-council.html"
+open "$REPO_DIR/docs/index.html"
 ```
 
 **Linux:**
 ```bash
-xdg-open "$REPO_DIR/docs/xve-help.html"
-xdg-open "$REPO_DIR/docs/xve-setup.html"
-xdg-open "$REPO_DIR/docs/xve-llm-council.html"
+xdg-open "$REPO_DIR/docs/index.html"
 ```
 
-Detect OS from `$OSTYPE` or `uname` and run the correct set. No output on success.
+Detect OS from `$OSTYPE` or `uname` and run the correct command. No output on success.

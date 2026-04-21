@@ -90,3 +90,7 @@ session-start.sh: ✓ / ✗
 XVE_EMAIL:        ✓ / ✗ not set
 karpathy-skills:  ✓ installed / ✗ failed
 ```
+
+## Step 7 — Open the guide
+
+Run `/xve-help` to open the XVE docs in the browser so the user has the getting started guide on screen.
