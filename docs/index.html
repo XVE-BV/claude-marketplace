@@ -175,7 +175,6 @@
             white-space: nowrap;
         }
 
-        .avoid { color: #dc2626; }
 
         .tip {
             background: #f0fdf4;
@@ -320,7 +319,7 @@
     CHECK -->|"Claude made a mistake"| REWIND --> WORK
     CHECK -->|"Heavy task or research"| AGENT --> WORK
     CHECK -->|"Around 60% full"| DONE
-    CHECK -->|"90% or more — avoid!"| AUTO
+    CHECK -->|"~85%+ — danger zone"| AUTO
 
     DONE -->|"Yes"| CLEAR
     DONE -->|"Not done yet"| HANDOFF
@@ -497,12 +496,12 @@
                                 </ul>
                             </div>
                             <div class="card red">
-                                <h3>90%+ — Avoid this zone</h3>
-                                <p class="tagline">Claude forgets most things here</p>
+                                <h3>~85%+ — Danger zone</h3>
+                                <p class="tagline">Claude degrades noticeably here</p>
                                 <ul>
                                     <li>Claude starts making more mistakes</li>
                                     <li>It forgets what you told it earlier</li>
-                                    <li>Automatic reset happens but loses most detail</li>
+                                    <li>Auto-compact kicks in — summarises the session, but you've lost control of what gets preserved</li>
                                 </ul>
                             </div>
                         </div>
@@ -529,22 +528,22 @@
                                 <tr>
                                     <td><code>/rewind</code></td>
                                     <td>Claude gives a wrong answer</td>
-                                    <td>Go back to before the mistake — the bad answer disappears and won't affect what comes next</td>
+                                    <td>Opens a menu: restore code + conversation, restore conversation only, restore code only, or <strong>summarize from here</strong> (compress context from that point forward without losing files)</td>
                                 </tr>
                                 <tr>
-                                    <td><code>/session-handoff</code></td>
+                                    <td><code>/session-handoff</code> <span style="font-size:0.7rem;color:#94a3b8;font-weight:600;">XVE skill</span></td>
                                     <td>Whiteboard is ~60% full</td>
-                                    <td>Claude writes a structured summary of everything important — decisions made, what was done, what's next</td>
+                                    <td>Claude writes a structured summary of everything important — decisions made, what was done, what's next. Requires the XVE plugin.</td>
                                 </tr>
                                 <tr>
                                     <td><code>/clear</code></td>
                                     <td>After the handoff summary</td>
-                                    <td>Wipes the whiteboard completely clean. Paste your handoff summary right after and Claude is back up to speed</td>
+                                    <td>Starts a fresh conversation. The old session isn't gone — use <code>/resume</code> to get it back. Paste your handoff summary and Claude is back up to speed</td>
                                 </tr>
                                 <tr>
-                                    <td><code class="avoid">/compact</code></td>
-                                    <td class="avoid">Try to avoid</td>
-                                    <td>Claude summarises itself but it happens when Claude is already struggling — the summary is lower quality than doing it manually</td>
+                                    <td><code>/compact</code></td>
+                                    <td>Continuing the same task, context is filling up</td>
+                                    <td>Summarises the conversation and replaces it with the summary — you stay in the same session. Add optional instructions to focus what gets kept. Alternative: ask Claude for a summary manually, then <code>/clear</code> and paste it back for more control</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -695,7 +694,7 @@
                         </table>
                     </div>
                     <div class="tip">
-                        <strong>Missing a var?</strong> Add it to <code>~/.zshrc</code> and restart your terminal. Get values from Bitwarden: <em>"xve claude marketplace env vars"</em>.
+                        <strong>Missing a var?</strong> On Windows: add via System Properties → Environment Variables. On macOS/WSL: add to <code>~/.zshrc</code> or <code>~/.bashrc</code> and restart your terminal. Get values from Bitwarden: <em>"xve claude marketplace env vars"</em>.
                     </div>
                 </section>
 
