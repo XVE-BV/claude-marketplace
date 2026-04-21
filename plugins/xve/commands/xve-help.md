@@ -16,10 +16,12 @@ If that returns empty, look for the marketplace in common locations (`~/Code`, `
 
 Run the correct command for the OS:
 
-**Windows:**
+**Windows (Git Bash):**
 ```bash
-start "" "$REPO_DIR/docs/index.html#/help"
+start "" "file:///$(cygpath -m "$REPO_DIR/docs/index.html")#/help"
 ```
+
+`start` must receive a `file://` URL, not a raw Windows path — otherwise Windows treats `#/help` as part of the filename and fails with "cannot find the file". `cygpath -m` converts `/c/Users/...` to `C:/Users/...` for the URL.
 
 **macOS:**
 ```bash
