@@ -199,38 +199,53 @@
         <div class="box">
             <div class="mermaid">
 flowchart TD
-    START([New chat]) --> CTX["Run /context — see how full the whiteboard is"]
-    CTX --> PLAN["Tell Claude your plan before starting"]
-    PLAN --> WORK["Do the work — Claude is freshest here"]
+    %% ── Node definitions ──────────────────────────────
+    START([New chat])
+    CTX["Run /context"]
+    PLAN["Plan your session"]
+    WORK["Do the work"]
+    CHECK{"How full is\nthe whiteboard?"}
+    REWIND["/rewind"]
+    AGENT["Delegate to a helper"]
+    DONE{"Done for today?"}
+    CLEAR["/clear"]
+    HANDOFF["/session-handoff"]
+    CLEAR2["/clear"]
+    PASTE["Paste the summary"]
+    AUTO["Auto-compaction"]
 
-    WORK --> CHECK{"How full is the whiteboard?"}
+    %% ── Flow ───────────────────────────────────────────
+    START --> CTX --> PLAN --> WORK --> CHECK
 
-    CHECK -->|Under 60 percent — keep going| WORK
-    CHECK -->|Claude made a mistake| REWIND["Use /rewind — go back before the mistake"]
-    REWIND --> WORK
-    CHECK -->|Heavy task or lots of reading| AGENT["Delegate to a helper — fresh context, returns only the result"]
-    AGENT --> WORK
-    CHECK -->|Around 60 percent full| DONE{"Done for today?"}
+    CHECK -->|"Under 60% — keep going"| WORK
+    CHECK -->|"Claude made a mistake"| REWIND --> WORK
+    CHECK -->|"Heavy task or research"| AGENT --> WORK
+    CHECK -->|"Around 60% full"| DONE
+    CHECK -->|"90% or more — avoid!"| AUTO
 
-    DONE -->|Yes| CLEAR["Use /clear — fresh whiteboard"]
-    DONE -->|Not done yet| HANDOFF["Use /session-handoff — Claude writes a full summary"]
-    HANDOFF --> CLEAR2["Use /clear"]
-    CLEAR2 --> PASTE["Paste the summary — Claude is back up to speed"]
+    DONE -->|"Yes"| CLEAR
+    DONE -->|"Not done yet"| HANDOFF
+
+    subgraph reset ["Reset loop"]
+        HANDOFF --> CLEAR2 --> PASTE
+    end
+
     PASTE --> WORK
 
-    CHECK -->|90 percent or more — avoid!| AUTO["Auto-compaction — Claude loses most of the detail"]
+    %% ── Classes ─────────────────────────────────────────
+    classDef green  fill:#14532d,stroke:#22c55e,color:#86efac
+    classDef blue   fill:#172554,stroke:#3b82f6,color:#93c5fd
+    classDef purple fill:#1e1b4b,stroke:#8b5cf6,color:#c4b5fd
+    classDef amber  fill:#451a03,stroke:#f59e0b,color:#fcd34d
+    classDef red    fill:#450a0a,stroke:#ef4444,color:#fca5a5
+    classDef muted  fill:#161b27,stroke:#334155,color:#94a3b8
 
-    style START   fill:#14532d,stroke:#22c55e,color:#86efac
-    style WORK    fill:#172554,stroke:#3b82f6,color:#93c5fd
-    style REWIND  fill:#1e1b4b,stroke:#8b5cf6,color:#c4b5fd
-    style AGENT   fill:#1e1b4b,stroke:#8b5cf6,color:#c4b5fd
-    style HANDOFF fill:#451a03,stroke:#f59e0b,color:#fcd34d
-    style CLEAR   fill:#14532d,stroke:#22c55e,color:#86efac
-    style CLEAR2  fill:#14532d,stroke:#22c55e,color:#86efac
-    style PASTE   fill:#14532d,stroke:#22c55e,color:#86efac
-    style AUTO    fill:#450a0a,stroke:#ef4444,color:#fca5a5
-    style CHECK   fill:#161b27,stroke:#334155,color:#94a3b8
-    style DONE    fill:#161b27,stroke:#334155,color:#94a3b8
+    class START,CLEAR,CLEAR2,PASTE green
+    class WORK blue
+    class REWIND,AGENT purple
+    class HANDOFF amber
+    class AUTO red
+    class CHECK,DONE muted
             </div>
             <div class="tip">
                 <strong>The key habit:</strong> Don't wait until Claude starts making mistakes. At around 60% full, pause — ask for a summary, clear the whiteboard, paste it back. It takes 30 seconds and Claude stays sharp.
