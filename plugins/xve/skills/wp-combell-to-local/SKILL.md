@@ -171,9 +171,14 @@ If the project is still on WP < 6.8 and uses `roots/wp-password-bcrypt`: the sam
 
 Optional: if multiple admins exist and user wants all reset, broaden the `WHERE` to `ID IN (SELECT user_id FROM wp_usermeta WHERE meta_key = 'wp_capabilities' AND meta_value LIKE '%administrator%')`.
 
-### 9. Align `.env` with the local domain
+### 9. Align `.env` with the local domain — **MOST COMMON GOTCHA**
 
-For Bedrock: `config/application.php` reads `WP_HOME` / `WP_SITEURL` from `.env`. If these don't match the browser origin, login fails with "cookies blocked" even though cookies are fine.
+For Bedrock: `config/application.php` calls `Config::define('WP_HOME', env('WP_HOME'))` and the same for `WP_SITEURL`. These constants **override** the `siteurl`/`home` rows in `wp_options`. If `.env` still points at the prod or staging URL (the value the `.env.example` was originally set up with, or leftover from a previous clone), you get:
+
+- **301 redirect loop** — loading `https://LOCALDOMAIN/` 301s to the prod/staging URL. DB rows show `LOCALDOMAIN` but Bedrock's constant overrides them. Trap: looks like the SQL localization failed, but the DB is clean.
+- **"Cookies blocked" on login** — same root cause. WP emits Set-Cookie for the domain in `WP_HOME`. Browser origin differs → cookie rejected → login fails with cookies-blocked error.
+
+Fix — `.env` must match browser origin exactly:
 
 ```env
 WP_HOME=https://LOCALDOMAIN
@@ -182,13 +187,58 @@ WP_ENV=development
 ```
 
 Checks:
-- Scheme matches (`https` vs `http`). Herd serves HTTPS by default.
-- `/wp` suffix on `WP_SITEURL` only — never on `WP_HOME`. This is a Bedrock structural thing.
+- Scheme matches (`https` vs `http`). Herd serves HTTPS by default — don't set `http://`.
+- Host matches exactly. `https://site.test` ≠ `https://www.site.test`.
+- `/wp` suffix on `WP_SITEURL` only — never on `WP_HOME`. Bedrock structural convention.
 - `WP_ENV=development` (anything other than the production tracking-environment value — e.g. not `production`).
+
+Diagnostic one-liner when a redirect is happening:
+
+```bash
+curl -sSI -k https://LOCALDOMAIN/ | grep -iE '^(HTTP|location|server)'
+```
+
+If `location:` shows prod/staging host, `.env` is the culprit (unless a Redirection/Yoast plugin option is enforcing — check `wp_options` for `kinabe.107.be`-style staging host references as a follow-up).
 
 Admin URL after this: `https://LOCALDOMAIN/wp/wp-login.php`.
 
-### 10. Commit the script to the project
+Also: ship a project-local `.env.example` with sane local defaults (`DB_HOST=127.0.0.1`, `DB_NAME=<project>`, `WP_HOME=https://<project>.test`) so the next clone doesn't inherit a prod URL from the upstream Bedrock boilerplate.
+
+### 10. Clear WordPress caches
+
+After URL rewrite + option changes, stale caches will serve HTML with the old prod URL and can stack on top of the `.env` redirect loop. Flush everything:
+
+```bash
+# Page cache (WP Rocket / WP Super Cache / W3 Total Cache — location varies)
+rm -rf web/app/cache/
+rm -rf web/app/wp-rocket-config/
+
+# Object cache + transients + rewrite rules
+wp cache flush
+wp transient delete --all
+wp rocket clean --confirm       # only if WP Rocket CLI plugin installed
+wp rewrite flush
+```
+
+Raw SQL fallback if wp-cli is unavailable:
+
+```sql
+DELETE FROM wp_options WHERE option_name LIKE '\_transient\_%' ESCAPE '\\';
+DELETE FROM wp_options WHERE option_name LIKE '\_site\_transient\_%' ESCAPE '\\';
+```
+
+Browser-side:
+- Hard reload (`Cmd/Ctrl+Shift+R`) to bypass disk cache.
+- If prod host has HSTS, the browser may still upgrade `http://LOCALDOMAIN` → `https://` — usually desired, but Chrome's `chrome://net-internals/#hsts` lets you delete HSTS entries per host if testing non-TLS.
+- Clear cookies for `LOCALDOMAIN` if login loops or a stale `wordpress_logged_in_*` cookie was set for the prod host.
+
+Opcache (Herd / PHP-FPM) caches compiled PHP — restart the Herd PHP service if plugin file paths changed:
+
+```bash
+herd restart php@8.0     # or whichever version the project uses
+```
+
+### 11. Commit the script to the project
 
 Ship `bin/localize-db.{sql,sh,ps1}` in the project repo so the next developer runs one command. Template structure:
 
@@ -207,7 +257,7 @@ Both wrappers should default to `127.0.0.1:3306 root <project-db-name>` and end 
 
 Safe to commit: **yes** — no secrets in the script, the bcrypt hash is of the literal string `password`, and the SMTP config points at loopback. Do NOT commit any Combell dump files (add `*.sql.gz` to `.gitignore`).
 
-### 11. Verify
+### 12. Verify
 
 ```bash
 # URL rewrite landed
@@ -228,7 +278,7 @@ Browser check: load `https://LOCALDOMAIN/wp/wp-login.php`, log in with `admin@ex
 
 ## Common failures
 
-- **"Cookies blocked" at login** — `.env` `WP_HOME`/`WP_SITEURL` don't match the browser origin (scheme or host mismatch). Fix `.env`, restart PHP-FPM / Herd service.
+- **"Cookies blocked" at login / 301 loop to prod** — `.env` `WP_HOME`/`WP_SITEURL` don't match the browser origin (scheme or host mismatch), or still point at the prod/staging URL inherited from `.env.example`. Bedrock's `Config::define()` overrides the DB rows, so the SQL localization looks like it silently failed. Fix `.env`, restart PHP-FPM / Herd service. See Step 9.
 - **Mixed content warnings** — serialized columns still carry `http://` or prod hostname. Run `wp search-replace` again including `--all-tables`.
 - **Login loops / logs out immediately** — often a stale `auth_cookie` from a previous browser session. Clear cookies for the local domain.
 - **"Error establishing database connection"** — Bedrock `.env` `DB_*` values don't match local MySQL. Herd MySQL: `127.0.0.1:3306`, user `root`, no password.
