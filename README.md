@@ -22,7 +22,7 @@ claude plugin install xve@xve-claude-marketplace
 
 1. Open Claude in a terminal and say:
    > _"Set the following environment variables in the correct shell config file"_
-   then paste the contents of the **"xve claude marketplace env vars"** note from Bitwarden.
+   then paste XVE_EMAIL=<your-email-here>.
    Claude adds them to `~/.zshrc` (Mac/Linux) or the Windows equivalent automatically.
 
 2. Close Claude, re-open it (so the new env vars are loaded).
