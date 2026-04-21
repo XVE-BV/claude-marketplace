@@ -1,0 +1,20 @@
+{
+    "name": "xve-claude-marketplace",
+    "version": "1.5.3",
+    "description": "XVE Claude Code marketplace — machine setup and configuration.",
+    "author": {
+        "name": "XVE"
+    },
+    "license": "MIT",
+    "keywords": [
+        "xve",
+        "setup",
+        "config"
+    ],
+    "commands": [
+        "./plugins/xve/commands/xve-setup.md",
+        "./plugins/xve/commands/xve-help.md",
+        "./plugins/xve/commands/xve-docs.md"
+    ],
+    "agents": []
+}

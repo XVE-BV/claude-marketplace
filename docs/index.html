@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XVE Docs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { corePlugins: { preflight: false } }</script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/vue-router@4/dist/vue-router.global.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        .page-content {
+            padding: 48px 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 6px; }
+        .subtitle { color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px; }
+        .intro {
+            font-size: 0.95rem;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-left: 3px solid #3b82f6;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 40px;
+            color: #1e40af;
+        }
+
+        section { margin-bottom: 40px; }
+        section > h2 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #94a3b8;
+            margin-bottom: 14px;
+        }
+
+        .box {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 28px;
+        }
+
+        .mermaid { text-align: center; }
+
+        /* ── Token bar ── */
+        .token-bar {
+            display: flex;
+            height: 16px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .token-bar .z-prime   { background: #22c55e; flex: 20; }
+        .token-bar .z-work    { background: #3b82f6; flex: 40; }
+        .token-bar .z-compact { background: #f59e0b; flex: 25; }
+        .token-bar .z-danger  { background: #ef4444; flex: 15; }
+        .token-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        /* ── Cards ── */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+        }
+        .cards-wide {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 14px;
+        }
+
+        .card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .card h3 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 6px;
+        }
+        .card .tagline {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        .card ul { list-style: none; }
+        .card li {
+            font-size: 0.85rem;
+            color: #475569;
+            padding: 3px 0;
+            display: flex;
+            gap: 8px;
+        }
+        .card li::before { content: '→'; color: #cbd5e1; flex-shrink: 0; }
+
+        .card.green  { border-left: 3px solid #16a34a; }
+        .card.green  h3 { color: #16a34a; }
+        .card.blue   { border-left: 3px solid #2563eb; }
+        .card.blue   h3 { color: #2563eb; }
+        .card.amber  { border-left: 3px solid #d97706; }
+        .card.amber  h3 { color: #d97706; }
+        .card.red    { border-left: 3px solid #dc2626; }
+        .card.red    h3 { color: #dc2626; }
+        .card.purple { border-left: 3px solid #7c3aed; }
+        .card.purple h3 { color: #7c3aed; }
+        .card.c1 { border-left: 3px solid #dc2626; }
+        .card.c1 h3 { color: #dc2626; font-size: 0.8rem; font-weight: 700; text-transform: none; letter-spacing: 0; }
+        .card.c2 { border-left: 3px solid #7c3aed; }
+        .card.c2 h3 { color: #7c3aed; font-size: 0.8rem; font-weight: 700; text-transform: none; letter-spacing: 0; }
+        .card.c3 { border-left: 3px solid #16a34a; }
+        .card.c3 h3 { color: #16a34a; font-size: 0.8rem; font-weight: 700; text-transform: none; letter-spacing: 0; }
+        .card.c4 { border-left: 3px solid #d97706; }
+        .card.c4 h3 { color: #d97706; font-size: 0.8rem; font-weight: 700; text-transform: none; letter-spacing: 0; }
+        .card.c5 { border-left: 3px solid #0891b2; }
+        .card.c5 h3 { color: #0891b2; font-size: 0.8rem; font-weight: 700; text-transform: none; letter-spacing: 0; }
+        .card p { font-size: 0.85rem; color: #475569; line-height: 1.5; }
+
+        /* ── Tables ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+        thead th {
+            text-align: left;
+            padding: 10px 16px;
+            background: #f1f5f9;
+            color: #64748b;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        tbody td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #374151;
+            vertical-align: top;
+        }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: #f8fafc; }
+
+        code {
+            background: #f1f5f9;
+            color: #2563eb;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+
+
+        .tip {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-left: 3px solid #16a34a;
+            border-radius: 8px;
+            padding: 14px 16px;
+            font-size: 0.85rem;
+            color: #166534;
+            margin-top: 16px;
+        }
+        .tip strong { color: #15803d; }
+
+        /* ── Setup steps ── */
+        .step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: #dbeafe;
+            color: #1e40af;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-right: 8px;
+        }
+        .step-row {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+            gap: 4px;
+        }
+        .step-row:last-child { border-bottom: none; }
+        .step-content strong { display: block; font-size: 0.9rem; color: #1e293b; margin-bottom: 2px; }
+        .step-content span { font-size: 0.85rem; color: #64748b; }
+
+        /* ── Use grid (council) ── */
+        .use-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .use-box {
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .use-box.yes {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+        .use-box.no {
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+        }
+        .use-box h3 {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 10px;
+        }
+        .use-box.yes h3 { color: #16a34a; }
+        .use-box.no  h3 { color: #dc2626; }
+        .use-box ul { list-style: none; }
+        .use-box li {
+            font-size: 0.85rem;
+            color: #475569;
+            padding: 3px 0;
+            display: flex;
+            gap: 8px;
+        }
+        .use-box.yes li::before { content: '✓'; color: #16a34a; flex-shrink: 0; }
+        .use-box.no  li::before { content: '✗'; color: #dc2626; flex-shrink: 0; }
+
+    </style>
+    <style type="text/tailwindcss">
+        .nav-link {
+            @apply px-4 py-1.5 rounded-md text-sm font-medium text-slate-500 no-underline transition-colors;
+        }
+        .nav-link:hover {
+            @apply bg-slate-100 text-slate-900;
+        }
+        .nav-link.router-link-active {
+            @apply bg-blue-600 text-white;
+        }
+        .nav-link.router-link-active:hover {
+            @apply bg-blue-700 text-white;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <nav class="sticky top-0 z-10 bg-white border-b-2 border-slate-200 shadow-sm flex items-center gap-2 px-6 py-3">
+            <span class="text-sm font-bold text-slate-800 mr-3">XVE Docs</span>
+            <span class="w-px h-5 bg-slate-200"></span>
+            <router-link to="/help" class="nav-link">Getting Started</router-link>
+            <router-link to="/setup" class="nav-link">Setup</router-link>
+            <router-link to="/council" class="nav-link">LLM Council</router-link>
+        </nav>
+        <router-view></router-view>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#dbeafe',
+                primaryTextColor: '#1e293b',
+                primaryBorderColor: '#93c5fd',
+                lineColor: '#94a3b8',
+                edgeLabelBackground: '#ffffff',
+                tertiaryColor: '#f1f5f9',
+                clusterBkg: '#f1f5f9',
+                clusterBorder: '#cbd5e1'
+            },
+            flowchart: { curve: 'basis' }
+        });
+
+        const DIAGRAMS = {
+            helpFlow: `flowchart TD
+    START([New chat])
+    CTX["Run /context"]
+    PLAN["Plan your session"]
+    WORK["Do the work"]
+    CHECK{"How full is\\nthe whiteboard?"}
+    REWIND["/rewind"]
+    AGENT["Delegate to a helper"]
+    DONE{"Done for today?"}
+    CLEAR["/clear"]
+    HANDOFF["/session-handoff"]
+    CLEAR2["/clear"]
+    PASTE["Paste the summary"]
+    AUTO["Auto-compaction"]
+
+    START --> CTX --> PLAN --> WORK --> CHECK
+
+    CHECK -->|"Under 60% — keep going"| WORK
+    CHECK -->|"Claude made a mistake"| REWIND --> WORK
+    CHECK -->|"Heavy task or research"| AGENT --> WORK
+    CHECK -->|"Around 60% full"| DONE
+    CHECK -->|"~85%+ — danger zone"| AUTO
+
+    DONE -->|"Yes"| CLEAR
+    DONE -->|"Not done yet"| HANDOFF
+
+    subgraph reset ["Reset loop"]
+        HANDOFF --> CLEAR2 --> PASTE
+    end
+
+    PASTE --> WORK
+
+    classDef green  fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef blue   fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef purple fill:#ede9fe,stroke:#7c3aed,color:#4c1d95
+    classDef amber  fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef red    fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    classDef muted  fill:#f1f5f9,stroke:#94a3b8,color:#475569
+
+    class START,CLEAR,CLEAR2,PASTE green
+    class WORK blue
+    class REWIND,AGENT purple
+    class HANDOFF amber
+    class AUTO red
+    class CHECK,DONE muted`,
+
+            skillCmd: `flowchart TD
+    PROMPT["You type a prompt to Claude"]
+    SEEN{"Typed something\\nlike this before?"}
+    KEEP["Keep working"]
+    PATTERN{"What kind of pattern?"}
+    SKILL["Create a Skill"]
+    COMMAND["Create a Command"]
+    BOTH["Create both"]
+    NEXT["Next time: one short command — Claude does the rest"]
+
+    PROMPT --> SEEN
+    SEEN -->|"First time"| KEEP
+    SEEN -->|"Second or third time"| PATTERN
+    PATTERN -->|"Rules or approach Claude should know"| SKILL
+    PATTERN -->|"Steps Claude should execute"| COMMAND
+    PATTERN -->|"Both knowledge and steps"| BOTH
+    SKILL --> NEXT
+    COMMAND --> NEXT
+    BOTH --> NEXT
+
+    classDef blue   fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef green  fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef amber  fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef purple fill:#ede9fe,stroke:#7c3aed,color:#4c1d95
+    classDef muted  fill:#f1f5f9,stroke:#94a3b8,color:#475569
+
+    class PROMPT,KEEP blue
+    class NEXT green
+    class SKILL,BOTH amber
+    class COMMAND purple
+    class SEEN,PATTERN muted`,
+
+            setupFlow: `flowchart TD
+    START(["/xve-setup"])
+    DETECT["Find repo location"]
+    SETTINGS["Apply settings.json"]
+    HOOKS{"Install hooks?"}
+    HOOK_YES["session-start.sh + env-guard.sh installed"]
+    ENVVARS["Check env vars"]
+    KARPATHY["Install karpathy-skills"]
+    SUMMARY["Summary checklist"]
+
+    START --> DETECT --> SETTINGS --> HOOKS
+    HOOKS -->|"Yes"| HOOK_YES --> ENVVARS
+    HOOKS -->|"No"| ENVVARS
+    ENVVARS --> KARPATHY --> SUMMARY
+
+    classDef blue   fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef green  fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef amber  fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef muted  fill:#f1f5f9,stroke:#94a3b8,color:#475569
+
+    class START,SUMMARY green
+    class SETTINGS,HOOK_YES,KARPATHY blue
+    class ENVVARS amber
+    class DETECT,HOOKS muted`,
+
+            councilFlow: `flowchart TD
+    START(["council this"])
+    FRAME["Step 1 — Frame the question"]
+    RESEARCH["Step 2 — Web research"]
+    ADVISORS["Step 3 — 5 advisors respond in parallel"]
+    REVIEW["Step 4 — 5 reviewers score anonymised responses"]
+    CHAIRMAN["Step 5 — Chairman synthesises and recommends"]
+    REPORT["Step 6 — HTML report + transcript saved"]
+
+    START --> FRAME --> RESEARCH --> ADVISORS --> REVIEW --> CHAIRMAN --> REPORT
+
+    classDef blue   fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef purple fill:#ede9fe,stroke:#7c3aed,color:#4c1d95
+    classDef green  fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef muted  fill:#f1f5f9,stroke:#94a3b8,color:#475569
+
+    class START,FRAME muted
+    class RESEARCH,ADVISORS,REVIEW blue
+    class CHAIRMAN purple
+    class REPORT green`
+        };
+
+        function runMermaid(el) {
+            const nodes = el.querySelectorAll('[data-diagram]');
+            nodes.forEach(node => { node.textContent = DIAGRAMS[node.dataset.diagram]; });
+            if (nodes.length) mermaid.run({ nodes });
+        }
+
+        const HelpPage = {
+            mounted() { this.$nextTick(() => runMermaid(this.$el)); },
+            template: `
+            <div class="page-content">
+                <h1>Claude Code — Getting Started Guide</h1>
+                <p class="subtitle">XVE · How to work with Claude without running into limits or getting bad results</p>
+                <p class="intro">
+                    Claude can only see a limited amount of conversation at once — think of it as a whiteboard that fills up as you chat.
+                    Once it's full, Claude starts forgetting things and making more mistakes.
+                    This guide shows you how to keep the whiteboard clean so Claude stays sharp all day.
+                </p>
+
+                <section>
+                    <h2>The Ideal Session Flow</h2>
+                    <div class="box">
+                        <div class="mermaid" data-diagram="helpFlow"></div>
+                        <div class="tip">
+                            <strong>The key habit:</strong> Don't wait until Claude starts making mistakes. At around 60% full, pause — ask for a summary, clear the whiteboard, paste it back. It takes 30 seconds and Claude stays sharp.
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>How Full Is The Whiteboard?</h2>
+                    <div class="box">
+                        <div class="token-bar">
+                            <div class="z-prime"></div>
+                            <div class="z-work"></div>
+                            <div class="z-compact"></div>
+                            <div class="z-danger"></div>
+                        </div>
+                        <div class="token-labels">
+                            <span>Empty</span>
+                            <span>20% — still fresh</span>
+                            <span>60% — act now</span>
+                            <span>85%</span>
+                            <span>Full</span>
+                        </div>
+                        <div class="cards">
+                            <div class="card green">
+                                <h3>0–20% — Best quality</h3>
+                                <p class="tagline">Claude is at its sharpest</p>
+                                <ul>
+                                    <li>This is the time to explain what you want</li>
+                                    <li>Claude follows instructions best here</li>
+                                    <li>Don't skip planning — it pays off</li>
+                                </ul>
+                            </div>
+                            <div class="card blue">
+                                <h3>20–60% — Working zone</h3>
+                                <p class="tagline">Claude is doing well, stay aware</p>
+                                <ul>
+                                    <li>Normal back-and-forth works great</li>
+                                    <li>If Claude makes a mistake, go back — don't push through</li>
+                                    <li>For big tasks, let a helper handle it</li>
+                                </ul>
+                            </div>
+                            <div class="card amber">
+                                <h3>60% — Time to reset</h3>
+                                <p class="tagline">Don't wait any longer</p>
+                                <ul>
+                                    <li>Ask Claude for a summary of what you've done</li>
+                                    <li>Type /clear to wipe the whiteboard</li>
+                                    <li>Paste the summary — you lose nothing</li>
+                                </ul>
+                            </div>
+                            <div class="card red">
+                                <h3>~85%+ — Danger zone</h3>
+                                <p class="tagline">Claude degrades noticeably here</p>
+                                <ul>
+                                    <li>Claude starts making more mistakes</li>
+                                    <li>It forgets what you told it earlier</li>
+                                    <li>Auto-compact kicks in — summarises the session, but you've lost control of what gets preserved</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Quick Command Reference</h2>
+                    <div class="box" style="padding: 0; overflow: hidden;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Command</th>
+                                    <th>When to use it</th>
+                                    <th>What it does in plain English</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>/context</code></td>
+                                    <td>Start of every session</td>
+                                    <td>Shows you how full the whiteboard is before you start</td>
+                                </tr>
+                                <tr>
+                                    <td><code>/rewind</code></td>
+                                    <td>Claude gives a wrong answer</td>
+                                    <td>Opens a menu: restore code + conversation, restore conversation only, restore code only, or <strong>summarize from here</strong> (compress context from that point forward without losing files)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>/session-handoff</code> <span style="font-size:0.7rem;color:#94a3b8;font-weight:600;">XVE skill</span></td>
+                                    <td>Whiteboard is ~60% full</td>
+                                    <td>Claude writes a structured summary of everything important — decisions made, what was done, what's next. Requires the XVE plugin.</td>
+                                </tr>
+                                <tr>
+                                    <td><code>/clear</code></td>
+                                    <td>After the handoff summary</td>
+                                    <td>Starts a fresh conversation. The old session isn't gone — use <code>/resume</code> to get it back. Paste your handoff summary and Claude is back up to speed</td>
+                                </tr>
+                                <tr>
+                                    <td><code>/compact</code></td>
+                                    <td>Continuing the same task, context is filling up</td>
+                                    <td>Summarises the conversation and replaces it with the summary — you stay in the same session. Add optional instructions to focus what gets kept. Alternative: ask Claude for a summary manually, then <code>/clear</code> and paste it back for more control</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="tip" style="margin-top: 14px;">
+                        <strong>Think of it like browser tabs:</strong> /clear closes all tabs. Your handoff summary is your bookmarks. You lose the tabs but keep everything that mattered.
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Stop Repeating Yourself — Build a Skill or Command</h2>
+                    <div class="box">
+                        <p style="color:#475569;font-size:0.9rem;margin-bottom:24px;">
+                            Every time you type the same prompt twice, you're leaving automation on the table.
+                            The second or third time you find yourself explaining the same thing — stop and turn it into a skill or command.
+                            Next time you just say <code>/name</code> and Claude does the rest.
+                        </p>
+
+                        <div class="mermaid" data-diagram="skillCmd"></div>
+
+                        <div class="cards" style="margin-top:24px;">
+                            <div class="card amber">
+                                <h3>Skill — knowledge Claude loads</h3>
+                                <p class="tagline">What Claude should know or how it should think</p>
+                                <ul>
+                                    <li>A set of rules or an approach</li>
+                                    <li>Reference material Claude consults</li>
+                                    <li>Behaviour you want consistent every session</li>
+                                    <li>Example: "when reviewing, always check for X"</li>
+                                </ul>
+                                <p style="margin-top:12px;font-size:0.8rem;color:#94a3b8;">
+                                    Scope: <strong style="color:#d97706">user level</strong> — works across all your projects
+                                </p>
+                                <p style="margin-top:6px;font-size:0.8rem;color:#94a3b8;">
+                                    Model: <strong style="color:#d97706">inherits session</strong> — or pin to <code style="font-size:0.75rem;">haiku</code> for simple rules
+                                </p>
+                            </div>
+                            <div class="card purple">
+                                <h3>Command — steps Claude executes</h3>
+                                <p class="tagline">What Claude should do, in what order</p>
+                                <ul>
+                                    <li>A sequence of actions to run</li>
+                                    <li>Setup or install procedures</li>
+                                    <li>Anything you'd describe as "first do X, then Y, then Z"</li>
+                                    <li>Example: "set up a new project with these 5 steps"</li>
+                                </ul>
+                                <p style="margin-top:12px;font-size:0.8rem;color:#94a3b8;">
+                                    Scope: <strong style="color:#7c3aed">user level</strong> — works across all your projects
+                                </p>
+                                <p style="margin-top:6px;font-size:0.8rem;color:#94a3b8;">
+                                    Model: <strong style="color:#7c3aed">inherits session</strong> — or pin to <code style="font-size:0.75rem;">haiku</code> for short, mechanical steps
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="tip" style="margin-top:16px;">
+                            <strong>Pick the right model for the job:</strong> Add a <code>model</code> field to the frontmatter to override the session model for that skill or command.<br><br>
+                            <strong>Use Haiku</strong> — quick transformations, formatting rules, simple lookups, short status checks<br>
+                            <strong>Use Sonnet</strong> (default) — anything requiring reasoning, code generation, or multi-step logic<br><br>
+                            <code style="display:block;background:#f1f5f9;padding:10px 12px;border-radius:6px;margin-top:10px;font-size:0.8rem;white-space:pre;">---
+description: Format commit messages
+model: haiku
+---
+
+Always use conventional commits: type(scope): message</code>
+                        </div>
+
+                        <div class="tip">
+                            <strong>How to do it:</strong> Paste your repeating prompt and tell Claude:<br>
+                            <em>"Turn this into a skill called <strong>xve-name</strong> at the user level so it works across all my projects."</em><br><br>
+                            <strong>Use a prefix</strong> — type <code>/xve-</code> to instantly filter to your own skills and commands, separate from built-ins and third-party ones. Pick a short prefix: your initials, team name, or project code. All XVE commands follow this pattern (<code>/xve-setup</code>, <code>/xve-help</code>).<br><br>
+                            Claude will create the file in the right place automatically. You don't need to know where — just tell it user level, not a specific project or plugin folder.
+                        </div>
+                    </div>
+                </section>
+            </div>
+            `
+        };
+
+        const SetupPage = {
+            mounted() { this.$nextTick(() => runMermaid(this.$el)); },
+            template: `
+            <div class="page-content">
+                <h1>XVE Setup Guide</h1>
+                <p class="subtitle">XVE · Run once on a new machine to wire up Claude Code with the full XVE configuration</p>
+                <p class="intro">
+                    Type <code>/xve-setup</code> in Claude Code after installing the plugin.
+                    It walks through each step, asks before touching anything, and shows a checklist at the end.
+                </p>
+
+                <section>
+                    <h2>Setup Flow</h2>
+                    <div class="box">
+                        <div class="mermaid" data-diagram="setupFlow"></div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>What Each Step Does</h2>
+                    <div class="box" style="padding: 0 28px;">
+                        <div class="step-row">
+                            <span class="step-num">1</span>
+                            <div class="step-content">
+                                <strong>Find repo location</strong>
+                                <span>Detects where the marketplace is checked out so it can reference files. Asks if it can't find it automatically.</span>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <span class="step-num">2</span>
+                            <div class="step-content">
+                                <strong>Apply settings.json</strong>
+                                <span>Merges XVE config into <code>~/.claude/settings.json</code>. Sets model strategy (Sonnet executor + Opus advisor), permissions, and token limits.</span>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <span class="step-num">3</span>
+                            <div class="step-content">
+                                <strong>Install hooks (asks first)</strong>
+                                <span><code>session-start.sh</code> — injects context at the start of every session.<br>
+                                <code>env-guard.sh</code> — blocks Claude from reading or writing <code>.env</code> files.</span>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <span class="step-num">4</span>
+                            <div class="step-content">
+                                <strong>Check env vars</strong>
+                                <span>Reports which vars are set and which are missing.</span>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <span class="step-num">5</span>
+                            <div class="step-content">
+                                <strong>Install karpathy-skills</strong>
+                                <span>Installs four coding principles automatically — no prompt needed.</span>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <span class="step-num">6</span>
+                            <div class="step-content">
+                                <strong>Summary checklist</strong>
+                                <span>Prints what was applied, what was skipped, and what still needs attention.</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Environment Variables</h2>
+                    <div class="box" style="padding: 0; overflow: hidden;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Variable</th>
+                                    <th>Purpose</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>XVE_EMAIL</code></td>
+                                    <td>Your email — used by Claude to identify your account</td>
+                                </tr>
+                                <tr>
+                                    <td><code>DISABLE_ADVISOR</code></td>
+                                    <td>Set to <code>1</code> to turn off Opus advisor calls</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="tip">
+                        <strong>Missing a var?</strong> On Windows: add via System Properties → Environment Variables. On macOS/WSL: add to <code>~/.zshrc</code> or <code>~/.bashrc</code> and restart your terminal.
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Karpathy Skills — Installed Automatically</h2>
+                    <div class="cards">
+                        <div class="card blue">
+                            <h3>Think Before Coding</h3>
+                            <p class="tagline">Surface assumptions first</p>
+                            <ul>
+                                <li>Present interpretations before acting</li>
+                                <li>Ask before guessing on unclear requirements</li>
+                            </ul>
+                        </div>
+                        <div class="card green">
+                            <h3>Simplicity First</h3>
+                            <p class="tagline">Minimum code, maximum clarity</p>
+                            <ul>
+                                <li>No speculative features</li>
+                                <li>No premature abstraction</li>
+                            </ul>
+                        </div>
+                        <div class="card amber">
+                            <h3>Surgical Changes</h3>
+                            <p class="tagline">Touch only what was asked</p>
+                            <ul>
+                                <li>Match existing style</li>
+                                <li>No scope creep</li>
+                            </ul>
+                        </div>
+                        <div class="card purple">
+                            <h3>Goal-Driven Execution</h3>
+                            <p class="tagline">Define success before starting</p>
+                            <ul>
+                                <li>Verifiable criteria before implementing</li>
+                                <li>Cuts rework significantly</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            `
+        };
+
+        const CouncilPage = {
+            mounted() { this.$nextTick(() => runMermaid(this.$el)); },
+            template: `
+            <div class="page-content">
+                <h1>LLM Council</h1>
+                <p class="subtitle">XVE · Get five independent AI perspectives on a high-stakes decision</p>
+                <p class="intro">
+                    Say <code>council this</code>, <code>war room this</code>, or <code>pressure-test this</code> — Claude convenes five advisors
+                    with different thinking styles, runs an anonymous peer review, then synthesises a Chairman's verdict with a concrete recommendation.
+                    Use it when the cost of a bad call is high.
+                </p>
+
+                <section>
+                    <h2>When to Use It</h2>
+                    <div class="use-grid">
+                        <div class="use-box yes">
+                            <h3>Good fit</h3>
+                            <ul>
+                                <li>Genuine uncertainty with real stakes</li>
+                                <li>Two or more options with meaningful tradeoffs</li>
+                                <li>"Should I hire a VA or build automation first?"</li>
+                                <li>"Should I launch at $97 or $497?"</li>
+                                <li>Decision you keep going back and forth on</li>
+                            </ul>
+                        </div>
+                        <div class="use-box no">
+                            <h3>Not a good fit</h3>
+                            <ul>
+                                <li>Factual lookups — just ask Claude directly</li>
+                                <li>Creation tasks — write a tweet, summarise this</li>
+                                <li>Already decided — don't run the council to validate</li>
+                                <li>Casual "should I" without real tradeoff</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>How It Works</h2>
+                    <div class="box">
+                        <div class="mermaid" data-diagram="councilFlow"></div>
+                        <div class="tip">
+                            <strong>Why parallel advisors?</strong> If advisors run one after another, each one reads the previous responses and starts to agree. Running them all at once keeps their perspectives genuinely independent — that's where the value comes from.
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>The Five Advisors</h2>
+                    <div class="cards-wide">
+                        <div class="card c1">
+                            <h3>The Contrarian</h3>
+                            <p>Actively looks for what's wrong, what's missing, what will fail. Not a pessimist — the friend who saves you from a bad deal by asking the questions you're avoiding. If everything looks solid, digs deeper.</p>
+                        </div>
+                        <div class="card c2">
+                            <h3>The First Principles Thinker</h3>
+                            <p>Ignores the surface question and asks "what are we actually trying to solve?" Strips away assumptions, rebuilds from the ground up. Often the most valuable output is "you're asking the wrong question entirely."</p>
+                        </div>
+                        <div class="card c3">
+                            <h3>The Expansionist</h3>
+                            <p>Looks for upside everyone else is missing. What could be bigger? What adjacent opportunity is hiding? Doesn't care about risk — that's the Contrarian's job. Focuses on what happens if this works even better than expected.</p>
+                        </div>
+                        <div class="card c4">
+                            <h3>The Outsider</h3>
+                            <p>Has zero context about you, your field, or your history. Responds purely to what's in front of them. Catches the curse of knowledge: things obvious to you but confusing to everyone else.</p>
+                        </div>
+                        <div class="card c5">
+                            <h3>The Executor</h3>
+                            <p>Only cares about one thing: can this be done, and what's the fastest path? Ignores theory and strategy. If an idea has no clear first step, says so.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>What You Get at the End</h2>
+                    <div class="box">
+                        <div class="cards">
+                            <div class="card c2">
+                                <h3>Chairman's verdict</h3>
+                                <p style="margin-top:4px;">Not "it depends" — a direct recommendation with reasoning, plus the one thing to do first.</p>
+                            </div>
+                            <div class="card c3">
+                                <h3>Where the council agrees</h3>
+                                <p style="margin-top:4px;">Converged points from multiple advisors = high-confidence signals you can trust.</p>
+                            </div>
+                            <div class="card c1">
+                                <h3>Where the council clashes</h3>
+                                <p style="margin-top:4px;">Genuine disagreements surfaced so you can weigh them yourself — not smoothed over.</p>
+                            </div>
+                            <div class="card c4">
+                                <h3>Blind spots caught</h3>
+                                <p style="margin-top:4px;">Things the peer review surfaced that no single advisor caught on their own.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            `
+        };
+
+        const routes = [
+            { path: '/', redirect: '/help' },
+            { path: '/help', component: HelpPage },
+            { path: '/setup', component: SetupPage },
+            { path: '/council', component: CouncilPage },
+        ];
+
+        const router = VueRouter.createRouter({
+            history: VueRouter.createWebHashHistory(),
+            routes
+        });
+
+        const app = Vue.createApp({});
+        app.use(router);
+        app.mount('#app');
+    </script>
+</body>
+</html>

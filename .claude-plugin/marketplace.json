@@ -1,0 +1,27 @@
+{
+    "name": "xve-claude-marketplace",
+    "owner": {
+        "name": "XVE",
+        "contact": "github.com/jonasvanderhaegen-xve"
+    },
+    "metadata": {
+        "description": "XVE Claude Code marketplace: machine setup and configuration."
+    },
+    "plugins": [
+        {
+            "name": "xve",
+            "source": "./plugins/xve",
+            "description": "XVE-specific config: customer/project mapping, install command, and shared customer reference skill.",
+            "version": "1.5.3",
+            "author": {
+                "name": "XVE"
+            },
+            "tags": [
+                "xve",
+                "customers",
+                "config",
+                "setup"
+            ]
+        }
+    ]
+}
