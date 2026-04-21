@@ -40,7 +40,7 @@ Reads your environment and reports what's set and what's missing:
 | `XVE_EMAIL` | Your email, used by Claude to identify your account |
 | `DISABLE_ADVISOR` | Set to `1` to turn off Opus advisor calls |
 
-Get the values from Bitwarden: **"xve claude marketplace env vars"**.
+If `XVE_EMAIL` is not set, Claude asks you for it interactively and appends `export XVE_EMAIL=...` to your `~/.zshrc`. Restart your terminal afterward so the var loads.
 
 ### 4 — Installs karpathy-skills
 

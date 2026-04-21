@@ -58,9 +58,18 @@ echo "XVE_EMAIL:          ${XVE_EMAIL:-(not set ⚠)}"
 echo "DISABLE_ADVISOR:    ${DISABLE_ADVISOR:-0 (advisor enabled)}"
 ```
 
-If any are missing or need adjusting, add to `~/.zshrc`:
+If `XVE_EMAIL` is not set, ask the user:
+> "What email should Claude use to identify your account? (e.g. `you@example.com`)"
+
+Then append to `~/.zshrc` (or the user's shell rc file) and confirm:
+```bash
+echo "export XVE_EMAIL=<answer>" >> ~/.zshrc
+```
+
+Remind the user to restart their terminal (or `source ~/.zshrc`) so the new env var loads.
+
+Other env vars (optional — mention, don't prompt):
 ```zsh
-export XVE_EMAIL=your@email.com
 # export DISABLE_ADVISOR=1       # uncomment to disable Opus advisor
 # XVE_CUSTOMER_N — see .env.example for full template
 ```
