@@ -2,7 +2,7 @@
 description: Open the XVE Claude Code guide — session flow, whiteboard zones, and command reference for new users.
 ---
 
-Open `docs/xve-help.html` from this marketplace repo in the default browser.
+Open `docs/index.html#/help` from this marketplace repo in the default browser.
 
 ## Step 1 — Find the repo
 
@@ -18,17 +18,17 @@ Run the correct command for the OS:
 
 **Windows:**
 ```bash
-start "" "$REPO_DIR/docs/xve-help.html"
+start "" "$REPO_DIR/docs/index.html#/help"
 ```
 
 **macOS:**
 ```bash
-open "$REPO_DIR/docs/xve-help.html"
+open "$REPO_DIR/docs/index.html#/help"
 ```
 
 **Linux:**
 ```bash
-xdg-open "$REPO_DIR/docs/xve-help.html"
+xdg-open "$REPO_DIR/docs/index.html#/help"
 ```
 
 Detect the OS from `$OSTYPE` or `uname` and run the matching command. No output on success.
