@@ -8,15 +8,16 @@
     <script>
         mermaid.initialize({
             startOnLoad: true,
-            theme: 'dark',
+            theme: 'default',
             themeVariables: {
-                primaryColor: '#1e2840',
-                primaryTextColor: '#e2e8f0',
-                primaryBorderColor: '#2d4060',
-                lineColor: '#475569',
-                edgeLabelBackground: '#0f1117',
-                tertiaryColor: '#161b27',
-                clusterBkg: '#161b27'
+                primaryColor: '#dbeafe',
+                primaryTextColor: '#1e293b',
+                primaryBorderColor: '#93c5fd',
+                lineColor: '#94a3b8',
+                edgeLabelBackground: '#ffffff',
+                tertiaryColor: '#f1f5f9',
+                clusterBkg: '#f1f5f9',
+                clusterBorder: '#cbd5e1'
             },
             flowchart: { curve: 'basis' }
         });
@@ -26,8 +27,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0f1117;
-            color: #e2e8f0;
+            background: #f8fafc;
+            color: #1e293b;
             padding: 48px 24px;
             max-width: 1100px;
             margin: 0 auto;
@@ -35,16 +36,16 @@
         }
 
         h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 6px; }
-        .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 8px; }
+        .subtitle { color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px; }
         .intro {
-            color: #94a3b8;
             font-size: 0.95rem;
-            background: #161b27;
-            border: 1px solid #1e2840;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
             border-left: 3px solid #3b82f6;
             border-radius: 8px;
             padding: 16px 20px;
             margin-bottom: 40px;
+            color: #1e40af;
         }
 
         section { margin-bottom: 40px; }
@@ -54,13 +55,13 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.08em;
-            color: #475569;
+            color: #94a3b8;
             margin-bottom: 14px;
         }
 
         .box {
-            background: #161b27;
-            border: 1px solid #1e2840;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: 10px;
             padding: 28px;
         }
@@ -84,7 +85,7 @@
             display: flex;
             justify-content: space-between;
             font-size: 0.72rem;
-            color: #475569;
+            color: #94a3b8;
             margin-bottom: 20px;
         }
 
@@ -96,8 +97,8 @@
         }
 
         .card {
-            background: #0f1117;
-            border: 1px solid #1e2840;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
             border-radius: 8px;
             padding: 16px;
         }
@@ -110,28 +111,30 @@
         }
         .card .tagline {
             font-size: 0.8rem;
-            color: #64748b;
+            color: #94a3b8;
             margin-bottom: 10px;
             font-style: italic;
         }
         .card ul { list-style: none; }
         .card li {
             font-size: 0.85rem;
-            color: #94a3b8;
+            color: #475569;
             padding: 3px 0;
             display: flex;
             gap: 8px;
         }
-        .card li::before { content: '→'; color: #334155; flex-shrink: 0; }
+        .card li::before { content: '→'; color: #cbd5e1; flex-shrink: 0; }
 
-        .card.green { border-left: 3px solid #22c55e; }
-        .card.green h3 { color: #22c55e; }
-        .card.blue  { border-left: 3px solid #3b82f6; }
-        .card.blue  h3 { color: #3b82f6; }
-        .card.amber { border-left: 3px solid #f59e0b; }
-        .card.amber h3 { color: #f59e0b; }
-        .card.red   { border-left: 3px solid #ef4444; }
-        .card.red   h3 { color: #ef4444; }
+        .card.green { border-left: 3px solid #16a34a; }
+        .card.green h3 { color: #16a34a; }
+        .card.blue  { border-left: 3px solid #2563eb; }
+        .card.blue  h3 { color: #2563eb; }
+        .card.amber { border-left: 3px solid #d97706; }
+        .card.amber h3 { color: #d97706; }
+        .card.red   { border-left: 3px solid #dc2626; }
+        .card.red   h3 { color: #dc2626; }
+        .card.purple { border-left: 3px solid #7c3aed; }
+        .card.purple h3 { color: #7c3aed; }
 
         /* ── Command table ── */
         table {
@@ -142,7 +145,7 @@
         thead th {
             text-align: left;
             padding: 10px 16px;
-            background: #1e2840;
+            background: #f1f5f9;
             color: #64748b;
             font-size: 0.72rem;
             font-weight: 600;
@@ -151,16 +154,16 @@
         }
         tbody td {
             padding: 12px 16px;
-            border-bottom: 1px solid #1e2840;
-            color: #cbd5e1;
+            border-bottom: 1px solid #e2e8f0;
+            color: #374151;
             vertical-align: top;
         }
         tbody tr:last-child td { border-bottom: none; }
-        tbody tr:hover td { background: #161b27; }
+        tbody tr:hover td { background: #f8fafc; }
 
         code {
-            background: #1e2840;
-            color: #93c5fd;
+            background: #f1f5f9;
+            color: #2563eb;
             padding: 2px 7px;
             border-radius: 4px;
             font-family: 'Cascadia Code', 'Fira Code', monospace;
@@ -168,19 +171,19 @@
             white-space: nowrap;
         }
 
-        .avoid { color: #f87171; }
+        .avoid { color: #dc2626; }
 
         .tip {
-            background: #0f1117;
-            border: 1px solid #1e2840;
-            border-left: 3px solid #22c55e;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-left: 3px solid #16a34a;
             border-radius: 8px;
             padding: 14px 16px;
             font-size: 0.85rem;
-            color: #94a3b8;
+            color: #166534;
             margin-top: 16px;
         }
-        .tip strong { color: #22c55e; }
+        .tip strong { color: #15803d; }
     </style>
 </head>
 <body>
@@ -193,7 +196,7 @@
         This guide shows you how to keep the whiteboard clean so Claude stays sharp all day.
     </p>
 
-    <!-- ── Diagram ── -->
+    <!-- ── Session flow ── -->
     <section>
         <h2>The Ideal Session Flow</h2>
         <div class="box">
@@ -233,12 +236,12 @@ flowchart TD
     PASTE --> WORK
 
     %% ── Classes ─────────────────────────────────────────
-    classDef green  fill:#14532d,stroke:#22c55e,color:#86efac
-    classDef blue   fill:#172554,stroke:#3b82f6,color:#93c5fd
-    classDef purple fill:#1e1b4b,stroke:#8b5cf6,color:#c4b5fd
-    classDef amber  fill:#451a03,stroke:#f59e0b,color:#fcd34d
-    classDef red    fill:#450a0a,stroke:#ef4444,color:#fca5a5
-    classDef muted  fill:#161b27,stroke:#334155,color:#94a3b8
+    classDef green  fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef blue   fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef purple fill:#ede9fe,stroke:#7c3aed,color:#4c1d95
+    classDef amber  fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef red    fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    classDef muted  fill:#f1f5f9,stroke:#94a3b8,color:#475569
 
     class START,CLEAR,CLEAR2,PASTE green
     class WORK blue
@@ -354,6 +357,90 @@ flowchart TD
         </div>
         <div class="tip" style="margin-top: 14px;">
             <strong>Think of it like browser tabs:</strong> /clear closes all tabs. Your handoff summary is your bookmarks. You lose the tabs but keep everything that mattered.
+        </div>
+    </section>
+
+    <!-- ── Automate repeating prompts ── -->
+    <section>
+        <h2>Stop Repeating Yourself — Build a Skill or Command</h2>
+        <div class="box">
+            <p style="color:#475569;font-size:0.9rem;margin-bottom:24px;">
+                Every time you type the same prompt twice, you're leaving automation on the table.
+                The second or third time you find yourself explaining the same thing — stop and turn it into a skill or command.
+                Next time you just say <code>/name</code> and Claude does the rest.
+            </p>
+
+            <div class="mermaid">
+flowchart TD
+    %% ── Nodes ──────────────────────────────────────────
+    PROMPT["You type a prompt to Claude"]
+    SEEN{"Typed something\nlike this before?"}
+    KEEP["Keep working"]
+    PATTERN{"What kind of pattern?"}
+    SKILL["Create a Skill"]
+    COMMAND["Create a Command"]
+    BOTH["Create both"]
+    NEXT["Next time: one short command — Claude does the rest"]
+
+    %% ── Flow ────────────────────────────────────────────
+    PROMPT --> SEEN
+    SEEN -->|"First time"| KEEP
+    SEEN -->|"Second or third time"| PATTERN
+    PATTERN -->|"Rules or approach Claude should know"| SKILL
+    PATTERN -->|"Steps Claude should execute"| COMMAND
+    PATTERN -->|"Both knowledge and steps"| BOTH
+    SKILL --> NEXT
+    COMMAND --> NEXT
+    BOTH --> NEXT
+
+    %% ── Classes ─────────────────────────────────────────
+    classDef blue   fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef green  fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef amber  fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef purple fill:#ede9fe,stroke:#7c3aed,color:#4c1d95
+    classDef muted  fill:#f1f5f9,stroke:#94a3b8,color:#475569
+
+    class PROMPT,KEEP blue
+    class NEXT green
+    class SKILL,BOTH amber
+    class COMMAND purple
+    class SEEN,PATTERN muted
+            </div>
+
+            <div class="cards" style="margin-top:24px;">
+                <div class="card amber">
+                    <h3>Skill — knowledge Claude loads</h3>
+                    <p class="tagline">What Claude should know or how it should think</p>
+                    <ul>
+                        <li>A set of rules or an approach</li>
+                        <li>Reference material Claude consults</li>
+                        <li>Behaviour you want consistent every session</li>
+                        <li>Example: "when reviewing, always check for X"</li>
+                    </ul>
+                    <p style="margin-top:12px;font-size:0.8rem;color:#94a3b8;">
+                        Scope: <strong style="color:#d97706">user level</strong> — works across all your projects
+                    </p>
+                </div>
+                <div class="card purple">
+                    <h3>Command — steps Claude executes</h3>
+                    <p class="tagline">What Claude should do, in what order</p>
+                    <ul>
+                        <li>A sequence of actions to run</li>
+                        <li>Setup or install procedures</li>
+                        <li>Anything you'd describe as "first do X, then Y, then Z"</li>
+                        <li>Example: "set up a new project with these 5 steps"</li>
+                    </ul>
+                    <p style="margin-top:12px;font-size:0.8rem;color:#94a3b8;">
+                        Scope: <strong style="color:#7c3aed">user level</strong> — works across all your projects
+                    </p>
+                </div>
+            </div>
+
+            <div class="tip">
+                <strong>How to do it:</strong> Paste your repeating prompt and tell Claude:<br>
+                <em>"Turn this into a skill at the user level so it works across all my projects."</em><br><br>
+                Claude will create the file in the right place automatically. You don't need to know where — just tell it user level, not a specific project or plugin folder.
+            </div>
         </div>
     </section>
 
