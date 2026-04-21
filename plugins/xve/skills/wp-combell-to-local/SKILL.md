@@ -257,7 +257,44 @@ Both wrappers should default to `127.0.0.1:3306 root <project-db-name>` and end 
 
 Safe to commit: **yes** — no secrets in the script, the bcrypt hash is of the literal string `password`, and the SMTP config points at loopback. Do NOT commit any Combell dump files (add `*.sql.gz` to `.gitignore`).
 
-### 12. Verify
+### 12. Build theme assets
+
+A fresh clone from the project repo ships source files only — no `node_modules/`, no `build/` / `dist/` / `public/` directory. Theme PHP enqueues compiled bundles (e.g. `get_template_directory_uri() . '/build/js/main.js'`). Until these are built, nginx returns the 404 HTML page for every script URL and the browser console lights up with:
+
+```
+Uncaught SyntaxError: Unexpected token '<'
+```
+
+(The `<` is the first char of `<!DOCTYPE html>` — JS parser choking on the 404 page.)
+
+Find the build tool via `package.json` — Roots Sage uses `yarn build`, XVE themes often use Buildozer (gulp-based) invoked as `yarn buildozer build`:
+
+```bash
+cd web/app/themes/<theme>
+
+# Node version — README often pins an old version (e.g. 17.8.0).
+# Buildozer builds on Node 22 despite that; try current first, fall back to nvm only if install fails.
+node --version
+
+# Deps + build
+yarn install && yarn buildozer build
+# or, without yarn:
+npm install && npx buildozer build
+```
+
+Verify output dir exists and nginx serves it as JS:
+
+```bash
+ls web/app/themes/<theme>/build/js/
+curl -sSI -k https://LOCALDOMAIN/app/themes/<theme>/build/js/main.js | grep -iE '^(HTTP|content-type)'
+# expect: HTTP/2 200  +  content-type: application/javascript
+```
+
+If node-sass / gulp-image chokes on newer Node: use `nvm install <pinned-version> && nvm use <pinned-version>` and retry. Don't bother "fixing" deprecation warnings (chokidar 2, fsevents 1, phantomjs-prebuilt) — they're cosmetic on build-time-only deps.
+
+Admin / frontend won't fully render until this step is done — CSS classes, Bootstrap JS, slick-carousel, Venobox lightboxes all depend on the bundle.
+
+### 13. Verify
 
 ```bash
 # URL rewrite landed
