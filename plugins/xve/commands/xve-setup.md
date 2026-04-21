@@ -100,6 +100,19 @@ Also call when:
 On longer tasks: once before committing to approach, once before declaring done. Don't call after every step — advisor adds most value before the approach crystallizes.
 
 Give advice serious weight. If data and advice conflict, don't silently switch — make one more advisor call: "I found X, you suggest Y, which breaks the tie?"
+
+## LLM Council
+
+Use `council this` when the cost of a bad call is high and there are real tradeoffs between options.
+
+Good fit:
+- Genuine uncertainty with meaningful options (architecture choices, hiring, pricing, strategy)
+- Decision you keep going back and forth on
+
+Not a good fit:
+- Factual lookups — just ask directly
+- Creation tasks (write a tweet, summarise this)
+- Already decided — don't run council to validate
 EOF
 fi
 ```
