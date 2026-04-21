@@ -80,7 +80,31 @@ Four principles that cut rework significantly:
 3. **Surgical Changes** — touch only what was asked, match existing style, no scope creep
 4. **Goal-Driven Execution** — define verifiable success criteria before implementing
 
-## Step 6 — Summary
+## Step 6 — Write advisor guidance to CLAUDE.md
+
+Append the advisor best practices to `~/.claude/CLAUDE.md`. Skip if the section already exists (idempotent).
+
+```bash
+if ! grep -q "## Advisor" ~/.claude/CLAUDE.md 2>/dev/null; then
+  cat >> ~/.claude/CLAUDE.md << 'EOF'
+
+## Advisor
+
+Call advisor() BEFORE substantive work — before writing, before committing to an approach. Reading files to orient is fine first.
+
+Also call when:
+- Stuck (errors recurring, approach not converging)
+- Changing approach
+- Task complete — but first make deliverables durable (write file, commit)
+
+On longer tasks: once before committing to approach, once before declaring done. Don't call after every step — advisor adds most value before the approach crystallizes.
+
+Give advice serious weight. If data and advice conflict, don't silently switch — make one more advisor call: "I found X, you suggest Y, which breaks the tie?"
+EOF
+fi
+```
+
+## Step 7 — Summary
 
 ```
 XVE Claude Code Setup
@@ -89,8 +113,9 @@ settings.json:    ✓ applied
 session-start.sh: ✓ / ✗
 XVE_EMAIL:        ✓ / ✗ not set
 karpathy-skills:  ✓ installed / ✗ failed
+CLAUDE.md advisor: ✓ written / ✗ skipped (already present)
 ```
 
-## Step 7 — Open the guide
+## Step 8 — Open the guide
 
 Run `/xve-help` to open the XVE docs in the browser so the user has the getting started guide on screen.
