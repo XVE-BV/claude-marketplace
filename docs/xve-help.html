@@ -208,7 +208,7 @@ flowchart TD
     CHECK -->|"Whiteboard is ~60 % full"| DONE{"Are you done\nfor today?"}
 
     DONE -->|"Yes"| CLEAR["/clear\nWipe the whiteboard\nStart fresh next time"]
-    DONE -->|"No — still have more to do"| HANDOFF["/xve-session-handoff\nAsk Claude to write a summary of everything important so far"]
+    DONE -->|"No — still have more to do"| HANDOFF["/session-handoff\nAsk Claude to write a summary of everything important so far"]
     HANDOFF --> CLEAR2["/clear — wipe the whiteboard"]
     CLEAR2 --> PASTE["Paste the summary\nClaude remembers everything again\nWhiteboard is clean"]
     PASTE --> WORK
@@ -315,7 +315,7 @@ flowchart TD
                         <td>Go back to before the mistake — the bad answer disappears and won't affect what comes next</td>
                     </tr>
                     <tr>
-                        <td><code>/xve-session-handoff</code></td>
+                        <td><code>/session-handoff</code></td>
                         <td>Whiteboard is ~60 % full</td>
                         <td>Claude writes a structured summary of everything important — decisions made, what was done, what's next</td>
                     </tr>
