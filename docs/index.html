@@ -275,6 +275,7 @@
             <span class="w-px h-5 bg-slate-200"></span>
             <router-link to="/help" class="nav-link">Getting Started</router-link>
             <router-link to="/setup" class="nav-link">Setup</router-link>
+            <router-link to="/hud" class="nav-link">Statusline</router-link>
             <router-link to="/council" class="nav-link">LLM Council</router-link>
         </nav>
         <router-view></router-view>
@@ -400,6 +401,35 @@
     class SETTINGS,HOOK_YES,KARPATHY blue
     class ENVVARS amber
     class DETECT,HOOKS muted`,
+
+            hudFlow: `flowchart TD
+    START([Every ~300ms Claude Code invokes the statusline])
+    READ["Read stdin JSON\\n(context + rate_limits)"]
+    CHECK{"Context %?"}
+    QUIET["Quiet — no banner"]
+    PACE{"5h pace delta\\n≥ +15%?"}
+    AMBER["Amber — handoff soon\\nrun /session-handoff"]
+    RED["Red — handoff NOW\\nauto-compact imminent"]
+
+    START --> READ --> CHECK
+    CHECK -->|"< 50%"| QUIET
+    CHECK -->|"50–59%"| PACE
+    CHECK -->|"60–84%"| AMBER
+    CHECK -->|"≥ 85%"| RED
+    PACE -->|"No"| QUIET
+    PACE -->|"Yes — burning fast"| AMBER
+
+    classDef green  fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef amber  fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef red    fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    classDef blue   fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef muted  fill:#f1f5f9,stroke:#94a3b8,color:#475569
+
+    class START,READ blue
+    class QUIET green
+    class AMBER amber
+    class RED red
+    class CHECK,PACE muted`,
 
             councilFlow: `flowchart TD
     START(["council this"])
@@ -758,6 +788,102 @@ Always use conventional commits: type(scope): message</code>
             `
         };
 
+        const HudPage = {
+            mounted() { this.$nextTick(() => runMermaid(this.$el)); },
+            template: `
+            <div class="page-content">
+                <h1>XVE Statusline (xve-hud)</h1>
+                <p class="subtitle">XVE · A passive nudge to hand off before the whiteboard fills up</p>
+                <p class="intro">
+                    The statusline is the whiteboard's fuel gauge. Under 60% it stays quiet. At 60% it turns amber and tells you to run <code>/session-handoff</code>. At 85% it turns red because auto-compact is about to take the wheel. If you're burning quota fast, it trips amber early so you don't run out of runway.
+                </p>
+
+                <section>
+                    <h2>How It Decides</h2>
+                    <div class="box">
+                        <div class="mermaid" data-diagram="hudFlow"></div>
+                        <div class="tip">
+                            <strong>Two inputs, one banner:</strong> context % is primary. The 5h pace delta is an amplifier — if you're spending 15%+ faster than sustainable and already past half the whiteboard, amber lights up early.
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>What You'll See</h2>
+                    <div class="box">
+                        <div class="cards">
+                            <div class="card green">
+                                <h3>Under 60% — Quiet</h3>
+                                <p class="tagline">Everything is fine, no banner</p>
+                                <ul>
+                                    <li>Only the two quota lines show</li>
+                                    <li>No interruption to your flow</li>
+                                </ul>
+                            </div>
+                            <div class="card amber">
+                                <h3>60–85% — Amber</h3>
+                                <p class="tagline">Handoff soon</p>
+                                <ul>
+                                    <li>Banner: <code>● handoff soon — /session-handoff</code></li>
+                                    <li>Same 60% threshold as the Getting Started doctrine</li>
+                                    <li>Also triggers early at 50%+ if quota pace is ⇡15%+</li>
+                                </ul>
+                            </div>
+                            <div class="card red">
+                                <h3>85%+ — Red</h3>
+                                <p class="tagline">Handoff NOW — auto-compact imminent</p>
+                                <ul>
+                                    <li>Banner: <code>● handoff NOW — auto-compact imminent</code></li>
+                                    <li>You've lost control of what gets summarised if you wait</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="tip" style="margin-top:16px;">
+                            <strong>Example output:</strong><br><br>
+                            <code style="display:block;background:#f1f5f9;padding:10px 12px;border-radius:6px;margin-top:4px;font-size:0.8rem;white-space:pre;color:#78350f;">● handoff soon — /session-handoff
+[Opus] my-project (main*) 3f +24 -7
+████████░░ 72% | 5h 40% 2h  7d 15% 4d</code>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Install</h2>
+                    <div class="box" style="padding: 0 28px;">
+                        <div class="step-row">
+                            <span class="step-num">1</span>
+                            <div class="step-content">
+                                <strong>Install jq</strong>
+                                <span>On macOS: <code>brew install jq</code>. On Debian/Ubuntu: <code>sudo apt install jq</code>. On Windows (WSL): <code>sudo apt install jq</code>.</span>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <span class="step-num">2</span>
+                            <div class="step-content">
+                                <strong>Run /xve-setup</strong>
+                                <span>The recommended path — full XVE setup wizard. Step 4 asks if you want to wire the statusline. Say yes.</span>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <span class="step-num">3</span>
+                            <div class="step-content">
+                                <strong>Or run /xve-hud-setup</strong>
+                                <span>If you've already run /xve-setup and skipped the statusline, or want only the statusline wired without touching the rest.</span>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <span class="step-num">4</span>
+                            <div class="step-content">
+                                <strong>Fully restart Claude Code</strong>
+                                <span>Not a reload — a full quit and relaunch. Then the banner will appear when context crosses the thresholds.</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            `
+        };
+
         const CouncilPage = {
             mounted() { this.$nextTick(() => runMermaid(this.$el)); },
             template: `
@@ -862,6 +988,7 @@ Always use conventional commits: type(scope): message</code>
             { path: '/', redirect: '/help' },
             { path: '/help', component: HelpPage },
             { path: '/setup', component: SetupPage },
+            { path: '/hud', component: HudPage },
             { path: '/council', component: CouncilPage },
         ];
 

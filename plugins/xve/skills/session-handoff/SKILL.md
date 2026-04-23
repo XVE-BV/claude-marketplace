@@ -53,7 +53,7 @@ Do NOT grep or `git log` to rediscover state. Synthesize what happened in this s
 ## Rules
 
 1. Chat only — never write to a file, never update memory.
-2. Never invent state — write "none", never omit a section.
+2. Never invent state — write "none" for any section or bullet without real content; never omit a section.
 3. Absolute paths always.
 4. Plan file goes first in "Key files".
 5. No emojis, no hype, no retrospectives.

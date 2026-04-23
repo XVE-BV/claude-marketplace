@@ -51,7 +51,30 @@ chmod +x ~/.claude/env-guard.sh
 
 `env-guard.sh` is a PreToolUse hook that blocks access to `.env` files via `Read`/`Edit`/`Write` and any bash command referencing `.env`. Deny rules in settings.json alone are insufficient — this hook is the actual gate.
 
-## Step 4 — Check env vars
+## Step 4 — Install xve-hud statusline (confirm first)
+
+Ask the user:
+> "Install the XVE statusline (xve-hud)? Shows a handoff-urgency banner on the statusline — amber at 60% context, red at 85%, early bump if you're burning quota fast. Requires `jq`. [Y/n]"
+
+If yes:
+```bash
+command -v jq >/dev/null || { echo "jq missing — skipping. Install jq and re-run /xve-hud-setup later."; SKIP_HUD=1; }
+```
+
+If `jq` is present, merge the following into `~/.claude/settings.json` (preserve other keys with `jq`):
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "${CLAUDE_PLUGIN_ROOT}/statusline/xve-hud.sh"
+  }
+}
+```
+
+Remind the user: a **full Claude Code restart** is required for the statusline change to take effect.
+
+## Step 5 — Check env vars
 
 ```bash
 echo "XVE_EMAIL:          ${XVE_EMAIL:-(not set ⚠)}"
@@ -74,7 +97,7 @@ Other env vars (optional — mention, don't prompt):
 # XVE_CUSTOMER_N — see .env.example for full template
 ```
 
-## Step 5 — Install karpathy-skills
+## Step 6 — Install karpathy-skills
 
 Install automatically — no prompt:
 
@@ -89,7 +112,7 @@ Four principles that cut rework significantly:
 3. **Surgical Changes** — touch only what was asked, match existing style, no scope creep
 4. **Goal-Driven Execution** — define verifiable success criteria before implementing
 
-## Step 6 — Write advisor guidance to CLAUDE.md
+## Step 7 — Write advisor guidance to CLAUDE.md
 
 Append the advisor best practices to `~/.claude/CLAUDE.md`. Skip if the section already exists (idempotent).
 
@@ -126,18 +149,19 @@ EOF
 fi
 ```
 
-## Step 7 — Summary
+## Step 8 — Summary
 
 ```
 XVE Claude Code Setup
 ─────────────────────
-settings.json:    ✓ applied
-session-start.sh: ✓ / ✗
-XVE_EMAIL:        ✓ / ✗ not set
-karpathy-skills:  ✓ installed / ✗ failed
+settings.json:     ✓ applied
+session-start.sh:  ✓ / ✗
+xve-hud:           ✓ wired / ✗ skipped
+XVE_EMAIL:         ✓ / ✗ not set
+karpathy-skills:   ✓ installed / ✗ failed
 CLAUDE.md advisor: ✓ written / ✗ skipped (already present)
 ```
 
-## Step 8 — Open the guide
+## Step 9 — Open the guide
 
 Run `/xve-help` to open the XVE docs in the browser so the user has the getting started guide on screen.
