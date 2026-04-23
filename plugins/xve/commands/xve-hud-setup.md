@@ -60,4 +60,4 @@ script present:  ✓
 settings.json:   ✓ statusLine wired
 ```
 
-Tell the user: after restart they'll see a quiet statusline under 60% context, an amber "handoff soon" banner at 60-85%, and a red "handoff NOW" banner at 85%+.
+Tell the user: after restart they'll see a quiet statusline under 60% context, an amber "handoff soon" banner at 60-85%, and a red "handoff NOW" banner at 85%+. Amber also trips early (at 50%+ context) if the 5h quota pace is ⇡15%+ — a heads-up that the 60% threshold is arriving sooner than expected.

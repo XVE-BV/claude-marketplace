@@ -31,11 +31,12 @@ plugins/xve/
 ├── statusline/
 │   ├── xve-hud.sh         # forked from claude-pace.sh + urgency banner
 │   └── NOTICE             # preserves claude-pace MIT attribution
-├── commands/
-│   ├── xve-setup.md       # extended with one optional "wire statusline?" step
-│   └── xve-hud-setup.md   # NEW — standalone installer
-└── config/
-    └── statusline.json    # { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/statusline/xve-hud.sh" }
+└── commands/
+    ├── xve-setup.md       # extended with one optional "wire statusline?" step
+    └── xve-hud-setup.md   # NEW — standalone installer
+
+Both setup commands merge the `statusLine` block directly into `~/.claude/settings.json`;
+no separate plugin-level config file is needed.
 ```
 
 ### Runtime (`xve-hud.sh`)
@@ -70,7 +71,7 @@ Rationale for the pace-bump edge: burning 15% faster than sustainable means the 
   {
     "statusLine": {
       "type": "command",
-      "command": "${CLAUDE_PLUGIN_ROOT}/plugins/xve/statusline/xve-hud.sh"
+      "command": "${CLAUDE_PLUGIN_ROOT}/statusline/xve-hud.sh"
     }
   }
   ```
