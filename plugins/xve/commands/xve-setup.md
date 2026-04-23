@@ -112,9 +112,9 @@ Four principles that cut rework significantly:
 3. **Surgical Changes** — touch only what was asked, match existing style, no scope creep
 4. **Goal-Driven Execution** — define verifiable success criteria before implementing
 
-## Step 7 — Write advisor guidance to CLAUDE.md
+## Step 7 — Write guidance to CLAUDE.md
 
-Append the advisor best practices to `~/.claude/CLAUDE.md`. Skip if the section already exists (idempotent).
+Append best practices to `~/.claude/CLAUDE.md`. Each block is idempotent — skip if the section already exists.
 
 ```bash
 if ! grep -q "## Advisor" ~/.claude/CLAUDE.md 2>/dev/null; then
@@ -147,6 +147,36 @@ Not a good fit:
 - Already decided — don't run council to validate
 EOF
 fi
+
+if ! grep -q "## Coding Guidelines" ~/.claude/CLAUDE.md 2>/dev/null; then
+  cat >> ~/.claude/CLAUDE.md << 'EOF'
+
+## Coding Guidelines
+
+### Think Before Coding
+- State assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them — don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
+
+### Simplicity First
+- Minimum code that solves the problem. No speculative features.
+- No abstractions for single-use code, no unrequested "flexibility".
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+### Surgical Changes
+- Touch only what the request requires. Don't improve adjacent code.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it — don't delete it.
+- Every changed line should trace directly to the user's request.
+
+### Goal-Driven Execution
+- Transform tasks into verifiable goals before starting.
+- For multi-step tasks, state a brief plan with verification steps.
+- Define success criteria upfront so you can loop independently.
+EOF
+fi
 ```
 
 ## Step 8 — Summary
@@ -154,12 +184,13 @@ fi
 ```
 XVE Claude Code Setup
 ─────────────────────
-settings.json:     ✓ applied
-session-start.sh:  ✓ / ✗
-xve-hud:           ✓ wired / ✗ skipped
-XVE_EMAIL:         ✓ / ✗ not set
-karpathy-skills:   ✓ installed / ✗ failed
-CLAUDE.md advisor: ✓ written / ✗ skipped (already present)
+settings.json:        ✓ applied
+session-start.sh:     ✓ / ✗
+xve-hud:              ✓ wired / ✗ skipped
+XVE_EMAIL:            ✓ / ✗ not set
+karpathy-skills:      ✓ installed / ✗ failed
+CLAUDE.md advisor:    ✓ written / ✗ skipped (already present)
+CLAUDE.md guidelines: ✓ written / ✗ skipped (already present)
 ```
 
 ## Step 9 — Open the guide

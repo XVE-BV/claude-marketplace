@@ -51,7 +51,16 @@ Automatically installs four coding principles that reduce rework:
 3. Surgical changes — touch only what was asked
 4. Goal-driven execution — define success criteria before implementing
 
-### 5 — Summary
+### 5 — Writes guidance to CLAUDE.md
+
+Appends two sections to `~/.claude/CLAUDE.md` (each idempotent — skipped if already present):
+
+- **Advisor** — when and how to call advisor() for strategic oversight
+- **Coding Guidelines** — the four Karpathy principles baked in as always-on instructions
+
+This means the guidelines are active in every session without needing to run `/karpathy-guidelines` manually.
+
+### 6 — Summary
 
 Prints a checklist at the end showing what was applied, what was skipped, and what still needs attention.
 
