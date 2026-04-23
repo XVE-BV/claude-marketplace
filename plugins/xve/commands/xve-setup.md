@@ -97,22 +97,7 @@ Other env vars (optional — mention, don't prompt):
 # XVE_CUSTOMER_N — see .env.example for full template
 ```
 
-## Step 6 — Install karpathy-skills
-
-Install automatically — no prompt:
-
-```bash
-claude plugin marketplace add https://github.com/forrestchang/andrej-karpathy-skills.git
-claude plugin install andrej-karpathy-skills@andrej-karpathy-skills
-```
-
-Four principles that cut rework significantly:
-1. **Think Before Coding** — surface assumptions, present interpretations, ask before guessing
-2. **Simplicity First** — minimum code, no speculative features or premature abstraction
-3. **Surgical Changes** — touch only what was asked, match existing style, no scope creep
-4. **Goal-Driven Execution** — define verifiable success criteria before implementing
-
-## Step 7 — Write guidance to CLAUDE.md
+## Step 6 — Write guidance to CLAUDE.md
 
 Append best practices to `~/.claude/CLAUDE.md`. Each block is idempotent — skip if the section already exists.
 
@@ -179,7 +164,7 @@ EOF
 fi
 ```
 
-## Step 8 — Summary
+## Step 7 — Summary
 
 ```
 XVE Claude Code Setup
@@ -188,11 +173,10 @@ settings.json:        ✓ applied
 session-start.sh:     ✓ / ✗
 xve-hud:              ✓ wired / ✗ skipped
 XVE_EMAIL:            ✓ / ✗ not set
-karpathy-skills:      ✓ installed / ✗ failed
 CLAUDE.md advisor:    ✓ written / ✗ skipped (already present)
 CLAUDE.md guidelines: ✓ written / ✗ skipped (already present)
 ```
 
-## Step 9 — Open the guide
+## Step 8 — Open the guide
 
 Run `/xve-help` to open the XVE docs in the browser so the user has the getting started guide on screen.

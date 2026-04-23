@@ -11,7 +11,7 @@ flowchart TD
     B -->|"No"| C
     B1 --> C
     C["Step 3 — Check env vars\nXVE_EMAIL, ..."] --> D
-    D["Step 4 — Install karpathy-skills\nauto, no prompt"] --> E
+    D["Step 4 — Write CLAUDE.md guidance\nauto, idempotent"] --> E
     E["Step 5 — Summary"]
 ```
 
@@ -42,16 +42,7 @@ Reads your environment and reports what's set and what's missing:
 
 If `XVE_EMAIL` is not set, Claude asks you for it interactively and appends `export XVE_EMAIL=...` to your `~/.zshrc`. Restart your terminal afterward so the var loads.
 
-### 4 — Installs karpathy-skills
-
-Automatically installs four coding principles that reduce rework:
-
-1. Think before coding — surface assumptions first
-2. Simplicity first — minimum code, no speculative features
-3. Surgical changes — touch only what was asked
-4. Goal-driven execution — define success criteria before implementing
-
-### 5 — Writes guidance to CLAUDE.md
+### 4 — Writes guidance to CLAUDE.md
 
 Appends two sections to `~/.claude/CLAUDE.md` (each idempotent — skipped if already present):
 
@@ -60,7 +51,7 @@ Appends two sections to `~/.claude/CLAUDE.md` (each idempotent — skipped if al
 
 This means the guidelines are active in every session without needing to run `/karpathy-guidelines` manually.
 
-### 6 — Summary
+### 5 — Summary
 
 Prints a checklist at the end showing what was applied, what was skipped, and what still needs attention.
 
