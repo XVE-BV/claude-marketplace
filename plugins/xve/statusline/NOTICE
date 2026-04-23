@@ -1,8 +1,11 @@
 xve-hud is derived from claude-pace by Astro-Han (MIT license).
 Original: https://github.com/Astro-Han/claude-pace
 
-Forked verbatim at this commit for integration into the xve plugin.
-Subsequent commits add XVE-specific modifications under the MIT license.
+Forked from claude-pace for integration into the xve plugin.
+
+XVE modifications under the MIT license:
+- Added handoff-urgency banner line computed from context percentage
+  and 5h pace delta (file: xve-hud.sh).
 
 The original claude-pace MIT copyright is retained below.
 

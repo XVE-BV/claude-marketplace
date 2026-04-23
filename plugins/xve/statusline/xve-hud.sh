@@ -298,5 +298,27 @@ if [[ "$SHOW_COST" == "1" ]]; then
   [[ "$_CS" != "\$0.00" ]] && L2+="  $_CS"
 fi
 
+# ── Handoff urgency banner (XVE) ──
+# Thresholds mirror /help canon: <60 quiet, 60-85 amber, >=85 red.
+# Pace bump: >=50% ctx AND >=+15% pace delta on the 5h window bumps to amber.
+BANNER=""
+if [[ "$PCT" =~ ^[0-9]+$ ]]; then
+  _pace_delta_5h=0
+  if [[ "$U5" =~ ^[0-9]+$ ]] && [[ "$RM5" =~ ^[0-9]+$ ]]; then
+    _elapsed_5h=$((300 - RM5))
+    if ((_elapsed_5h < 0)); then _elapsed_5h=0; fi
+    _expected_5h=$((_elapsed_5h * 100 / 300))
+    _pace_delta_5h=$((U5 - _expected_5h))
+  fi
+  if ((PCT >= 85)); then
+    BANNER="${R}● handoff NOW — auto-compact imminent${N}"
+  elif ((PCT >= 60)); then
+    BANNER="${Y}● handoff soon — /session-handoff${N}"
+  elif ((PCT >= 50)) && ((_pace_delta_5h >= 15)); then
+    BANNER="${Y}● handoff soon — /session-handoff${N}"
+  fi
+fi
+[ -n "$BANNER" ] && printf '%s\n' "$BANNER"
+
 printf '%s\n' "$L1"
 printf '%s\n' "$L2"
