@@ -17,9 +17,10 @@ command -v jq >/dev/null || {
 }
 
 # ── Colors & Utilities ──
-# C=Cyan G=Green Y=Yellow R=Red M=Magenta T=Turquoise D=Dim N=Normal (reset)
+# C=Cyan G=Green Y=Yellow R=Red M=Magenta T=Turquoise D=Light gray (bright black) N=Normal (reset)
 # Store real escape bytes so final output does not need echo -e interpretation.
-C=$'\033[36m' G=$'\033[32m' Y=$'\033[33m' R=$'\033[31m' M=$'\033[35m' T=$'\033[96m' D=$'\033[2m' N=$'\033[0m'
+# D uses bright-black (\033[90m) instead of the dim attribute (\033[2m) — dim renders unreadable on many terminals.
+C=$'\033[36m' G=$'\033[32m' Y=$'\033[33m' R=$'\033[31m' M=$'\033[35m' T=$'\033[96m' D=$'\033[90m' N=$'\033[0m'
 # Cache records use ASCII Unit Separator so legal Git ref names cannot split
 # serialized fields and empty values survive round-trips through read.
 SEP=$'\037'
@@ -262,40 +263,48 @@ else
   fi
 fi
 
-# Combined usage formatter: used% [pace delta], resets @ HH:MM
+# Combined usage formatter: used%, resets @ HH:MM [⇡ burning fast]
 _usage() {
-  local u="${1:---}" rm="$2" w="$3" epoch="${4:-0}"
+  local u="${1:---}" rm="$2" w="$3" epoch="${4:-0}" _burn=""
   if [[ ! "$u" =~ ^[0-9]+$ ]]; then
     printf "%s" "$u"
-  else
-    if ((u >= 90)); then printf "${R}%d%%${N} ${D}used${N}" "$u"; elif ((u >= 70)); then printf "${Y}%d%%${N} ${D}used${N}" "$u"; else printf "${G}%d%%${N} ${D}used${N}" "$u"; fi
-    if [[ "$rm" =~ ^[0-9]+$ ]] && ((rm <= w)); then
-      # Only surface over-pace (burning faster than expected) — under-pace is noise.
-      local d=$((u - (w - rm) * 100 / w))
-      ((d > 0)) && printf " ${R}⇡ burning fast${N}"
-    fi
+    return
   fi
-  [[ "$rm" =~ ^[0-9]+$ ]] || return
-  # Show absolute clock time. Add day name when reset is not today (e.g. 7d window).
-  if [[ "$epoch" =~ ^[0-9]+$ ]] && ((epoch > NOW)); then
-    local _rt _today _rday _day
-    _rt=$(date -d "@${epoch}" +"%H:%M" 2>/dev/null || date -r "${epoch}" +"%H:%M" 2>/dev/null || echo "")
-    if [[ -n "$_rt" ]]; then
-      _today=$(date +"%Y-%m-%d")
-      _rday=$(date -d "@${epoch}" +"%Y-%m-%d" 2>/dev/null || date -r "${epoch}" +"%Y-%m-%d" 2>/dev/null || echo "")
-      if [[ "$_today" != "$_rday" ]]; then
-        _day=$(date -d "@${epoch}" +"%a %d %b" 2>/dev/null || date -r "${epoch}" +"%a %d %b" 2>/dev/null || echo "")
-        printf "${D}, resets @ %s %s${N}" "$_day" "$_rt"
+  if ((u >= 90)); then printf "${R}%d%%${N} ${D}used${N}" "$u"
+  elif ((u >= 70)); then printf "${Y}%d%%${N} ${D}used${N}" "$u"
+  else printf "${G}%d%%${N} ${D}used${N}" "$u"; fi
+  # Compute burn-fast suffix; emit after the reset time.
+  if [[ "$rm" =~ ^[0-9]+$ ]] && ((rm <= w)); then
+    local d=$((u - (w - rm) * 100 / w))
+    ((d > 0)) && _burn="  ${R}⇡ burning fast${N}"
+  fi
+  if [[ "$rm" =~ ^[0-9]+$ ]]; then
+    # Show absolute clock time. Add day name when reset is not today (e.g. 7d window).
+    if [[ "$epoch" =~ ^[0-9]+$ ]] && ((epoch > NOW)); then
+      local _rt _today _rday _day
+      _rt=$(date -d "@${epoch}" +"%H:%M" 2>/dev/null || date -r "${epoch}" +"%H:%M" 2>/dev/null || echo "")
+      if [[ -n "$_rt" ]]; then
+        _today=$(date +"%Y-%m-%d")
+        _rday=$(date -d "@${epoch}" +"%Y-%m-%d" 2>/dev/null || date -r "${epoch}" +"%Y-%m-%d" 2>/dev/null || echo "")
+        if [[ "$_today" != "$_rday" ]]; then
+          _day=$(date -d "@${epoch}" +"%a %d %b" 2>/dev/null || date -r "${epoch}" +"%a %d %b" 2>/dev/null || echo "")
+          printf "${D}, resets @ %s %s${N}" "$_day" "$_rt"
+        else
+          printf "${D}, resets @ %s${N}" "$_rt"
+        fi
       else
-        printf "${D}, resets @ %s${N}" "$_rt"
+        # Fallback to relative time when date formatting fails.
+        ((rm >= 1440)) && printf " ${D}resets in %dd${N}" $((rm / 1440))
+        ((rm < 1440 && rm >= 60))   && printf " ${D}resets in %dh${N}" $((rm / 60))
+        ((rm < 60))    && printf " ${D}resets in %dm${N}" "$rm"
       fi
-      return
+    else
+      ((rm >= 1440)) && printf " ${D}resets in %dd${N}" $((rm / 1440))
+      ((rm < 1440 && rm >= 60))   && printf " ${D}resets in %dh${N}" $((rm / 60))
+      ((rm < 60))    && printf " ${D}resets in %dm${N}" "$rm"
     fi
   fi
-  # Fallback to relative time when epoch is unavailable or date formatting fails.
-  ((rm >= 1440)) && { printf " ${D}resets in %dd${N}" $((rm / 1440)); return; }
-  ((rm >= 60))   && { printf " ${D}resets in %dh${N}" $((rm / 60));   return; }
-  printf " ${D}resets in %dm${N}" "$rm"
+  printf "%s" "$_burn"
 }
 
 # ── Output Assembly ──
