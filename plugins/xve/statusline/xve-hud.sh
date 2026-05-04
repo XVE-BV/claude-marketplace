@@ -20,7 +20,7 @@ command -v jq >/dev/null || {
 # C=Cyan G=Green Y=Yellow R=Red M=Magenta T=Turquoise D=Light gray (bright black) N=Normal (reset)
 # Store real escape bytes so final output does not need echo -e interpretation.
 # D uses bright-black (\033[90m) instead of the dim attribute (\033[2m) — dim renders unreadable on many terminals.
-C=$'\033[36m' G=$'\033[32m' Y=$'\033[33m' R=$'\033[31m' M=$'\033[35m' T=$'\033[96m' D=$'\033[90m' N=$'\033[0m'
+C=$'\033[36m' G=$'\033[32m' Y=$'\033[33m' R=$'\033[31m' M=$'\033[35m' T=$'\033[96m' D=$'\033[37m' N=$'\033[0m'
 # Cache records use ASCII Unit Separator so legal Git ref names cannot split
 # serialized fields and empty values survive round-trips through read.
 SEP=$'\037'
