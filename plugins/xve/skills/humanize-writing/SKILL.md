@@ -17,7 +17,12 @@ Make text sound like a specific human wrote it. Read `references/ai-patterns-dic
 1. User specified → use it.
 2. User provided a sample → mirror it (sentence length, word choice, punctuation habits, transitions). Disliked samples are equally useful.
 3. Neither → ask:
-   > "What voice? Clear thinker / Casual / Sharp & opinionated / Warm professional / Your own (paste a sample)"
+   > "What voice?
+   > - **Clear thinker** — direct, no decoration, smart person working through an idea
+   > - **Casual** — like telling a friend. Warm, loose, real.
+   > - **Sharp** — strong takes, punchy sentences, zero hedging
+   > - **Warm professional** — credible and polished but still sounds like a person
+   > - **Your voice** — paste a sample and I'll match it"
 4. User says "just do it" → default to **clear thinker** and go.
 
 ## Three passes
@@ -33,6 +38,7 @@ Make text sound like a specific human wrote it. Read `references/ai-patterns-dic
 - Neat paragraph endings → let ≥30% just stop without a tidy conclusion.
 - Inflation of importance ("pivotal", "testament to") → delete. Content speaks for itself.
 - Signposting ("Let's dive in") → drop the announcement, start with the substance.
+- Secondary convergence → when you stop using one AI pattern, don't replace it with another. Vary approaches; sometimes no transition at all.
 
 **Pass 3 — Add human texture.** Apply the selected voice, then: vary sentence length aggressively (short, long, fragment); start some sentences with "And" or "But"; have opinions (remove "it could be argued"); use specific numbers/names/dates over vague claims; leave some thoughts unresolved.
 
@@ -50,8 +56,9 @@ After rewriting: ask "What still makes this obviously AI-generated?" — note 2�
 - [ ] No rhetorical Q+A / inflation of importance / signposting
 - [ ] Sentence length varies; at least one starts with "And" or "But"
 - [ ] Author's opinion is visible; reads like a person, not a press release
+- [ ] Output matches the selected voice
 
-Keep meaning and facts intact. Return the rewrite only; don't explain changes unless asked.
+Keep meaning and facts intact. Don't dumb it down — "human" isn't "simplistic." Return the rewrite only; don't explain changes unless asked.
 
 ---
 *Based on [Wikipedia: Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing), [brandonwise/humanizer](https://github.com/brandonwise/humanizer), [blader/humanizer](https://github.com/blader/humanizer), [lguz/humanize-writing-skill](https://github.com/lguz/humanize-writing-skill). MIT.*
