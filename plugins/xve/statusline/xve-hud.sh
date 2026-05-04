@@ -301,7 +301,7 @@ fi
 L1="${_CFG_PFX}${C}${MODEL} ${EF}${N}${PAD1} ${D}|${N}  ${L1R}"
 
 # Line 2: bar pct% CL | 5h used% ...  7d used% ...
-L2="${D}context:${N} ${BC}${BAR}${N} ${PCT}% ${CL}${PAD2} ${D}|${N}  ${D}hourly:${N} $(_usage "$U5" "$RM5" 300)   ${D}weekly:${N} $(_usage "$U7" "$RM7" 10080)"
+L2="${D}context:${N} ${BC}${BAR}${N} ${PCT}% ${CL}${PAD2} ${D}|${N}  ${D}5h quota:${N} $(_usage "$U5" "$RM5" 300)   ${D}7d quota:${N} $(_usage "$U7" "$RM7" 10080)"
 # Session cost: only when usage data is unavailable in stdin.
 if [[ "$SHOW_COST" == "1" ]]; then
   printf -v _CS "\$%.2f" "$COST" 2>/dev/null
