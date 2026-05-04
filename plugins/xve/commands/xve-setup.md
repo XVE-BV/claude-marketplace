@@ -133,6 +133,25 @@ Not a good fit:
 EOF
 fi
 
+if ! grep -q "## Decisive Thinking" ~/.claude/CLAUDE.md 2>/dev/null; then
+  cat >> ~/.claude/CLAUDE.md << 'EOF'
+
+## Decisive Thinking
+
+When deciding how to approach a problem, choose an approach and commit to it.
+Avoid revisiting decisions unless you encounter new information that directly
+contradicts your reasoning. If weighing two approaches, pick one and see it
+through — you can course-correct later if it fails.
+
+Thinking adds latency and should only be used when it will meaningfully
+improve answer quality. When in doubt, respond directly.
+
+State conclusions, not deliberation. If you reconsider, do it once and move
+on — don't loop. If you catch yourself revisiting the same decision a second
+time, call advisor() before continuing rather than spiraling further.
+EOF
+fi
+
 if ! grep -q "## Coding Guidelines" ~/.claude/CLAUDE.md 2>/dev/null; then
   cat >> ~/.claude/CLAUDE.md << 'EOF'
 
@@ -174,6 +193,7 @@ session-start.sh:     ✓ / ✗
 xve-hud:              ✓ wired / ✗ skipped
 XVE_EMAIL:            ✓ / ✗ not set
 CLAUDE.md advisor:    ✓ written / ✗ skipped (already present)
+CLAUDE.md thinking:   ✓ written / ✗ skipped (already present)
 CLAUDE.md guidelines: ✓ written / ✗ skipped (already present)
 ```
 
