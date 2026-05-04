@@ -174,6 +174,8 @@ BF=$((PCT / 5)); ((BF < 0)) && BF=0; ((BF > 20)) && BF=20
 BR=0; ((REM > 0)) && BR=$((REM / 5))
 ((BF + BR > 20)) && BR=$((20 - BF))
 BB=$((20 - BF - BR)); ((BB < 0)) && BB=0
+# Fresh session (PCT=0, no remaining data yet): show neutral bar instead of all-red ▒
+((PCT == 0 && BR == 0)) && BR=20 && BB=0
 if ((PCT >= 90)); then BC=$R; elif ((PCT >= 70)); then BC=$Y; else BC=$G; fi
 BAR="${BC}"
 for ((i = 0; i < BF; i++)); do BAR+='█'; done
