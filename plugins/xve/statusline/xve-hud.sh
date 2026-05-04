@@ -143,7 +143,7 @@ IFS=$'\t' read -r MODEL DIR PCT CTX COST EFF HAS_RL U5 U7 R5 R7 < <(
     (.rate_limits.five_hour.used_percentage//null|if type=="number" then floor else "--" end),
     (.rate_limits.seven_day.used_percentage//null|if type=="number" then floor else "--" end),
     (.rate_limits.five_hour.resets_at//0),
-    (.rate_limits.seven_day.resets_at//0)]|@tsv' <<<"$input"
+    (.rate_limits.seven_day.resets_at//0)]|@tsv' <<<"$input" | tr -d '\r'
 )
 case "${EFF:-default}" in low) EF='◌' ;; high) EF='◎' ;; xhigh) EF='◉' ;; max) EF='●' ;; *) EF='○' ;; esac
 
@@ -273,7 +273,7 @@ _usage() {
       _today=$(date +"%Y-%m-%d")
       _rday=$(date -d "@${epoch}" +"%Y-%m-%d" 2>/dev/null || date -r "${epoch}" +"%Y-%m-%d" 2>/dev/null || echo "")
       if [[ "$_today" != "$_rday" ]]; then
-        _day=$(date -d "@${epoch}" +"%a" 2>/dev/null || date -r "${epoch}" +"%a" 2>/dev/null || echo "")
+        _day=$(date -d "@${epoch}" +"%a %d %b" 2>/dev/null || date -r "${epoch}" +"%a %d %b" 2>/dev/null || echo "")
         printf "${D}, resets @ %s %s${N}" "$_day" "$_rt"
       else
         printf "${D}, resets @ %s${N}" "$_rt"
@@ -287,47 +287,21 @@ _usage() {
   printf " ${D}resets in %dm${N}" "$rm"
 }
 
-# ── Output Assembly (symmetric single-pipe alignment) ──
+# ── Output Assembly ──
 
-# Configured model prefix (e.g. "opusplan") shown dim before the live model name.
-_CFG_PFX_PLAIN="" _CFG_PFX=""
-if [[ -n "$_cfg_model" ]]; then
-  _CFG_PFX_PLAIN="${_cfg_model}  "
-  _CFG_PFX="${T}${_cfg_model}${N}  "
-fi
+# Configured model prefix (e.g. "opusplan") shown in turquoise before the live model.
+_CFG_PFX=""
+[[ -n "$_cfg_model" ]] && _CFG_PFX="${T}${_cfg_model}${N}  "
 
-# Build plain-text left sections for width measurement (no ANSI codes).
-L1_PLAIN="${_CFG_PFX_PLAIN}${MODEL} ${EF}"
-L2_PLAIN="context window: ${BAR} ${PCT}%${CL:+ of ${CL}} used"
-# Pad shorter side so | aligns on both lines.
-W1=${#L1_PLAIN} W2=${#L2_PLAIN}
-PAD1="" PAD2=""
-if ((W1 > W2)); then
-  printf -v PAD2 "%*s" $((W1 - W2)) ""
-elif ((W2 > W1)); then
-  printf -v PAD1 "%*s" $((W2 - W1)) ""
-fi
-
-# Line 1: [config model]  live model (context) effort | project (branch) git-stats
-L1="${_CFG_PFX}${C}${MODEL} ${EF}${N}${PAD1} ${D}|${N}  ${L1R}"
-
-# Line 2: bar pct% CL | 5h used% ...  7d used% ...
-L2="${D}context window:${N} ${BC}${BAR}${N} ${PCT}%${CL:+ of ${CL}} ${D}used${N}${PAD2} ${D}|${N}  ${D}5h quota:${N} $(_usage "$U5" "$RM5" 300 "$R5")   ${D}7d quota:${N} $(_usage "$U7" "$RM7" 10080 "$R7")"
-# Session cost: only when usage data is unavailable in stdin.
-if [[ "$SHOW_COST" == "1" ]]; then
-  printf -v _CS "\$%.2f" "$COST" 2>/dev/null
-  [[ "$_CS" != "\$0.00" ]] && L2+="  $_CS"
-fi
-
-# ── Handoff urgency banner (XVE) ──
-# Thresholds mirror /help canon: <60 quiet, 60-85 amber, >=85 red.
-# Pace bump: >=50% ctx AND >=+15% pace delta on the 5h window bumps to amber.
+# ── Handoff urgency banner (XVE) — inlined on the context bar line ──
+# Thresholds: <60 quiet, 60-85 amber, >=85 red.
+# Pace bump: >=50% ctx AND >=+15% pace delta on 5h window trips amber early.
 BANNER=""
 if [[ "$PCT" =~ ^[0-9]+$ ]]; then
   _pace_delta_5h=0
   if [[ "$U5" =~ ^[0-9]+$ ]] && [[ "$RM5" =~ ^[0-9]+$ ]]; then
     _elapsed_5h=$((300 - RM5))
-    if ((_elapsed_5h < 0)); then _elapsed_5h=0; fi
+    ((_elapsed_5h < 0)) && _elapsed_5h=0
     _expected_5h=$((_elapsed_5h * 100 / 300))
     _pace_delta_5h=$((U5 - _expected_5h))
   fi
@@ -339,7 +313,20 @@ if [[ "$PCT" =~ ^[0-9]+$ ]]; then
     BANNER="${Y}● handoff soon — /session-handoff${N}"
   fi
 fi
-[ -n "$BANNER" ] && printf '%s\n' "$BANNER"
+
+# Line 1: [config model]  live model effort  |  project (branch) git-stats
+L1="${_CFG_PFX}${C}${MODEL} ${EF}${N}  ${D}|${N}  ${L1R}"
+
+# Line 2: context bar [+ inline handoff banner when triggered]
+L2="${D}context window:${N} ${BC}${BAR}${N} ${PCT}%${CL:+ of ${CL}} ${D}used${N}${BANNER:+  ${BANNER}}"
+
+# Line 3: quota windows [+ session cost when no quota data]
+L3="${D}5h quota:${N} $(_usage "$U5" "$RM5" 300 "$R5")   ${D}7d quota:${N} $(_usage "$U7" "$RM7" 10080 "$R7")"
+if [[ "$SHOW_COST" == "1" ]]; then
+  printf -v _CS "\$%.2f" "$COST" 2>/dev/null
+  [[ "$_CS" != "\$0.00" ]] && L3+="  $_CS"
+fi
 
 printf '%s\n' "$L1"
 printf '%s\n' "$L2"
+printf '%s\n' "$L3"
