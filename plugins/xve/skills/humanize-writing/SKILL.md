@@ -58,7 +58,7 @@ After rewriting: ask "What still makes this obviously AI-generated?" — note 2�
 - [ ] Author's opinion is visible; reads like a person, not a press release
 - [ ] Output matches the selected voice
 
-Keep meaning and facts intact. Don't dumb it down — "human" isn't "simplistic." Return the rewrite only; don't explain changes unless asked.
+Keep meaning and facts intact. Don't dumb it down — "human" isn't "simplistic." Don't over-correct into a different kind of artificiality — forced casualness is just as obvious. Return the rewrite only; don't explain changes unless asked.
 
 ---
 *Based on [Wikipedia: Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing), [brandonwise/humanizer](https://github.com/brandonwise/humanizer), [blader/humanizer](https://github.com/blader/humanizer), [lguz/humanize-writing-skill](https://github.com/lguz/humanize-writing-skill). MIT.*
