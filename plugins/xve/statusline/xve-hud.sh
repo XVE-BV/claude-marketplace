@@ -133,10 +133,11 @@ _stale() { [ ! -f "$1" ] || [ $((NOW - $(stat -f%m "$1" 2>/dev/null || stat -c%Y
 _cfg_eff=$(jq -r '.effortLevel // "default"' ~/.claude/settings.json 2>/dev/null || echo "default")
 _cfg_model=$(jq -r '.model // ""' ~/.claude/settings.json 2>/dev/null || echo "")
 HAS_RL=0
-IFS=$'\t' read -r MODEL DIR PCT CTX COST EFF HAS_RL U5 U7 R5 R7 < <(
+IFS=$'\t' read -r MODEL DIR PCT CTX REM COST EFF HAS_RL U5 U7 R5 R7 < <(
   jq -r --arg cfg_eff "$_cfg_eff" \
     '[(.model.display_name//"?"),(.workspace.project_dir//"."),
     (.context_window.used_percentage//0|floor),(.context_window.context_window_size//0),
+    (.context_window.remaining_percentage//0|floor),
     (.cost.total_cost_usd//0),
     $cfg_eff,
     (if .rate_limits then 1 else 0 end),
@@ -146,12 +147,20 @@ IFS=$'\t' read -r MODEL DIR PCT CTX COST EFF HAS_RL U5 U7 R5 R7 < <(
     (.rate_limits.seven_day.resets_at//0)]|@tsv' <<<"$input" | tr -d '\r'
 )
 
-# ── Context label (needed by MODEL_SHORT and line 2) ──
+# ── Context label and token counts ──
 if ((CTX >= 1000000)); then
   CL="$((CTX / 1000000))M"
 elif ((CTX > 0)); then
   CL="$((CTX / 1000))K"
 else CL=""; fi
+# Tokens used and safe space remaining before auto-compact (from remaining_percentage).
+USED_K="" REM_K=""
+if ((CTX > 0 && PCT > 0)); then
+  USED_K="$((PCT * CTX / 100000))K"
+fi
+if ((CTX > 0 && REM > 0)); then
+  REM_K="$((REM * CTX / 100000))K"
+fi
 
 # ── MODEL_SHORT: strip redundant context label ──
 MODEL=${MODEL/ context)/)}
@@ -316,7 +325,7 @@ fi
 L1="${_CFG_PFX}${C}${MODEL}${N}  ${D}|${N}  ${L1R}"
 
 # Line 2: context bar [+ inline handoff banner when triggered]
-L2="${D}context window:${N} ${BC}${BAR}${N} ${PCT}%${CL:+ of ${CL}} ${D}used${N}${BANNER:+  ${BANNER}}"
+L2="${D}context window:${N} ${BC}${BAR}${N} ${PCT}%${CL:+ of ${CL}} ${D}used${USED_K:+ (${USED_K} tokens)}${REM_K:+ · ${REM_K} safe space left}${N}${BANNER:+  ${BANNER}}"
 
 # Line 3: quota windows [+ session cost when no quota data]
 L3="${D}5h quota:${N} $(_usage "$U5" "$RM5" 300 "$R5")   ${D}7d quota:${N} $(_usage "$U7" "$RM7" 10080 "$R7")"
