@@ -17,9 +17,9 @@ command -v jq >/dev/null || {
 }
 
 # ── Colors & Utilities ──
-# C=Cyan G=Green Y=Yellow R=Red D=Dim N=Normal (reset)
+# C=Cyan G=Green Y=Yellow R=Red M=Magenta D=Dim N=Normal (reset)
 # Store real escape bytes so final output does not need echo -e interpretation.
-C=$'\033[36m' G=$'\033[32m' Y=$'\033[33m' R=$'\033[31m' D=$'\033[2m' N=$'\033[0m'
+C=$'\033[36m' G=$'\033[32m' Y=$'\033[33m' R=$'\033[31m' M=$'\033[35m' D=$'\033[2m' N=$'\033[0m'
 # Cache records use ASCII Unit Separator so legal Git ref names cannot split
 # serialized fields and empty values survive round-trips through read.
 SEP=$'\037'
@@ -259,22 +259,21 @@ _usage() {
   else
     if ((u >= 90)); then printf "${R}%d%%${N} ${D}used${N}" "$u"; elif ((u >= 70)); then printf "${Y}%d%%${N} ${D}used${N}" "$u"; else printf "${G}%d%%${N} ${D}used${N}" "$u"; fi
     if [[ "$rm" =~ ^[0-9]+$ ]] && ((rm <= w)); then
-      # Pace delta: positive = over pace (overspend), negative = under pace (surplus).
+      # Only surface over-pace (burning faster than expected) — under-pace is noise.
       local d=$((u - (w - rm) * 100 / w))
-      ((d > 0)) && printf " ${R}⇡%d%%${N} ${D}pace${N}" "$d"
-      ((d < 0)) && printf " ${G}⇣%d%%${N} ${D}pace${N}" "${d#-}"
+      ((d > 0)) && printf " ${R}⇡ burning fast${N}" "$d"
     fi
   fi
   [[ "$rm" =~ ^[0-9]+$ ]] || return
   ((rm >= 1440)) && {
-    printf " ${D}resets %dd${N}" $((rm / 1440))
+    printf " ${D}resets in %dd${N}" $((rm / 1440))
     return
   }
   ((rm >= 60)) && {
-    printf " ${D}resets %dh${N}" $((rm / 60))
+    printf " ${D}resets in %dh${N}" $((rm / 60))
     return
   }
-  printf " ${D}resets %dm${N}" "$rm"
+  printf " ${D}resets in %dm${N}" "$rm"
 }
 
 # ── Output Assembly (symmetric single-pipe alignment) ──
@@ -283,12 +282,12 @@ _usage() {
 _CFG_PFX_PLAIN="" _CFG_PFX=""
 if [[ -n "$_cfg_model" ]]; then
   _CFG_PFX_PLAIN="${_cfg_model}  "
-  _CFG_PFX="${D}${_cfg_model}${N}  "
+  _CFG_PFX="${M}${_cfg_model}${N}  "
 fi
 
 # Build plain-text left sections for width measurement (no ANSI codes).
 L1_PLAIN="${_CFG_PFX_PLAIN}${MODEL} ${EF}"
-L2_PLAIN="${BAR} ${PCT}% ${CL}"
+L2_PLAIN="context: ${BAR} ${PCT}% ${CL}"
 # Pad shorter side so | aligns on both lines.
 W1=${#L1_PLAIN} W2=${#L2_PLAIN}
 PAD1="" PAD2=""
@@ -302,7 +301,7 @@ fi
 L1="${_CFG_PFX}${C}${MODEL} ${EF}${N}${PAD1} ${D}|${N}  ${L1R}"
 
 # Line 2: bar pct% CL | 5h used% ...  7d used% ...
-L2="${BC}${BAR}${N} ${PCT}% ${CL}${PAD2} ${D}|${N}  ${D}5h:${N} $(_usage "$U5" "$RM5" 300)   ${D}7d:${N} $(_usage "$U7" "$RM7" 10080)"
+L2="${D}context:${N} ${BC}${BAR}${N} ${PCT}% ${CL}${PAD2} ${D}|${N}  ${D}hourly:${N} $(_usage "$U5" "$RM5" 300)   ${D}weekly:${N} $(_usage "$U7" "$RM7" 10080)"
 # Session cost: only when usage data is unavailable in stdin.
 if [[ "$SHOW_COST" == "1" ]]; then
   printf -v _CS "\$%.2f" "$COST" 2>/dev/null
