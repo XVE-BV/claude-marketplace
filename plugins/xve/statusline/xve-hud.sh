@@ -17,9 +17,9 @@ command -v jq >/dev/null || {
 }
 
 # ── Colors & Utilities ──
-# C=Cyan G=Green Y=Yellow R=Red M=Magenta D=Dim N=Normal (reset)
+# C=Cyan G=Green Y=Yellow R=Red M=Magenta T=Turquoise D=Dim N=Normal (reset)
 # Store real escape bytes so final output does not need echo -e interpretation.
-C=$'\033[36m' G=$'\033[32m' Y=$'\033[33m' R=$'\033[31m' M=$'\033[35m' D=$'\033[2m' N=$'\033[0m'
+C=$'\033[36m' G=$'\033[32m' Y=$'\033[33m' R=$'\033[31m' M=$'\033[35m' T=$'\033[96m' D=$'\033[2m' N=$'\033[0m'
 # Cache records use ASCII Unit Separator so legal Git ref names cannot split
 # serialized fields and empty values survive round-trips through read.
 SEP=$'\037'
@@ -282,7 +282,7 @@ _usage() {
 _CFG_PFX_PLAIN="" _CFG_PFX=""
 if [[ -n "$_cfg_model" ]]; then
   _CFG_PFX_PLAIN="${_cfg_model}  "
-  _CFG_PFX="${M}${_cfg_model}${N}  "
+  _CFG_PFX="${T}${_cfg_model}${N}  "
 fi
 
 # Build plain-text left sections for width measurement (no ANSI codes).
