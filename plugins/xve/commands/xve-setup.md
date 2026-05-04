@@ -190,6 +190,17 @@ if ! grep -q "## Coding Guidelines" ~/.claude/CLAUDE.md 2>/dev/null; then
 EOF
 fi
 
+if ! grep -q "## Review Mindset" ~/.claude/CLAUDE.md 2>/dev/null; then
+  cat >> ~/.claude/CLAUDE.md << 'EOF'
+
+## Review Mindset
+
+Treat every output — code, prose, decisions — as if a senior engineer will review it line by line and catch sloppy work. Not a hypothetical: assume it.
+
+This isn't about being defensive or hedging. It's about the bar: would this hold up under scrutiny by someone who knows the domain better than you? If not, fix it before shipping.
+EOF
+fi
+
 if ! grep -q "## Writing Guidelines" ~/.claude/CLAUDE.md 2>/dev/null; then
   cat >> ~/.claude/CLAUDE.md << 'EOF'
 
@@ -232,6 +243,7 @@ XVE_EMAIL:            ✓ / ✗ not set
 CLAUDE.md advisor:    ✓ written / ↩ already present (re-run = check for updates)
 CLAUDE.md thinking:   ✓ written / ↩ already present (re-run = check for updates)
 CLAUDE.md guidelines: ✓ written / ↩ already present (re-run = check for updates)
+CLAUDE.md review:     ✓ written / ↩ already present (re-run = check for updates)
 CLAUDE.md writing:    ✓ written / ↩ already present (re-run = check for updates)
 ```
 
