@@ -105,13 +105,37 @@ Other env vars (optional — mention, don't prompt):
 
 ## Step 6 — Write guidance to CLAUDE.md
 
-Append best practices to `~/.claude/CLAUDE.md`. Each block checks if the section already exists before writing.
+Force-overwrite the xve-managed sections in `~/.claude/CLAUDE.md` with the latest canonical versions. A timestamped backup is taken first so the user can recover any local edits.
 
-**Re-run signal:** If any sections already exist and the user is running setup again, that's a signal the plugin was updated. Tell them: "Some sections already present — re-running setup suggests there may be updates. Open `~/.claude/CLAUDE.md` and compare your existing sections against the current plugin version to pick up any changes."
+**Behavior:** On every run — first install or re-run — managed sections are stripped and replaced with the canonical versions below. Any user edits inside those sections will be overwritten (they live in the `.bak` file). Sections outside this set are left untouched.
 
 ```bash
-if ! grep -q "## Advisor" ~/.claude/CLAUDE.md 2>/dev/null; then
-  cat >> ~/.claude/CLAUDE.md << 'EOF'
+CLAUDE_MD="$HOME/.claude/CLAUDE.md"
+touch "$CLAUDE_MD"
+
+# Always back up first so user can recover local edits.
+BACKUP="$HOME/.claude/CLAUDE.md.bak.$(date +%Y%m%d-%H%M%S)"
+cp "$CLAUDE_MD" "$BACKUP"
+echo "Backup: $BACKUP"
+
+# Strip every xve-managed section (## Heading until next ## or EOF).
+awk '
+  BEGIN {
+    managed["## Advisor"] = 1
+    managed["## LLM Council"] = 1
+    managed["## Decisive Thinking"] = 1
+    managed["## Coding Guidelines"] = 1
+    managed["## Review Mindset"] = 1
+    managed["## Writing Guidelines"] = 1
+    in_strip = 0
+  }
+  $0 in managed { in_strip = 1; next }
+  in_strip && /^## / { in_strip = 0 }
+  !in_strip { print }
+' "$CLAUDE_MD" > "$CLAUDE_MD.tmp" && mv "$CLAUDE_MD.tmp" "$CLAUDE_MD"
+
+# Append all canonical sections in one heredoc.
+cat >> "$CLAUDE_MD" << 'EOF'
 
 ## Advisor
 
@@ -138,11 +162,6 @@ Not a good fit:
 - Factual lookups — just ask directly
 - Creation tasks (write a tweet, summarise this)
 - Already decided — don't run council to validate
-EOF
-fi
-
-if ! grep -q "## Decisive Thinking" ~/.claude/CLAUDE.md 2>/dev/null; then
-  cat >> ~/.claude/CLAUDE.md << 'EOF'
 
 ## Decisive Thinking
 
@@ -157,11 +176,6 @@ improve answer quality. When in doubt, respond directly.
 State conclusions, not deliberation. If you reconsider, do it once and move
 on — don't loop. If you catch yourself revisiting the same decision a second
 time, call advisor() before continuing rather than spiraling further.
-EOF
-fi
-
-if ! grep -q "## Coding Guidelines" ~/.claude/CLAUDE.md 2>/dev/null; then
-  cat >> ~/.claude/CLAUDE.md << 'EOF'
 
 ## Coding Guidelines
 
@@ -187,22 +201,12 @@ if ! grep -q "## Coding Guidelines" ~/.claude/CLAUDE.md 2>/dev/null; then
 - Transform tasks into verifiable goals before starting.
 - For multi-step tasks, state a brief plan with verification steps.
 - Define success criteria upfront so you can loop independently.
-EOF
-fi
-
-if ! grep -q "## Review Mindset" ~/.claude/CLAUDE.md 2>/dev/null; then
-  cat >> ~/.claude/CLAUDE.md << 'EOF'
 
 ## Review Mindset
 
 Treat every output — code, prose, decisions — as if a senior engineer will review it line by line and catch sloppy work. Not a hypothetical: assume it.
 
 This isn't about being defensive or hedging. It's about the bar: would this hold up under scrutiny by someone who knows the domain better than you? If not, fix it before shipping.
-EOF
-fi
-
-if ! grep -q "## Writing Guidelines" ~/.claude/CLAUDE.md 2>/dev/null; then
-  cat >> ~/.claude/CLAUDE.md << 'EOF'
 
 ## Writing Guidelines
 
@@ -226,7 +230,8 @@ Write like a human, not a language model. These rules apply to all output — re
 - Start some sentences with "And" or "But."
 - Don't dumb it down. "Human" isn't "simplistic."
 EOF
-fi
+
+echo "Updated CLAUDE.md sections. Old version: $BACKUP"
 ```
 
 ## Step 7 — Summary
@@ -240,11 +245,7 @@ env-guard.sh:         ✓ / ✗
 writing-guard.sh:     ✓ / ✗
 xve-hud:              ✓ wired / ✗ skipped
 XVE_EMAIL:            ✓ / ✗ not set
-CLAUDE.md advisor:    ✓ written / ↩ already present (re-run = check for updates)
-CLAUDE.md thinking:   ✓ written / ↩ already present (re-run = check for updates)
-CLAUDE.md guidelines: ✓ written / ↩ already present (re-run = check for updates)
-CLAUDE.md review:     ✓ written / ↩ already present (re-run = check for updates)
-CLAUDE.md writing:    ✓ written / ↩ already present (re-run = check for updates)
+CLAUDE.md sections:   ✓ refreshed (backup: ~/.claude/CLAUDE.md.bak.<timestamp>)
 ```
 
 ## Step 8 — Open the guide
