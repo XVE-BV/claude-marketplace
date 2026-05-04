@@ -330,9 +330,9 @@ if [[ "$PCT" =~ ^[0-9]+$ ]]; then
   if ((PCT >= 85)); then
     BANNER="${R}● handoff NOW — auto-compact imminent${N}"
   elif ((PCT >= 60)); then
-    BANNER="${Y}● handoff soon — /session-handoff${N}"
+    BANNER="${Y}● handoff soon — /xve:session-handoff${N}"
   elif ((PCT >= 50)) && ((_pace_delta_5h >= 15)); then
-    BANNER="${Y}● handoff soon — /session-handoff${N}"
+    BANNER="${Y}● handoff soon — /xve:session-handoff${N}"
   fi
 fi
 
