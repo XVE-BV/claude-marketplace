@@ -99,7 +99,9 @@ Other env vars (optional — mention, don't prompt):
 
 ## Step 6 — Write guidance to CLAUDE.md
 
-Append best practices to `~/.claude/CLAUDE.md`. Each block is idempotent — skip if the section already exists.
+Append best practices to `~/.claude/CLAUDE.md`. Each block checks if the section already exists before writing.
+
+**Re-run signal:** If any sections already exist and the user is running setup again, that's a signal the plugin was updated. Tell them: "Some sections already present — re-running setup suggests there may be updates. Open `~/.claude/CLAUDE.md` and compare your existing sections against the current plugin version to pick up any changes."
 
 ```bash
 if ! grep -q "## Advisor" ~/.claude/CLAUDE.md 2>/dev/null; then
@@ -181,6 +183,33 @@ if ! grep -q "## Coding Guidelines" ~/.claude/CLAUDE.md 2>/dev/null; then
 - Define success criteria upfront so you can loop independently.
 EOF
 fi
+
+if ! grep -q "## Writing Guidelines" ~/.claude/CLAUDE.md 2>/dev/null; then
+  cat >> ~/.claude/CLAUDE.md << 'EOF'
+
+## Writing Guidelines
+
+Write like a human, not a language model. These rules apply to all output — responses, docs, messages, anything.
+
+**Banned vocabulary (never use):** delve, tapestry, landscape (abstract), pivotal, underscore (verb), testament, meticulous, nuanced, multifaceted, embark, spearhead, bolster, garner, realm, robust, seamless, groundbreaking, transformative, paramount, myriad, cornerstone, catalyst, nestled, bustling, vibrant, comprehensive, invaluable, reimagine, empower.
+
+**Structural tells to avoid:**
+- Em dashes as a stylistic habit — use commas, periods, or parentheses instead. Max one per 500 words.
+- Parallel negation: "Not X, but Y" → just state the positive.
+- Rule of three: forcing ideas into trios. Pick one or two.
+- Inflation of importance: "pivotal moment", "testament to", "crucial development" → delete. State facts.
+- Signposting: "Let's dive in", "Here's what you need to know" → drop it, start with the substance.
+- Neat endings on every paragraph → let some thoughts just stop.
+- Sycophantic openers: "Great question!", "Certainly!" → cut entirely.
+
+**Always do:**
+- Vary sentence length. Short. Then a longer one. Then a fragment. AI writes at a steady rhythm; don't.
+- Have opinions. Remove "it could be argued" and say the thing.
+- Use specific details — numbers, names, dates — over vague claims.
+- Start some sentences with "And" or "But."
+- Don't dumb it down. "Human" isn't "simplistic."
+EOF
+fi
 ```
 
 ## Step 7 — Summary
@@ -192,9 +221,10 @@ settings.json:        ✓ applied
 session-start.sh:     ✓ / ✗
 xve-hud:              ✓ wired / ✗ skipped
 XVE_EMAIL:            ✓ / ✗ not set
-CLAUDE.md advisor:    ✓ written / ✗ skipped (already present)
-CLAUDE.md thinking:   ✓ written / ✗ skipped (already present)
-CLAUDE.md guidelines: ✓ written / ✗ skipped (already present)
+CLAUDE.md advisor:    ✓ written / ↩ already present (re-run = check for updates)
+CLAUDE.md thinking:   ✓ written / ↩ already present (re-run = check for updates)
+CLAUDE.md guidelines: ✓ written / ↩ already present (re-run = check for updates)
+CLAUDE.md writing:    ✓ written / ↩ already present (re-run = check for updates)
 ```
 
 ## Step 8 — Open the guide
