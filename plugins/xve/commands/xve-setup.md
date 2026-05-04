@@ -33,6 +33,7 @@ Ask the user:
 > "Install session hooks? These run automatically on every Claude session:
 > - **session-start.sh** — injects context at session start (enables/disables advisor via env vars)
 > - **env-guard.sh** — blocks Claude from reading/executing .env files via any tool
+> - **writing-guard.sh** — Stop hook; flags AI writing tells (em dashes, banned vocab) and asks Claude to revise. Safety net behind the CLAUDE.md Writing Guidelines.
 >
 > Install? [Y/n]"
 
@@ -44,12 +45,17 @@ chmod +x ~/.claude/session-start.sh
 curl -fsSL https://raw.githubusercontent.com/XVE-BV/claude-marketplace/main/hooks/env-guard.sh \
   -o ~/.claude/env-guard.sh 2>/dev/null || cp "$REPO_DIR/hooks/env-guard.sh" ~/.claude/env-guard.sh
 chmod +x ~/.claude/env-guard.sh
+
+cp "$REPO_DIR/hooks/writing-guard.sh" ~/.claude/writing-guard.sh
+chmod +x ~/.claude/writing-guard.sh
 ```
 
 `session-start.sh` injects context at session start based on env vars:
 - `DISABLE_ADVISOR=1` → blocks advisor() calls
 
 `env-guard.sh` is a PreToolUse hook that blocks access to `.env` files via `Read`/`Edit`/`Write` and any bash command referencing `.env`. Deny rules in settings.json alone are insufficient — this hook is the actual gate.
+
+`writing-guard.sh` is a Stop hook that scans Claude's last response for AI writing tells (banned vocabulary, em dash overuse, AI phrases). When violations are found in prose responses over 150 words, it blocks the stop and forces Claude to revise. Note: this fires *after* the original response is already on screen — Claude posts a corrected version in a follow-up turn. The `## Writing Guidelines` block in CLAUDE.md is the primary prevention; this hook is the safety net. Requires `jq`.
 
 ## Step 4 — Install xve-hud statusline (confirm first)
 
@@ -219,6 +225,8 @@ XVE Claude Code Setup
 ─────────────────────
 settings.json:        ✓ applied
 session-start.sh:     ✓ / ✗
+env-guard.sh:         ✓ / ✗
+writing-guard.sh:     ✓ / ✗
 xve-hud:              ✓ wired / ✗ skipped
 XVE_EMAIL:            ✓ / ✗ not set
 CLAUDE.md advisor:    ✓ written / ↩ already present (re-run = check for updates)
