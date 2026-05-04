@@ -129,8 +129,9 @@ _stale() { [ ! -f "$1" ] || [ $((NOW - $(stat -f%m "$1" 2>/dev/null || stat -c%Y
 
 # ── Parse stdin + settings in one jq call ──
 # Fields: MODEL DIR PCT CTX COST EFF HAS_RL U5 U7 R5 R7
-# Pre-read effortLevel to avoid --slurpfile process substitution (no /proc on Windows).
+# Pre-read settings to avoid --slurpfile process substitution (no /proc on Windows).
 _cfg_eff=$(jq -r '.effortLevel // "default"' ~/.claude/settings.json 2>/dev/null || echo "default")
+_cfg_model=$(jq -r '.model // ""' ~/.claude/settings.json 2>/dev/null || echo "")
 HAS_RL=0
 IFS=$'\t' read -r MODEL DIR PCT CTX COST EFF HAS_RL U5 U7 R5 R7 < <(
   jq -r --arg cfg_eff "$_cfg_eff" \
@@ -278,8 +279,15 @@ _usage() {
 
 # ── Output Assembly (symmetric single-pipe alignment) ──
 
+# Configured model prefix (e.g. "opusplan") shown dim before the live model name.
+_CFG_PFX_PLAIN="" _CFG_PFX=""
+if [[ -n "$_cfg_model" ]]; then
+  _CFG_PFX_PLAIN="${_cfg_model}  "
+  _CFG_PFX="${D}${_cfg_model}${N}  "
+fi
+
 # Build plain-text left sections for width measurement (no ANSI codes).
-L1_PLAIN="${MODEL} ${EF}"
+L1_PLAIN="${_CFG_PFX_PLAIN}${MODEL} ${EF}"
 L2_PLAIN="${BAR} ${PCT}% ${CL}"
 # Pad shorter side so | aligns on both lines.
 W1=${#L1_PLAIN} W2=${#L2_PLAIN}
@@ -290,8 +298,8 @@ elif ((W2 > W1)); then
   printf -v PAD1 "%*s" $((W2 - W1)) ""
 fi
 
-# Line 1: model (context) effort | project (branch) git-stats
-L1="${C}${MODEL} ${EF}${N}${PAD1} ${D}|${N}  ${L1R}"
+# Line 1: [config model]  live model (context) effort | project (branch) git-stats
+L1="${_CFG_PFX}${C}${MODEL} ${EF}${N}${PAD1} ${D}|${N}  ${L1R}"
 
 # Line 2: bar pct% CL | 5h used% ...  7d used% ...
 L2="${BC}${BAR}${N} ${PCT}% ${CL}${PAD2} ${D}|${N}  ${D}5h:${N} $(_usage "$U5" "$RM5" 300)   ${D}7d:${N} $(_usage "$U7" "$RM7" 10080)"
