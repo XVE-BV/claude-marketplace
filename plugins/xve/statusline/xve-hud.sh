@@ -168,14 +168,18 @@ MODEL=${MODEL/ context)/)}
 # Truncate long model names to keep padding within 0-5 chars.
 ((${#MODEL} > 30)) && MODEL="${MODEL:0:29}…"
 
-# ── Progress Bar ──
-F=$((PCT / 10))
-((F < 0)) && F=0
-((F > 10)) && F=10
+# ── Progress Bar (3 zones: used █ | safe space ░ | compact buffer ▒) ──
+BF=$((PCT / 10)); ((BF < 0)) && BF=0; ((BF > 10)) && BF=10
+BR=0; ((REM > 0)) && BR=$((REM / 10))
+((BF + BR > 10)) && BR=$((10 - BF))
+BB=$((10 - BF - BR)); ((BB < 0)) && BB=0
 if ((PCT >= 90)); then BC=$R; elif ((PCT >= 70)); then BC=$Y; else BC=$G; fi
-BAR=""
-for ((i = 0; i < F; i++)); do BAR+='█'; done
-for ((i = F; i < 10; i++)); do BAR+='░'; done
+BAR="${BC}"
+for ((i = 0; i < BF; i++)); do BAR+='█'; done
+BAR+="${N}${D}"
+for ((i = 0; i < BR; i++)); do BAR+='░'; done
+((BB > 0)) && { BAR+="${N}${R}"; for ((i = 0; i < BB; i++)); do BAR+='▒'; done; }
+BAR+="${N}"
 
 # ── Git Info (5s cache, atomic write) ──
 # Cache key encodes DIR so concurrent sessions in different repos don't clash.
@@ -325,7 +329,7 @@ fi
 L1="${_CFG_PFX}${C}${MODEL}${N}  ${D}|${N}  ${L1R}"
 
 # Line 2: context bar [+ inline handoff banner when triggered]
-L2="${D}context window:${N} ${BC}${BAR}${N} ${PCT}%${CL:+ of ${CL}} ${D}used${USED_K:+ (${USED_K} tokens)}${REM_K:+ · ${REM_K} safe space left}${N}${BANNER:+  ${BANNER}}"
+L2="${D}context window:${N} ${BAR} ${PCT}%${CL:+ of ${CL}}${REM_K:+ · ${D}${REM_K} safe${N}}${BANNER:+  ${BANNER}}"
 
 # Line 3: quota windows [+ session cost when no quota data]
 L3="${D}5h quota:${N} $(_usage "$U5" "$RM5" 300 "$R5")   ${D}7d quota:${N} $(_usage "$U7" "$RM7" 10080 "$R7")"
