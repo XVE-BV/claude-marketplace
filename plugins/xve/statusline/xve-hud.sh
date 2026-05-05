@@ -256,24 +256,24 @@ _usage() {
   if [[ ! "$u" =~ ^[0-9]+$ ]]; then
     printf "%s" "$u"
   else
-    if ((u >= 90)); then printf "${R}%d%%${N}" "$u"; elif ((u >= 70)); then printf "${Y}%d%%${N}" "$u"; else printf "${G}%d%%${N}" "$u"; fi
+    if ((u >= 90)); then printf "${R}%d%%${N} ${D}used${N}" "$u"; elif ((u >= 70)); then printf "${Y}%d%%${N} ${D}used${N}" "$u"; else printf "${G}%d%%${N} ${D}used${N}" "$u"; fi
     if [[ "$rm" =~ ^[0-9]+$ ]] && ((rm <= w)); then
       # Pace delta: positive = over pace (overspend), negative = under pace (surplus).
       local d=$((u - (w - rm) * 100 / w))
-      ((d > 0)) && printf " ${R}⇡%d%%${N}" "$d"
-      ((d < 0)) && printf " ${G}⇣%d%%${N}" "${d#-}"
+      ((d > 0)) && printf " ${R}⇡%d%%${N} ${D}pace${N}" "$d"
+      ((d < 0)) && printf " ${G}⇣%d%%${N} ${D}pace${N}" "${d#-}"
     fi
   fi
   [[ "$rm" =~ ^[0-9]+$ ]] || return
   ((rm >= 1440)) && {
-    printf " ${D}%dd${N}" $((rm / 1440))
+    printf " ${D}resets %dd${N}" $((rm / 1440))
     return
   }
   ((rm >= 60)) && {
-    printf " ${D}%dh${N}" $((rm / 60))
+    printf " ${D}resets %dh${N}" $((rm / 60))
     return
   }
-  printf " ${D}%dm${N}" "$rm"
+  printf " ${D}resets %dm${N}" "$rm"
 }
 
 # ── Output Assembly (symmetric single-pipe alignment) ──
@@ -294,7 +294,7 @@ fi
 L1="${C}${MODEL} ${EF}${N}${PAD1} ${D}|${N}  ${L1R}"
 
 # Line 2: bar pct% CL | 5h used% ...  7d used% ...
-L2="${BC}${BAR}${N} ${PCT}% ${CL}${PAD2} ${D}|${N}  5h $(_usage "$U5" "$RM5" 300)  7d $(_usage "$U7" "$RM7" 10080)"
+L2="${BC}${BAR}${N} ${PCT}% ${CL}${PAD2} ${D}|${N}  ${D}5h:${N} $(_usage "$U5" "$RM5" 300)   ${D}7d:${N} $(_usage "$U7" "$RM7" 10080)"
 # Session cost: only when usage data is unavailable in stdin.
 if [[ "$SHOW_COST" == "1" ]]; then
   printf -v _CS "\$%.2f" "$COST" 2>/dev/null
