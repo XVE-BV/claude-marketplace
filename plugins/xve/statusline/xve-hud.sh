@@ -129,13 +129,15 @@ _stale() { [ ! -f "$1" ] || [ $((NOW - $(stat -f%m "$1" 2>/dev/null || stat -c%Y
 
 # ── Parse stdin + settings in one jq call ──
 # Fields: MODEL DIR PCT CTX COST EFF HAS_RL U5 U7 R5 R7
+# Pre-read effortLevel to avoid --slurpfile process substitution (no /proc on Windows).
+_cfg_eff=$(jq -r '.effortLevel // "default"' ~/.claude/settings.json 2>/dev/null || echo "default")
 HAS_RL=0
 IFS=$'\t' read -r MODEL DIR PCT CTX COST EFF HAS_RL U5 U7 R5 R7 < <(
-  jq -r --slurpfile cfg <(cat ~/.claude/settings.json 2>/dev/null || echo '{}') \
+  jq -r --arg cfg_eff "$_cfg_eff" \
     '[(.model.display_name//"?"),(.workspace.project_dir//"."),
     (.context_window.used_percentage//0|floor),(.context_window.context_window_size//0),
     (.cost.total_cost_usd//0),
-    ($cfg[0].effortLevel//"default"),
+    $cfg_eff,
     (if .rate_limits then 1 else 0 end),
     (.rate_limits.five_hour.used_percentage//null|if type=="number" then floor else "--" end),
     (.rate_limits.seven_day.used_percentage//null|if type=="number" then floor else "--" end),
