@@ -331,13 +331,16 @@ L1="${_CFG_PFX}${C}${MODEL}${N}  ${D}|${N}  ${L1R}"
 # Line 2: context bar [+ inline handoff banner when triggered]
 L2="${D}context window:${N} ${BAR} ${PCT}%${CL:+ of ${CL}}${REM_K:+ · ${D}${REM_K} safe${N}}${BANNER:+  ${BANNER}}"
 
-# Line 3: quota windows [+ session cost when no quota data]
-L3="${D}5h quota:${N} $(_usage "$U5" "$RM5" 300 "$R5")   ${D}7d quota:${N} $(_usage "$U7" "$RM7" 10080 "$R7")"
+# Line 3: 5h quota window
+L3="${D}5h quota:${N} $(_usage "$U5" "$RM5" 300 "$R5")"
+# Line 4: 7d quota window [+ session cost when no quota data]
+L4="${D}7d quota:${N} $(_usage "$U7" "$RM7" 10080 "$R7")"
 if [[ "$SHOW_COST" == "1" ]]; then
   printf -v _CS "\$%.2f" "$COST" 2>/dev/null
-  [[ "$_CS" != "\$0.00" ]] && L3+="  $_CS"
+  [[ "$_CS" != "\$0.00" ]] && L4+="  $_CS"
 fi
 
 printf '%s\n' "$L1"
 printf '%s\n' "$L2"
 printf '%s\n' "$L3"
+printf '%s\n' "$L4"
