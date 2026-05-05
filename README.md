@@ -18,10 +18,13 @@ claude plugin marketplace add https://github.com/XVE-BV/claude-marketplace.git
 claude plugin install xve@xve-claude-marketplace
 ```
 
+open claude in terminal.
+
 **Step 3 — Run setup** ([read what this does first](docs/xve-setup.md))**:**
 
+type
 ```
-/xve-setup
+/xve-setup # and enter
 ```
 
 Claude will ask for your email and guide you through the rest.
