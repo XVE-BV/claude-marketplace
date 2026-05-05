@@ -198,6 +198,7 @@ fi
 # ── Project Name + Line 1 Right Section ──
 # Extract project name. Worktree: save repo name explicitly.
 PN="${DIR##*/}"
+PN="${PN##*\\}"  # handle Windows backslash paths
 IS_WT=0 _REPO=""
 if [[ "${DIR/#$HOME/\~}" =~ /([^/]+)/\.claude/worktrees/([^/]+) ]]; then
   IS_WT=1
