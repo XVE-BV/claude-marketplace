@@ -287,7 +287,7 @@ fi
 
 # Build plain-text left sections for width measurement (no ANSI codes).
 L1_PLAIN="${_CFG_PFX_PLAIN}${MODEL} ${EF}"
-L2_PLAIN="context: ${BAR} ${PCT}% ${CL}"
+L2_PLAIN="context window: ${BAR} ${PCT}%${CL:+ of ${CL}} used"
 # Pad shorter side so | aligns on both lines.
 W1=${#L1_PLAIN} W2=${#L2_PLAIN}
 PAD1="" PAD2=""
@@ -301,7 +301,7 @@ fi
 L1="${_CFG_PFX}${C}${MODEL} ${EF}${N}${PAD1} ${D}|${N}  ${L1R}"
 
 # Line 2: bar pct% CL | 5h used% ...  7d used% ...
-L2="${D}context:${N} ${BC}${BAR}${N} ${PCT}% ${CL}${PAD2} ${D}|${N}  ${D}5h quota:${N} $(_usage "$U5" "$RM5" 300)   ${D}7d quota:${N} $(_usage "$U7" "$RM7" 10080)"
+L2="${D}context window:${N} ${BC}${BAR}${N} ${PCT}%${CL:+ of ${CL}} ${D}used${N}${PAD2} ${D}|${N}  ${D}5h quota:${N} $(_usage "$U5" "$RM5" 300)   ${D}7d quota:${N} $(_usage "$U7" "$RM7" 10080)"
 # Session cost: only when usage data is unavailable in stdin.
 if [[ "$SHOW_COST" == "1" ]]; then
   printf -v _CS "\$%.2f" "$COST" 2>/dev/null
