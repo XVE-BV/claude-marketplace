@@ -251,9 +251,9 @@ else
   fi
 fi
 
-# Combined usage formatter: used% [pace delta] (countdown)
+# Combined usage formatter: used% [pace delta], resets @ HH:MM
 _usage() {
-  local u="${1:---}" rm="$2" w="$3"
+  local u="${1:---}" rm="$2" w="$3" epoch="${4:-0}"
   if [[ ! "$u" =~ ^[0-9]+$ ]]; then
     printf "%s" "$u"
   else
@@ -261,18 +261,29 @@ _usage() {
     if [[ "$rm" =~ ^[0-9]+$ ]] && ((rm <= w)); then
       # Only surface over-pace (burning faster than expected) — under-pace is noise.
       local d=$((u - (w - rm) * 100 / w))
-      ((d > 0)) && printf " ${R}⇡ burning fast${N}" "$d"
+      ((d > 0)) && printf " ${R}⇡ burning fast${N}"
     fi
   fi
   [[ "$rm" =~ ^[0-9]+$ ]] || return
-  ((rm >= 1440)) && {
-    printf " ${D}resets in %dd${N}" $((rm / 1440))
-    return
-  }
-  ((rm >= 60)) && {
-    printf " ${D}resets in %dh${N}" $((rm / 60))
-    return
-  }
+  # Show absolute clock time. Add day name when reset is not today (e.g. 7d window).
+  if [[ "$epoch" =~ ^[0-9]+$ ]] && ((epoch > NOW)); then
+    local _rt _today _rday _day
+    _rt=$(date -d "@${epoch}" +"%H:%M" 2>/dev/null || date -r "${epoch}" +"%H:%M" 2>/dev/null || echo "")
+    if [[ -n "$_rt" ]]; then
+      _today=$(date +"%Y-%m-%d")
+      _rday=$(date -d "@${epoch}" +"%Y-%m-%d" 2>/dev/null || date -r "${epoch}" +"%Y-%m-%d" 2>/dev/null || echo "")
+      if [[ "$_today" != "$_rday" ]]; then
+        _day=$(date -d "@${epoch}" +"%a" 2>/dev/null || date -r "${epoch}" +"%a" 2>/dev/null || echo "")
+        printf "${D}, resets @ %s %s${N}" "$_day" "$_rt"
+      else
+        printf "${D}, resets @ %s${N}" "$_rt"
+      fi
+      return
+    fi
+  fi
+  # Fallback to relative time when epoch is unavailable or date formatting fails.
+  ((rm >= 1440)) && { printf " ${D}resets in %dd${N}" $((rm / 1440)); return; }
+  ((rm >= 60))   && { printf " ${D}resets in %dh${N}" $((rm / 60));   return; }
   printf " ${D}resets in %dm${N}" "$rm"
 }
 
@@ -301,7 +312,7 @@ fi
 L1="${_CFG_PFX}${C}${MODEL} ${EF}${N}${PAD1} ${D}|${N}  ${L1R}"
 
 # Line 2: bar pct% CL | 5h used% ...  7d used% ...
-L2="${D}context window:${N} ${BC}${BAR}${N} ${PCT}%${CL:+ of ${CL}} ${D}used${N}${PAD2} ${D}|${N}  ${D}5h quota:${N} $(_usage "$U5" "$RM5" 300)   ${D}7d quota:${N} $(_usage "$U7" "$RM7" 10080)"
+L2="${D}context window:${N} ${BC}${BAR}${N} ${PCT}%${CL:+ of ${CL}} ${D}used${N}${PAD2} ${D}|${N}  ${D}5h quota:${N} $(_usage "$U5" "$RM5" 300 "$R5")   ${D}7d quota:${N} $(_usage "$U7" "$RM7" 10080 "$R7")"
 # Session cost: only when usage data is unavailable in stdin.
 if [[ "$SHOW_COST" == "1" ]]; then
   printf -v _CS "\$%.2f" "$COST" 2>/dev/null
