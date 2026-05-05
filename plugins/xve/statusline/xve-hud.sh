@@ -168,11 +168,11 @@ MODEL=${MODEL/ context)/)}
 # Truncate long model names to keep padding within 0-5 chars.
 ((${#MODEL} > 30)) && MODEL="${MODEL:0:29}…"
 
-# ── Progress Bar (3 zones: used █ | safe space ░ | compact buffer ▒) ──
-BF=$((PCT / 10)); ((BF < 0)) && BF=0; ((BF > 10)) && BF=10
-BR=0; ((REM > 0)) && BR=$((REM / 10))
-((BF + BR > 10)) && BR=$((10 - BF))
-BB=$((10 - BF - BR)); ((BB < 0)) && BB=0
+# ── Progress Bar (3 zones, 20 blocks: used █ | safe space ░ | compact buffer ▒) ──
+BF=$((PCT / 5)); ((BF < 0)) && BF=0; ((BF > 20)) && BF=20
+BR=0; ((REM > 0)) && BR=$((REM / 5))
+((BF + BR > 20)) && BR=$((20 - BF))
+BB=$((20 - BF - BR)); ((BB < 0)) && BB=0
 if ((PCT >= 90)); then BC=$R; elif ((PCT >= 70)); then BC=$Y; else BC=$G; fi
 BAR="${BC}"
 for ((i = 0; i < BF; i++)); do BAR+='█'; done
