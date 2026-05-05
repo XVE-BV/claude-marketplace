@@ -145,7 +145,6 @@ IFS=$'\t' read -r MODEL DIR PCT CTX COST EFF HAS_RL U5 U7 R5 R7 < <(
     (.rate_limits.five_hour.resets_at//0),
     (.rate_limits.seven_day.resets_at//0)]|@tsv' <<<"$input" | tr -d '\r'
 )
-case "${EFF:-default}" in low) EF='◌' ;; high) EF='◎' ;; xhigh) EF='◉' ;; max) EF='●' ;; *) EF='○' ;; esac
 
 # ── Context label (needed by MODEL_SHORT and line 2) ──
 if ((CTX >= 1000000)); then
@@ -158,8 +157,7 @@ else CL=""; fi
 MODEL=${MODEL/ context)/)}
 [[ "$CTX" -gt 0 && "$MODEL" != *"("* ]] && MODEL="${MODEL} (${CL})"
 # Truncate long model names to keep padding within 0-5 chars.
-_ML="${MODEL} ${EF}"
-((${#_ML} > 22)) && MODEL="${MODEL:0:$((22 - 2 - ${#EF}))}…"
+((${#MODEL} > 30)) && MODEL="${MODEL:0:29}…"
 
 # ── Progress Bar ──
 F=$((PCT / 10))
@@ -315,7 +313,7 @@ if [[ "$PCT" =~ ^[0-9]+$ ]]; then
 fi
 
 # Line 1: [config model]  live model effort  |  project (branch) git-stats
-L1="${_CFG_PFX}${C}${MODEL} ${EF}${N}  ${D}|${N}  ${L1R}"
+L1="${_CFG_PFX}${C}${MODEL}${N}  ${D}|${N}  ${L1R}"
 
 # Line 2: context bar [+ inline handoff banner when triggered]
 L2="${D}context window:${N} ${BC}${BAR}${N} ${PCT}%${CL:+ of ${CL}} ${D}used${N}${BANNER:+  ${BANNER}}"
