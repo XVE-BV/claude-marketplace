@@ -25,7 +25,6 @@ All values from Bitwarden: **"xve claude marketplace env vars"**. See `.env.exam
 
 | Var | Purpose |
 |-----|---------|
-| `XVE_EMAIL` | Your email, used by Claude when needed |
 | `XVE_CUSTOMER_N` | Customer mapping: `path_hint\|project_id\|label` |
 
 ## Behavioral guidelines

@@ -83,19 +83,8 @@ Remind the user: a **full Claude Code restart** is required for the statusline c
 ## Step 5 — Check env vars
 
 ```bash
-echo "XVE_EMAIL:          ${XVE_EMAIL:-(not set ⚠)}"
 echo "DISABLE_ADVISOR:    ${DISABLE_ADVISOR:-0 (advisor enabled)}"
 ```
-
-If `XVE_EMAIL` is not set, ask the user:
-> "What email should Claude use to identify your account? (e.g. `you@example.com`)"
-
-Then append to `~/.zshrc` (or the user's shell rc file) and confirm:
-```bash
-echo "export XVE_EMAIL=<answer>" >> ~/.zshrc
-```
-
-Remind the user to restart their terminal (or `source ~/.zshrc`) so the new env var loads.
 
 Other env vars (optional — mention, don't prompt):
 ```zsh
@@ -244,7 +233,6 @@ session-start.sh:     ✓ / ✗
 env-guard.sh:         ✓ / ✗
 writing-guard.sh:     ✓ / ✗
 xve-hud:              ✓ wired / ✗ skipped
-XVE_EMAIL:            ✓ / ✗ not set
 CLAUDE.md sections:   ✓ refreshed (backup: ~/.claude/CLAUDE.md.bak.<timestamp>)
 ```
 

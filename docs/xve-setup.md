@@ -10,7 +10,7 @@ flowchart TD
     B["Step 2 — Install hooks?\nsession-start.sh"] -->|"Yes"| B1["Hooks installed"]
     B -->|"No"| C
     B1 --> C
-    C["Step 3 — Check env vars\nXVE_EMAIL, ..."] --> D
+    C["Step 3 — Check env vars\nDISABLE_ADVISOR, ..."] --> D
     D["Step 4 — Write CLAUDE.md guidance\nauto, idempotent"] --> E
     E["Step 5 — Summary"]
 ```
@@ -37,10 +37,7 @@ Reads your environment and reports what's set and what's missing:
 
 | Var | Purpose |
 |-----|---------|
-| `XVE_EMAIL` | Your email, used by Claude to identify your account |
 | `DISABLE_ADVISOR` | Set to `1` to turn off Opus advisor calls |
-
-If `XVE_EMAIL` is not set, Claude asks you for it interactively and appends `export XVE_EMAIL=...` to your `~/.zshrc`. Restart your terminal afterward so the var loads.
 
 ### 4 — Writes guidance to CLAUDE.md
 
