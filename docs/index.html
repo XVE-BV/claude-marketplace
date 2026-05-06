@@ -378,7 +378,7 @@
     class SEEN,PATTERN muted`,
 
             setupFlow: `flowchart TD
-    START(["/xve-setup"])
+    START(["/xve:setup"])
     DETECT["Find repo location"]
     SETTINGS["Apply settings.json"]
     HOOKS{"Install hooks?"}
@@ -644,7 +644,7 @@ Always use conventional commits: type(scope): message</code>
                         <div class="tip">
                             <strong>How to do it:</strong> Paste your repeating prompt and tell Claude:<br>
                             <em>"Turn this into a skill called <strong>xve-name</strong> at the user level so it works across all my projects."</em><br><br>
-                            <strong>Use a prefix</strong> — type <code>/xve-</code> to instantly filter to your own skills and commands, separate from built-ins and third-party ones. Pick a short prefix: your initials, team name, or project code. All XVE commands follow this pattern (<code>/xve-setup</code>, <code>/xve-help</code>).<br><br>
+                            <strong>Use a prefix</strong> — type <code>/xve:</code> to instantly filter to your own skills, separate from built-ins and third-party ones. Pick a short prefix: your initials, team name, or project code. All XVE skills follow this pattern (<code>/xve:setup</code>, <code>/xve:docs</code>).<br><br>
                             Claude will create the file in the right place automatically. You don't need to know where — just tell it user level, not a specific project or plugin folder.
                         </div>
                     </div>
@@ -660,7 +660,7 @@ Always use conventional commits: type(scope): message</code>
                 <h1>XVE Setup Guide</h1>
                 <p class="subtitle">XVE · Run once on a new machine to wire up Claude Code with the full XVE configuration</p>
                 <p class="intro">
-                    Type <code>/xve-setup</code> in Claude Code after installing the plugin.
+                    Type <code>/xve:setup</code> in Claude Code after installing the plugin.
                     It walks through each step, asks before touching anything, and shows a checklist at the end.
                 </p>
 
@@ -856,15 +856,15 @@ Always use conventional commits: type(scope): message</code>
                         <div class="step-row">
                             <span class="step-num">2</span>
                             <div class="step-content">
-                                <strong>Run /xve-setup</strong>
+                                <strong>Run /xve:setup</strong>
                                 <span>The recommended path — full XVE setup wizard. Step 4 asks if you want to wire the statusline. Say yes.</span>
                             </div>
                         </div>
                         <div class="step-row">
                             <span class="step-num">3</span>
                             <div class="step-content">
-                                <strong>Or run /xve-hud-setup</strong>
-                                <span>If you've already run /xve-setup and skipped the statusline, or want only the statusline wired without touching the rest.</span>
+                                <strong>Or run /xve:hud-setup</strong>
+                                <span>If you've already run /xve:setup and skipped the statusline, or want only the statusline wired without touching the rest.</span>
                             </div>
                         </div>
                         <div class="step-row">
