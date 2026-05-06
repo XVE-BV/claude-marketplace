@@ -2,7 +2,15 @@
 
 All skills are in the `xve` namespace — invoke with `/xve:<name>`.
 
-## Skills
+## Explicit (user-invoked only)
+
+| Skill | Action |
+|-------|--------|
+| `/xve:setup` | Bootstrap Claude Code on a new machine |
+| `/xve:docs` | Open the XVE docs in the browser |
+| `/xve:hud-setup` | Wire the xve-hud statusline into `~/.claude/settings.json` |
+
+## Auto-triggered (Claude loads when relevant, or invoke directly)
 
 | Skill | Triggers |
 |-------|---------|

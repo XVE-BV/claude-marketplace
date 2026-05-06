@@ -11,6 +11,9 @@ plugins/
     config/settings.json             Claude Code settings template
     statusline/xve-hud.sh            Handoff-urgency statusline script
     skills/
+      setup/SKILL.md                 Bootstrap (disable-model-invocation: true)
+      docs/SKILL.md                  Open docs in browser (disable-model-invocation: true)
+      hud-setup/SKILL.md             Wire statusline (disable-model-invocation: true)
       session-handoff/SKILL.md       End-of-session handoff summary
       llm-council/SKILL.md           Multi-advisor decision framework
       diagram-design/SKILL.md        Diagram generation (+ assets/, references/)
