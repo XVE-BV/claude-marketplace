@@ -238,4 +238,4 @@ CLAUDE.md sections:   ✓ refreshed (backup: ~/.claude/CLAUDE.md.bak.<timestamp>
 
 ## Step 8 — Open the guide
 
-Run `/xve:help` to open the XVE docs in the browser so the user has the getting started guide on screen.
+Run `/xve:docs` to open the XVE docs in the browser so the user has the getting started guide on screen.
