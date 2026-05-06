@@ -1,14 +1,27 @@
-# Plugins
+# Skills
 
-## xve — Machine setup
+All skills are in the `xve` namespace — invoke with `/xve:<name>`.
 
-| Command | Action |
-|---------|--------|
+## Explicit (user-invoked only)
+
+| Skill | Action |
+|-------|--------|
 | `/xve:setup` | Bootstrap Claude Code on a new machine |
+| `/xve:docs` | Open the XVE docs in the browser |
+| `/xve:hud-setup` | Wire the xve-hud statusline into `~/.claude/settings.json` |
 
-## xve — LLM Council
+## Auto-triggered (Claude loads when relevant, or invoke directly)
 
-Trigger: say "council this", "war room this", "pressure-test this", or present a real decision with stakes ("should I X or Y").
+| Skill | Triggers |
+|-------|---------|
+| `/xve:session-handoff` | "session handoff", "wrap up session", "hand off" |
+| `/xve:llm-council` | "council this", "war room this", "pressure-test this", genuine multi-option decision |
+| `/xve:diagram-design` | Architecture, flowchart, sequence, ER, timeline, swimlane, and other diagram requests |
+| `/xve:humanize-writing` | "humanize this", "sounds too AI", "remove em dashes" |
+| `/xve:combell-db-import` | "import combell dump", "restore combell backup", "load combell sql" |
+| `/xve:wp-combell-to-local` | "localize wp db", "convert combell backup for local dev", "set up local wp from combell" |
+
+## LLM Council
 
 5 advisors run in parallel (Contrarian, First Principles, Expansionist, Outsider, Executor) → 5 anonymous peer reviewers → Chairman verdict → HTML report + markdown transcript saved locally.
 

@@ -27,14 +27,14 @@ type
 /xve:setup # and enter
 ```
 
-Claude will ask for your email and guide you through the rest.
+Claude will guide you through the rest.
 
 ---
 
 | Doc | What's in it |
 |-----|-------------|
-| [Plugins & commands](docs/plugins.md) | All slash commands and what they do |
+| [Skills reference](docs/plugins.md) | All skills and what they do |
 | [Configuration & env vars](docs/configuration.md) | Env var reference, model/advisor strategy |
 | [Repository structure](docs/structure.md) | File layout and what each file does |
 | [LLM Council](docs/llm-council.md) | Multi-advisor decision framework — when and how to use it |
-| [xve-setup guide](docs/setup.md) | What `/xve:setup` does, step by step |
+| [Setup guide](docs/setup.md) | What `/xve:setup` does, step by step |
