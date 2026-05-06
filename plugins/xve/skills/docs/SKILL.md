@@ -1,5 +1,6 @@
 ---
 description: Open the XVE docs in the browser — Getting Started, Setup, and LLM Council in one page.
+disable-model-invocation: true
 ---
 
 Open `docs/index.html` from this marketplace repo in the default browser.

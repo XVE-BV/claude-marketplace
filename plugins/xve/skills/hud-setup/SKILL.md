@@ -1,5 +1,6 @@
 ---
 description: Wire the xve-hud statusline into ~/.claude/settings.json.
+disable-model-invocation: true
 ---
 
 Install the XVE statusline (xve-hud). Adds a handoff-urgency banner on top of the claude-pace-derived quota lines.
