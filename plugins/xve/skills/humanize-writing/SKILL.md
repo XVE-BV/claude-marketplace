@@ -1,5 +1,5 @@
 ---
-name: humanize-writing
+name: humanize-writing-skill
 description: >
   Use when text sounds "too AI" or "too ChatGPT," user asks to humanize a draft,
   remove em dashes, or de-AI writing. Triggers: "humanize this", "make it less AI",

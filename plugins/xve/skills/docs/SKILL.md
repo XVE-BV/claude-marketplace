@@ -1,4 +1,5 @@
 ---
+name: docs-skill
 description: Open the XVE docs in the browser — Getting Started, Setup, and LLM Council in one page.
 disable-model-invocation: true
 ---

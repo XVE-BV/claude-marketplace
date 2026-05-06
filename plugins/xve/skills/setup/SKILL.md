@@ -1,4 +1,5 @@
 ---
+name: setup-skill
 description: XVE setup — apply personal Claude Code settings, agents, and commands to this machine.
 disable-model-invocation: true
 ---

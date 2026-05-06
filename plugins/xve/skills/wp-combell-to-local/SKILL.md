@@ -1,11 +1,11 @@
 ---
-name: wp-combell-to-local
-description: "Use when user wants to convert a WordPress site (often Roots Bedrock) from a Combell production backup into a ready-to-run local dev environment. Covers the whole flow after the raw dump has landed locally: URL rewrite, third-party tracking neutralization, SMTP reroute to a local mail catcher (Herd / Mailpit / MailHog), blanking of billable API keys and webhook secrets, admin password reset, and .env alignment so login cookies work. Also covers what belongs in the project's bin/ folder and what stays out of git. Delegates the raw dump import to the sibling skill xve-combell-db-import. Triggers: 'localize wp db', 'convert combell backup for local dev', 'prepare prod dump for .test domain', 'set up local wp from combell'."
+name: wp-combell-to-local-skill
+description: "Use when user wants to convert a WordPress site (often Roots Bedrock) from a Combell production backup into a ready-to-run local dev environment. Covers the whole flow after the raw dump has landed locally: URL rewrite, third-party tracking neutralization, SMTP reroute to a local mail catcher (Herd / Mailpit / MailHog), blanking of billable API keys and webhook secrets, admin password reset, and .env alignment so login cookies work. Also covers what belongs in the project's bin/ folder and what stays out of git. Delegates the raw dump import to the sibling skill xve:combell-db-import-skill. Triggers: 'localize wp db', 'convert combell backup for local dev', 'prepare prod dump for .test domain', 'set up local wp from combell'."
 ---
 
 # WordPress Combell → Local
 
-End-to-end playbook for turning a Combell production dump into a safe, working local WordPress site. Pairs with `xve-combell-db-import` (raw import) — this skill covers everything after the dump is in MySQL.
+End-to-end playbook for turning a Combell production dump into a safe, working local WordPress site. Pairs with `xve:combell-db-import-skill` (raw import) — this skill covers everything after the dump is in MySQL.
 
 ## When to use
 
@@ -34,7 +34,7 @@ End-to-end playbook for turning a Combell production dump into a safe, working l
 
 ### 1. Import the dump
 
-Delegate to `xve-combell-db-import`. Confirm count of `wp_posts`, `wp_users`, and `siteurl` value before continuing.
+Delegate to `xve:combell-db-import-skill`. Confirm count of `wp_posts`, `wp_users`, and `siteurl` value before continuing.
 
 ### 2. Plain-text URL rewrite (SQL, in transaction)
 
@@ -320,7 +320,7 @@ Browser check: load `https://LOCALDOMAIN/wp/wp-login.php`, log in with `admin@ex
 - **Login loops / logs out immediately** — often a stale `auth_cookie` from a previous browser session. Clear cookies for the local domain.
 - **"Error establishing database connection"** — Bedrock `.env` `DB_*` values don't match local MySQL. Herd MySQL: `127.0.0.1:3306`, user `root`, no password.
 - **500 on admin** — license or plugin expects a real network call. Check `web/app/debug.log` / PHP error log; disable the offending plugin via `UPDATE wp_options SET option_value = REPLACE(option_value, 'plugin-folder/plugin-file.php', '') WHERE option_name = 'active_plugins';` (serialized — easier to just rename the plugin folder under `web/app/plugins/`).
-- **Corrupted accents** — dump landed in `latin1` but tables are `utf8mb4`. Re-import with target DB pre-created as `utf8mb4` (see `xve-combell-db-import`).
+- **Corrupted accents** — dump landed in `latin1` but tables are `utf8mb4`. Re-import with target DB pre-created as `utf8mb4` (see `xve:combell-db-import-skill`).
 
 ## One-liner (full flow, once `bin/localize-db.*` exists)
 

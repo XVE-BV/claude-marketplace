@@ -1,5 +1,5 @@
 ---
-name: combell-db-import
+name: combell-db-import-skill
 description: "Use when user wants to import a Combell MySQL backup (gzipped SQL dump, typically named like ID######_<sitename>_YYYY-MM-DD_HHMM.sql.gz) into a local MySQL/MariaDB database. Handles the Combell quirk where the dump contains a CREATE DATABASE and USE statement for the original Combell database name (e.g. ID######_sitename) — this skill rewrites those to target any local DB name the user specifies. Triggers: 'import combell dump', 'restore combell backup', 'load combell sql', 'import this into <db>'."
 ---
 

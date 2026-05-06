@@ -1,4 +1,5 @@
 ---
+name: hud-setup-skill
 description: Wire the xve-hud statusline into ~/.claude/settings.json.
 disable-model-invocation: true
 ---
