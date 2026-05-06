@@ -17,7 +17,7 @@ Advisor fires before writing code, before major decisions, when stuck, and befor
 |---------|---------|--------|
 | `DISABLE_ADVISOR` | `0` | Set to `1` to disable Opus advisor |
 
-Controlled at session start by `~/.claude/session-start.sh` (installed by `/xve-setup`).
+Controlled at session start by `~/.claude/session-start.sh` (installed by `/xve:setup`).
 
 ## Env var reference
 
@@ -28,9 +28,3 @@ All values from Bitwarden: **"xve claude marketplace env vars"**. See `.env.exam
 | `XVE_CUSTOMER_N` | Customer mapping: `path_hint\|project_id\|label` |
 
 ## Behavioral guidelines
-
-`/xve-setup` optionally installs [karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills):
-- Think Before Coding
-- Simplicity First
-- Surgical Changes
-- Goal-Driven Execution

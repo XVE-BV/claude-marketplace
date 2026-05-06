@@ -4,7 +4,7 @@
 
 | Command | Action |
 |---------|--------|
-| `/xve-setup` | Bootstrap Claude Code on a new machine |
+| `/xve:setup` | Bootstrap Claude Code on a new machine |
 
 ## xve — LLM Council
 

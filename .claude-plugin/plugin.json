@@ -1,6 +1,6 @@
 {
     "name": "xve-claude-marketplace",
-    "version": "1.12.0",
+    "version": "1.13.0",
     "description": "XVE Claude Code marketplace — machine setup and configuration.",
     "author": {
         "name": "XVE"
@@ -12,9 +12,10 @@
         "config"
     ],
     "commands": [
-        "./plugins/xve/commands/xve-setup.md",
-        "./plugins/xve/commands/xve-help.md",
-        "./plugins/xve/commands/xve-docs.md"
+        "./plugins/xve/commands/setup.md",
+        "./plugins/xve/commands/help.md",
+        "./plugins/xve/commands/docs.md",
+        "./plugins/xve/commands/hud-setup.md"
     ],
     "agents": []
 }

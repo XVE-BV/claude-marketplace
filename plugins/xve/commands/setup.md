@@ -64,7 +64,7 @@ Ask the user:
 
 If yes:
 ```bash
-command -v jq >/dev/null || { echo "jq missing — skipping. Install jq and re-run /xve-hud-setup later."; SKIP_HUD=1; }
+command -v jq >/dev/null || { echo "jq missing — skipping. Install jq and re-run /xve:hud-setup later."; SKIP_HUD=1; }
 ```
 
 If `jq` is present, merge the following into `~/.claude/settings.json` (preserve other keys with `jq`):
@@ -238,4 +238,4 @@ CLAUDE.md sections:   ✓ refreshed (backup: ~/.claude/CLAUDE.md.bak.<timestamp>
 
 ## Step 8 — Open the guide
 
-Run `/xve-help` to open the XVE docs in the browser so the user has the getting started guide on screen.
+Run `/xve:help` to open the XVE docs in the browser so the user has the getting started guide on screen.

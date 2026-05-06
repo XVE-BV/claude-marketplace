@@ -1,4 +1,4 @@
-# /xve-setup
+# /xve:setup
 
 Run this once on a new machine after installing the plugins. It wires up Claude Code with the full XVE configuration.
 

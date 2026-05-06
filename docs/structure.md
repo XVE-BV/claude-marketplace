@@ -7,7 +7,7 @@ hooks/
   env-guard.sh                  PreToolUse hook — blocks .env file access via any tool
 plugins/
   xve/
-    commands/xve-setup.md       Bootstrap command
+    commands/setup.md           Bootstrap command
     config/settings.json        Claude Code settings template
     skills/customers/           XVE_CUSTOMER_N env var docs
 docs/

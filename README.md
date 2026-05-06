@@ -20,11 +20,11 @@ claude plugin install xve@xve-claude-marketplace
 
 open claude in terminal.
 
-**Step 3 — Run setup** ([read what this does first](docs/xve-setup.md))**:**
+**Step 3 — Run setup** ([read what this does first](docs/setup.md))**:**
 
 type
 ```
-/xve-setup # and enter
+/xve:setup # and enter
 ```
 
 Claude will ask for your email and guide you through the rest.
@@ -37,4 +37,4 @@ Claude will ask for your email and guide you through the rest.
 | [Configuration & env vars](docs/configuration.md) | Env var reference, model/advisor strategy |
 | [Repository structure](docs/structure.md) | File layout and what each file does |
 | [LLM Council](docs/llm-council.md) | Multi-advisor decision framework — when and how to use it |
-| [xve-setup guide](docs/xve-setup.md) | What `/xve-setup` does, step by step |
+| [xve-setup guide](docs/setup.md) | What `/xve:setup` does, step by step |
