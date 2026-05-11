@@ -1,7 +1,7 @@
 {
     "name": "xve-claude-marketplace",
-    "version": "1.20.0",
-    "description": "XVE Claude Code marketplace — machine setup and configuration.",
+    "version": "1.21.0",
+    "description": "XVE Claude Code marketplace: machine setup and configuration.",
     "author": {
         "name": "XVE"
     },

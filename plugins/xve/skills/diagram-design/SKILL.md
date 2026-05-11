@@ -1,6 +1,6 @@
 ---
 name: diagram-design-skill
-description: Create technical and product diagrams — architecture, flowchart, sequence, state machine, ER / data model, timeline, swimlane, quadrant, nested, tree, layer stack, venn, pyramid — as standalone HTML files with inline SVG. Ships with a neutral editorial skin and a first-run gate that prompts users to customize the style guide (colors, fonts) from their own website before generating. Includes annotation-callout primitive and optional sketchy variant.
+description: Create technical/product diagrams (architecture, flowchart, sequence, state machine, ER, timeline, swimlane, quadrant, tree, venn, pyramid, etc.) as standalone HTML files with inline SVG. Editorial design system; optional sketchy variant.
 license: MIT
 metadata:
   version: "1.0"

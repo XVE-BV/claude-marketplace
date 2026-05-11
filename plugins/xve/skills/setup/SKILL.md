@@ -35,7 +35,7 @@ Ask the user:
 > "Install session hooks? These run automatically on every Claude session:
 > - **session-start.sh** — injects context at session start (enables/disables advisor via env vars)
 > - **env-guard.sh** — blocks Claude from reading/executing .env files via any tool
-> - **writing-guard.sh** — Stop hook; flags AI writing tells (em dashes, banned vocab) and asks Claude to revise. Safety net behind the CLAUDE.md Writing Guidelines.
+> - **writing-guard.sh** — PostToolUse hook on Write/Edit; flags AI writing tells (em dashes, banned vocab) in artifact content and asks Claude to revise. Does not fire on terminal chat.
 >
 > Install? [Y/n]"
 
@@ -57,7 +57,7 @@ chmod +x ~/.claude/writing-guard.sh
 
 `env-guard.sh` is a PreToolUse hook that blocks access to `.env` files via `Read`/`Edit`/`Write` and any bash command referencing `.env`. Deny rules in settings.json alone are insufficient — this hook is the actual gate.
 
-`writing-guard.sh` is a Stop hook that scans Claude's last response for AI writing tells (banned vocabulary, em dash overuse, AI phrases). When violations are found in prose responses over 150 words, it blocks the stop and forces Claude to revise. Note: this fires *after* the original response is already on screen — Claude posts a corrected version in a follow-up turn. The `## Writing Guidelines` block in CLAUDE.md is the primary prevention; this hook is the safety net. Requires `jq`.
+`writing-guard.sh` is a PostToolUse hook on `Write|Edit` that scans the content being written to a file for AI writing tells. Em dashes get a strict zero-tolerance check on every file (skipping data, lock, and binary formats). Banned vocabulary and AI phrases are checked only on prose files (`.md`, `.html`, `.txt`, `.rst`, etc.) and only when the content is at least 150 words. When violations are found, the hook blocks and tells Claude to re-edit the file. The hook does not run on terminal chat; the `## Writing Guidelines` block in CLAUDE.md remains the primary prevention there. Requires `jq`.
 
 ## Step 4 — Install xve-hud statusline (confirm first)
 

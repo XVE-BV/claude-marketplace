@@ -1,6 +1,6 @@
 ---
 name: wp-combell-to-local-skill
-description: "Use when user wants to convert a WordPress site (often Roots Bedrock) from a Combell production backup into a ready-to-run local dev environment. Covers the whole flow after the raw dump has landed locally: URL rewrite, third-party tracking neutralization, SMTP reroute to a local mail catcher (Herd / Mailpit / MailHog), blanking of billable API keys and webhook secrets, admin password reset, and .env alignment so login cookies work. Also covers what belongs in the project's bin/ folder and what stays out of git. Delegates the raw dump import to the sibling skill xve:combell-db-import-skill. Triggers: 'localize wp db', 'convert combell backup for local dev', 'prepare prod dump for .test domain', 'set up local wp from combell'."
+description: "Convert a WordPress site (often Roots Bedrock) from a Combell production backup into a ready-to-run local dev environment: URL rewrite, tracking neutralization, SMTP reroute, key blanking, admin reset. Triggers: 'localize wp db', 'convert combell backup for local dev', 'set up local wp from combell'."
 ---
 
 # WordPress Combell → Local

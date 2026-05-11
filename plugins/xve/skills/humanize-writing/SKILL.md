@@ -1,10 +1,6 @@
 ---
 name: humanize-writing-skill
-description: >
-  Use when text sounds "too AI" or "too ChatGPT," user asks to humanize a draft,
-  remove em dashes, or de-AI writing. Triggers: "humanize this", "make it less AI",
-  "sounds too ChatGPT", "remove AI patterns", "rewrite to sound human". Skip for
-  technical docs, READMEs, code comments, commit messages, formal/academic tone.
+description: "Humanize text that sounds too AI or too ChatGPT. Triggers: 'humanize this', 'make it less AI', 'sounds too ChatGPT', 'remove em dashes', 'de-AI writing'. Skip for technical docs, READMEs, code comments, commit messages, formal/academic tone."
 license: MIT
 ---
 
@@ -30,7 +26,7 @@ Make text sound like a specific human wrote it. Read `references/ai-patterns-dic
 **Pass 1 — Kill AI vocabulary.** Replace every Tier 1 word. Replace Tier 2 where clustered. Delete Tier 3 transition clusters (>2 in a short section) — good writing rarely needs explicit connectors. Don't just swap synonyms; restructure when the fancy word isn't needed.
 
 **Pass 2 — Break AI structures.** These are stronger tells than vocabulary:
-- Em dashes → commas, periods, or parentheses. Max 1 per 500 words.
+- Em dashes: never. Replace every one with a comma, period, or parentheses.
 - Parallel negation ("Not X, but Y") → state the positive directly.
 - Rule of three → pick the one or two that matter.
 - Rhetorical Q + answer ("What does this mean? It means...") → just say it.
@@ -52,7 +48,7 @@ After rewriting: ask "What still makes this obviously AI-generated?" — note 2�
 - [ ] Tier 2 words max once each
 - [ ] ≤2 formal transition words total
 - [ ] No parallel negation / tricolons / mirror structures
-- [ ] Max 1 em dash per 500 words
+- [ ] Zero em dashes
 - [ ] No rhetorical Q+A / inflation of importance / signposting
 - [ ] Sentence length varies; at least one starts with "And" or "But"
 - [ ] Author's opinion is visible; reads like a person, not a press release

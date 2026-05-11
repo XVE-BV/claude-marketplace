@@ -71,7 +71,7 @@ Furthermore, Moreover, Additionally, Consequently, Nevertheless, Subsequently, N
 
 | Pattern | Tell | Fix |
 |---------|------|-----|
-| **Em dash overuse** | 3–5× human rate ("ChatGPT dash") | Commas, periods, or parentheses. Max 1 per 500 words. |
+| **Em dashes** | 3 to 5x human rate ("ChatGPT dash") | Never. Replace every one with a comma, period, or parentheses. |
 | **Parallel negation** | "Not X, but Y" — 5–10× more than human text | State the positive directly. |
 | **Rule of three** | Forces trios to sound comprehensive | Pick the one or two that matter. |
 | **Rhetorical Q + answer** | "What does this mean? It means..." | Just say it. |

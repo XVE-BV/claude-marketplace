@@ -1,6 +1,6 @@
 ---
 name: llm-council-skill
-description: "Use when user says 'council this', 'run the council', 'war room this', 'pressure-test this', 'stress-test this', 'debate this', or presents a genuine decision with stakes and multiple options: 'should I X or Y', 'which option', 'I can't decide', 'I'm torn between', 'validate this', 'get multiple perspectives'. Do NOT trigger on factual lookups, simple yes/no, or casual 'should I' without meaningful tradeoff."
+description: "Pressure-test high-stakes decisions with multiple LLM perspectives. Triggers: 'council this', 'war room this', 'pressure-test this', 'debate this', 'should I X or Y', 'which option', 'I can't decide'. Skip factual lookups and trivial choices."
 ---
 
 # LLM Council
