@@ -62,20 +62,24 @@ chmod +x ~/.claude/writing-guard.sh
 ## Step 3b — Install judge-hook (confirm first, opt-in)
 
 Ask the user:
-> "Install **judge-hook** — the LLM-as-judge pattern as a Claude Code hook? Catches dangerous tool calls (`rm -rf /`, `curl|bash`, `sudo`, force pushes, secret-file writes) deterministically; optionally escalates ambiguous patterns (e.g., `git push origin main`) to a haiku call. Requires `jq` and `claude` CLI. Adds zero latency by default; LLM escalate rules cost ~$0.001 + ~2s when they fire.
+> "Install **judge-hook** — an extra safety net for tool calls? It pattern-matches risky inputs (`rm -rf /`, `curl|bash`, `sudo`, force pushes, writes to secret-like files) and can escalate ambiguous patterns to a haiku call. Stacks on top of the other PreToolUse hooks; failure modes are fail-open, so it's a safety layer, not a security boundary.
 >
-> Full docs: [docs/judge-hook.md](../../../../docs/judge-hook.md).
+> Requires `jq`; LLM escalation also needs the `claude` CLI. No latency by default; LLM escalate rules cost ~\$0.001 + ~2s per fire.
+>
+> Full docs: `docs/judge-hook.md` in the marketplace repo (https://github.com/XVE-BV/claude-marketplace/blob/main/docs/judge-hook.md).
 >
 > Install? [y/N]"
 
 Default to **No** — this is opt-in and rules need review before activation. If the user accepts:
 
 ```bash
+SETTINGS="$HOME/.claude/settings.json"
+
 # 1. Copy the hook script
 cp "$REPO_DIR/hooks/judge-hook.sh" ~/.claude/judge-hook.sh
 chmod +x ~/.claude/judge-hook.sh
 
-# 2. Copy the example rules file ONLY if no rules file exists (don't clobber)
+# 2. Copy the example rules file ONLY if no rules file exists (don't clobber).
 if [ ! -f ~/.claude/judge-rules.json ]; then
   cp "$REPO_DIR/hooks/judge-rules.example.json" ~/.claude/judge-rules.json
   echo "Wrote ~/.claude/judge-rules.json from example. Review and customize before relying on it."
@@ -83,22 +87,28 @@ else
   echo "~/.claude/judge-rules.json already exists — left untouched. Compare against $REPO_DIR/hooks/judge-rules.example.json for new rules."
 fi
 
-# 3. Merge a PreToolUse entry into ~/.claude/settings.json (append, don't overwrite)
-SETTINGS="$HOME/.claude/settings.json"
-jq '.hooks.PreToolUse += [{
-  "matcher": "Bash|Write|Edit|NotebookEdit",
-  "hooks": [{
-    "type": "command",
-    "command": "bash ~/.claude/judge-hook.sh",
-    "statusMessage": "Judging tool call..."
-  }]
-}]' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
+# 3. Merge a PreToolUse entry into ~/.claude/settings.json — idempotent (skip if
+#    a hook already references judge-hook.sh) and defensive (creates missing
+#    .hooks and .hooks.PreToolUse paths).
+if jq -e '.hooks.PreToolUse // [] | map(.hooks // [] | map(.command // "")) | flatten | any(. | contains("judge-hook.sh"))' "$SETTINGS" >/dev/null 2>&1; then
+  echo "judge-hook already wired into settings.json — leaving as-is."
+else
+  jq '.hooks //= {} | .hooks.PreToolUse //= [] | .hooks.PreToolUse += [{
+    "matcher": "Bash|Write|Edit|NotebookEdit",
+    "hooks": [{
+      "type": "command",
+      "command": "bash ~/.claude/judge-hook.sh",
+      "statusMessage": "Judging tool call..."
+    }]
+  }]' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
+fi
 ```
 
 Tell the user to:
 1. **Review `~/.claude/judge-rules.json`** before the next session. The shipped example denies common destructive patterns; their environment may need additions (org-specific branches, prod hostnames, custom file paths).
 2. **Test rules** against the eval scaffold: `cd "$REPO_DIR/hooks/judge-eval" && ./run-evals.sh`.
 3. Read `docs/judge-hook.md` for the rule format, environment variables (`JUDGE_RULES_FILE`, `JUDGE_LLM_TIMEOUT`, `JUDGE_LLM_MODEL`), and fail-open behavior.
+4. Note: judge-hook is the 4th PreToolUse handler if env-guard, writing-guard, and judge-hook are all installed. They fire in registration order.
 
 Requires a Claude Code restart for the hook to take effect.
 
