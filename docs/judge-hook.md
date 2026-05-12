@@ -145,9 +145,23 @@ RUN_LLM_EVALS=1 ./run-evals.sh  # also runs escalate cases (costs ~$0.01)
 
 Each fixture under `fixtures/` is a JSON file with a `_description`, `_expected_exit`, optionally `_requires_llm: true`, plus the `tool_name` + `tool_input` to feed the hook. Add fixtures for any rule you author.
 
-## Relationship to Claude Code's built-in permissions
+## Three layers of agent control
 
-Claude Code already has `permissions.allow` / `permissions.deny` in settings. The hook is **additive** — it runs after permissions evaluate (if permissions deny, the hook never sees the call) and lets you express richer rules: regex over tool inputs, LLM-based judgment, structured reasons. Use both: permissions for the simple allow/deny list, the hook for everything more nuanced.
+Three separate questions about agent autonomy, each with its own surface:
+
+| Layer | Question it answers | Cost when wrong |
+|---|---|---|
+| Permissions | What's the agent technically allowed to invoke? | Agent can't do its job |
+| **Judge / hook (this)** | Which of those invocations need a second opinion before running? | Agent does the wrong thing, or asks too often |
+| Logs / audit | What did the agent actually do? | Can't reconstruct what happened |
+
+Claude Code already ships permissions (`permissions.allow` / `permissions.deny` in settings) and logs (session transcripts). The hook fills the middle layer.
+
+Without the middle layer, "preventive" defaults to either "block everything that looks risky" (annoying, breaks autonomy) or "allow everything inside the permission set" (the Replit-deletes-prod-DB pattern). The hook is where you express *graduated trust*: this regex auto-denies, this regex needs a haiku check, this regex needs a human.
+
+The hook is additive. It runs after permissions evaluate (if permissions deny, the hook never sees the call) and expresses richer rules than the allowlist alone: regex over tool inputs, LLM-based judgment, structured reasons. Use both. Permissions handle the coarse allow/deny list. The hook handles everything more nuanced.
+
+If you removed the hook tomorrow, you'd still have permissions (coarse) and logs (after-the-fact). What you'd lose is the graduated layer, plus the discipline of writing it down.
 
 ## When not to use this
 
