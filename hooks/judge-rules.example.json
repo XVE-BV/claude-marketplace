@@ -1,0 +1,49 @@
+{
+  "_comment": "Copy this to ~/.claude/judge-rules.json and customize. Rules are evaluated in order; first match wins. class=deny blocks (exit 2). class=allow short-circuits to allow (use for allowlist patterns above broader denies). class=escalate spawns claude -p with judge_prompt; LLM returns ALLOW or BLOCK on the first line. Pattern is a POSIX extended regex matched against the tool_input JSON.",
+  "rules": [
+    {
+      "tool": "Bash",
+      "pattern": "rm\\s+-[rRf]+\\s+(/|~|\\$HOME)",
+      "class": "deny",
+      "reason": "destructive rm at root, home, or HOME"
+    },
+    {
+      "tool": "Bash",
+      "pattern": "curl[^|]*\\|\\s*(bash|sh|zsh)",
+      "class": "deny",
+      "reason": "pipe-to-shell from curl"
+    },
+    {
+      "tool": "Bash",
+      "pattern": "sudo\\s",
+      "class": "deny",
+      "reason": "sudo invocation"
+    },
+    {
+      "tool": "Bash",
+      "pattern": "git\\s+push.*--force\\b|git\\s+push.*-f\\b",
+      "class": "deny",
+      "reason": "force push"
+    },
+    {
+      "tool": "Bash",
+      "pattern": "git\\s+push\\s+(origin\\s+)?(main|master)\\b",
+      "class": "escalate",
+      "reason": "push to main/master needs review",
+      "judge_prompt": "A Claude Code session is about to push to main or master. Block if there is no recent indication the user explicitly asked for this push. Allow if the user clearly requested it (e.g., previous message contained 'push to main', 'ship it', or similar)."
+    },
+    {
+      "tool": "Bash",
+      "pattern": "(DROP|TRUNCATE|DELETE FROM)\\s",
+      "class": "escalate",
+      "reason": "destructive SQL",
+      "judge_prompt": "A Bash command contains destructive SQL (DROP/TRUNCATE/DELETE FROM). Block unless the target is clearly a test/scratch database or the SQL has a narrow WHERE clause. Allow if it looks like an intentional dev-database cleanup."
+    },
+    {
+      "tool": "Write",
+      "pattern": "\"file_path\"\\s*:\\s*\"[^\"]*/\\.env(\\.|\")",
+      "class": "deny",
+      "reason": "writing to .env file"
+    }
+  ]
+}
