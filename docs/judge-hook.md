@@ -4,6 +4,35 @@ A `PreToolUse` hook that implements the LLM-as-judge pattern as a deterministic 
 
 **Status:** opt-in. Not wired into the plugin's default `settings.json`. Enable by copying the example rules and adding the hook entry to your `~/.claude/settings.json` (see below).
 
+## Why use this
+
+Once installed, the daily wins:
+
+**1. Catches the "agent deleted my DB" class of mistakes.** The example rules block `rm -rf /`, `curl|bash`, `sudo`, force pushes, and writes to secret-like files. Deterministic, microsecond-level guards over Claude Code's permission system. The xve plugin's existing `env-guard` already does this for one specific file type — `judge-hook` extends the pattern to anything you can match.
+
+**2. Project-scoped policy via `JUDGE_RULES_FILE`.** Point the env var at a per-project rules file checked into the repo. Different rules per project, no plugin rebuild. Onboard a collaborator by pointing them at your rules file.
+
+**3. Semantic judgment for cases regex can't handle.** `class: escalate` rules spawn a haiku call with your `judge_prompt`. Example: `git push origin main` — escalate asks haiku to check whether recent context shows the user requested this push. Allows when context supports it, blocks when Claude is doing it unprompted. Cost ~$0.001 per fire, ~2s latency. Only fires for patterns you explicitly tagged — never as a fallback.
+
+**4. Visible reasoning.** When the hook blocks, the reason shows in Claude Code's output. When the LLM escalates, you see its one-line reason. Reviewable, debuggable.
+
+### What changes vs. not having it
+
+- Claude Code permissions stay as the coarse allowlist (allow/deny per tool name).
+- The hook adds an **input-aware** layer: same tool, different inputs → different decisions.
+- `escalate` adds a **context-aware** layer: same input, different recent conversation → different decisions.
+
+### Where this matters most
+
+Extended autonomous sessions — cron loops, multi-hour tasks, agent teams. The hook is the difference between "Claude can spend 4 hours running my workflow and the worst case is a blocked tool call" vs "the worst case is unbounded."
+
+### Honest limits
+
+- **Not a security boundary.** Fail-open on infra errors (missing `jq`, `claude` CLI down, timeout). Use for safety, not adversarial defense.
+- **Maintaining rules is real work.** Stale rules add friction without value. Prune them.
+- **LLM escalations cost money.** Never apply `escalate` to high-frequency tools like Bash unconditionally — that bankrupts you and makes Claude Code feel sluggish.
+- **Regex bypasses exist.** `rm -fr` looks different from `rm -rf` but does the same thing. Pattern-match in both directions if you care.
+
 ## What it does
 
 For every tool call (`PreToolUse`), the hook:
