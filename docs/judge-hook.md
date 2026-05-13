@@ -1,0 +1,182 @@
+# Judge Hook
+
+A `PreToolUse` hook that implements the LLM-as-judge pattern as a deterministic regex layer with optional LLM escalation. Sits between Claude Code's intent and any tool call with real-world side effects.
+
+**Status:** opt-in. Not wired into the plugin's default `settings.json`. Enable by copying the example rules and adding the hook entry to your `~/.claude/settings.json` (see below).
+
+## Why use this
+
+Once installed, the daily wins:
+
+**1. Catches the "agent deleted my DB" class of mistakes.** The example rules block `rm -rf /`, `curl|bash`, `sudo`, force pushes, and writes to secret-like files. Deterministic, microsecond-level guards over Claude Code's permission system. The xve plugin's existing `env-guard` already does this for one specific file type — `judge-hook` extends the pattern to anything you can match.
+
+**2. Project-scoped policy via `JUDGE_RULES_FILE`.** Point the env var at a per-project rules file checked into the repo. Different rules per project, no plugin rebuild. Onboard a collaborator by pointing them at your rules file.
+
+**3. Semantic judgment for cases regex can't handle.** `class: escalate` rules spawn a haiku call with your `judge_prompt`. Example: `git push origin main` — escalate asks haiku to check whether recent context shows the user requested this push. Allows when context supports it, blocks when Claude is doing it unprompted. Cost ~$0.001 per fire, ~2s latency. Only fires for patterns you explicitly tagged — never as a fallback.
+
+**4. Visible reasoning.** When the hook blocks, the reason shows in Claude Code's output. When the LLM escalates, you see its one-line reason. Reviewable, debuggable.
+
+### What changes vs. not having it
+
+- Claude Code permissions stay as the coarse allowlist (allow/deny per tool name).
+- The hook adds an **input-aware** layer: same tool, different inputs → different decisions.
+- `escalate` adds a **context-aware** layer: same input, different recent conversation → different decisions.
+
+### Where this matters most
+
+Extended autonomous sessions — cron loops, multi-hour tasks, agent teams. The hook is the difference between "Claude can spend 4 hours running my workflow and the worst case is a blocked tool call" vs "the worst case is unbounded."
+
+### Honest limits
+
+- **Not a security boundary.** Fail-open on infra errors (missing `jq`, `claude` CLI down, timeout). Use for safety, not adversarial defense.
+- **Maintaining rules is real work.** Stale rules add friction without value. Prune them.
+- **LLM escalations cost money.** Never apply `escalate` to high-frequency tools like Bash unconditionally — that bankrupts you and makes Claude Code feel sluggish.
+- **Regex bypasses exist.** `rm -fr` looks different from `rm -rf` but does the same thing. Pattern-match in both directions if you care.
+
+## What it does
+
+For every tool call (`PreToolUse`), the hook:
+
+1. Reads the rules file at `~/.claude/judge-rules.json` (override with `$JUDGE_RULES_FILE`).
+2. Walks rules in order — the first one whose `tool` and `pattern` both match wins.
+3. Per matched rule:
+   - `class: deny` → exits 2 with the reason → Claude Code blocks the call
+   - `class: allow` → exits 0 → call proceeds (use to allowlist exceptions above broader denies)
+   - `class: escalate` → spawns `claude -p` with the rule's `judge_prompt` + the tool proposal; LLM returns `ALLOW` or `BLOCK` on the first line, reason on the second
+4. No rule matches → exits 0 (allow).
+
+If `~/.claude/judge-rules.json` is missing, the hook is a no-op. Adding rules is the entire activation mechanism.
+
+## Quick start
+
+```bash
+# 1. Copy the example rules
+cp ~/.claude/plugins/xve/hooks/judge-rules.example.json ~/.claude/judge-rules.json
+
+# 2. Wire the hook into ~/.claude/settings.json under "hooks.PreToolUse"
+#    (see the snippet below)
+
+# 3. Restart Claude Code or start a new session
+```
+
+Settings snippet to add to `~/.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/judge-hook.sh",
+            "statusMessage": "Judging tool call..."
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+You will also need to copy `judge-hook.sh` to `~/.claude/judge-hook.sh` (or reference it directly from the plugin install path — adjust the `command` field).
+
+## Rule format
+
+```json
+{
+  "rules": [
+    {
+      "tool": "Bash",
+      "pattern": "rm\\s+-[rRf]+\\s+(/|~)",
+      "class": "deny",
+      "reason": "destructive rm at root or home"
+    },
+    {
+      "tool": "Bash",
+      "pattern": "git\\s+push\\s+(origin\\s+)?(main|master)\\b",
+      "class": "escalate",
+      "reason": "push to main needs review",
+      "judge_prompt": "A Claude Code session is about to push to main. Block unless the user clearly asked for this."
+    }
+  ]
+}
+```
+
+| Field | Type | Notes |
+|---|---|---|
+| `tool` | string | Exact tool name (`Bash`, `Write`, `Edit`, etc.) or `*` for any |
+| `pattern` | string (POSIX ERE) | Matched against the tool_input JSON. Empty = match all inputs of this tool |
+| `class` | enum | `deny` / `allow` / `escalate` |
+| `reason` | string | Shown to the user when denying or escalating |
+| `judge_prompt` | string | Required when `class=escalate`. Sent to the LLM judge before the proposal |
+
+## Environment variables
+
+| Var | Default | Purpose |
+|---|---|---|
+| `JUDGE_RULES_FILE` | `~/.claude/judge-rules.json` | Path to rules file |
+| `JUDGE_LLM_TIMEOUT` | `10` | Seconds before LLM escalation falls open |
+| `JUDGE_LLM_MODEL` | `claude-haiku-4-5-20251001` | Model for escalation calls |
+
+## Fail-open behavior
+
+The hook is **fail-open** on infrastructure errors. If `jq` is missing, the rules file is empty, the `claude` CLI is unavailable, or the LLM call times out, the hook exits 0 and the tool call proceeds.
+
+This is a usability tradeoff. For anything that **must** block deterministically, use `class: deny` rules — they do not depend on `claude` or network. Save `class: escalate` for cases where regex is insufficient and you accept the latency + cost + occasional fall-open behavior.
+
+## Cost and latency
+
+- `deny` and `allow` rules: zero LLM cost, microseconds of overhead.
+- `escalate` rules: one `claude -p` call per matched rule. Latency ~1-3 seconds with Haiku; cost a fraction of a cent per call. Tune `JUDGE_LLM_MODEL` if you need more capable judgment.
+
+Use escalate sparingly — patterns like "every Bash command" or "every Write" will make Claude Code feel sluggish and burn money. The example rules limit escalation to `git push main/master` and destructive SQL.
+
+## Testing rules
+
+The plugin ships an eval scaffold at `hooks/judge-eval/`:
+
+```bash
+cd ~/.claude/plugins/xve/hooks/judge-eval
+./run-evals.sh                  # regex cases only (fast, free)
+RUN_LLM_EVALS=1 ./run-evals.sh  # also runs escalate cases (costs ~$0.01)
+```
+
+Each fixture under `fixtures/` is a JSON file with a `_description`, `_expected_exit`, optionally `_requires_llm: true`, plus the `tool_name` + `tool_input` to feed the hook. Add fixtures for any rule you author.
+
+## Three layers of agent control
+
+Three separate questions about agent autonomy, each with its own surface:
+
+| Layer | Question it answers | Cost when wrong |
+|---|---|---|
+| Permissions | What's the agent technically allowed to invoke? | Agent can't do its job |
+| **Judge / hook (this)** | Which of those invocations need a second opinion before running? | Agent does the wrong thing, or asks too often |
+| Logs / audit | What did the agent actually do? | Can't reconstruct what happened |
+
+Claude Code already ships permissions (`permissions.allow` / `permissions.deny` in settings) and logs (session transcripts). The hook fills the middle layer.
+
+Without the middle layer, "preventive" defaults to either "block everything that looks risky" (annoying, breaks autonomy) or "allow everything inside the permission set" (the Replit-deletes-prod-DB pattern). The hook is where you express *graduated trust*: this regex auto-denies, this regex needs a haiku check, this regex needs a human.
+
+The hook is additive. It runs after permissions evaluate (if permissions deny, the hook never sees the call) and expresses richer rules than the allowlist alone: regex over tool inputs, LLM-based judgment, structured reasons. Use both. Permissions handle the coarse allow/deny list. The hook handles everything more nuanced.
+
+If you removed the hook tomorrow, you'd still have permissions (coarse) and logs (after-the-fact). What you'd lose is the graduated layer, plus the discipline of writing it down.
+
+## When not to use this
+
+- Read-only sessions — there's nothing to gate.
+- Sessions where you accept full responsibility for tool calls (e.g., interactive exploration on a scratch machine).
+- High-throughput automation where every millisecond matters — even regex evaluation adds tens of milliseconds per tool call.
+
+## Related skills
+
+The judge pattern as design discipline (separate from the runtime hook):
+
+- `/xve:action-surface-audit-skill` — map an agent's action surface before adding a judge
+- `/xve:judge-criteria-skill` — design what a judge evaluates
+- `/xve:judge-prompt-writer-skill` — write the judge system prompt
+- `/xve:judge-eval-suite-skill` — generate test cases for the judge
+- `/xve:judge-architecture-review-skill` — audit an existing system's judge layer
+
+These produce design artifacts (specs, prompts, eval cases). The hook is the runtime that enforces them in Claude Code itself.

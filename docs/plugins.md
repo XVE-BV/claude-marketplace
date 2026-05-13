@@ -20,6 +20,17 @@ All skills are in the `xve` namespace — invoke with `/xve:<name>`.
 | `/xve:humanize-writing` | "humanize this", "sounds too AI", "remove em dashes" |
 | `/xve:combell-db-import` | "import combell dump", "restore combell backup", "load combell sql" |
 | `/xve:wp-combell-to-local` | "localize wp db", "convert combell backup for local dev", "set up local wp from combell" |
+| `/xve:action-surface-audit-skill` | "action surface audit", "where do we need a judge", "classify agent actions" |
+| `/xve:judge-criteria-skill` | "design judge criteria", "what should the judge check", "design action proposal format" |
+| `/xve:judge-prompt-writer-skill` | "write the judge prompt", "turn this spec into a judge", "judge system prompt for this boundary" |
+| `/xve:judge-eval-suite-skill` | "generate eval suite for this judge", "test cases for the judge", "before deploying the judge" |
+| `/xve:judge-architecture-review-skill` | "review the judge architecture", "audit our agent safety", "before scaling this agent" |
+
+## Judge Pattern (skills + hook)
+
+Five skills cover the design discipline (audit → criteria → prompt → eval → architecture review). A runtime hook at `hooks/judge-hook.sh` enforces rules during Claude Code sessions — opt-in, ships with example rules and an eval scaffold.
+
+Full guide: [judge-hook.md](judge-hook.md)
 
 ## LLM Council
 
