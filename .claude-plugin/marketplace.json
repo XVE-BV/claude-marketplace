@@ -12,7 +12,7 @@
             "name": "xve",
             "source": "./plugins/xve",
             "description": "XVE-specific config: customer/project mapping, install command, and shared customer reference skill.",
-            "version": "1.21.0",
+            "version": "1.22.0",
             "author": {
                 "name": "XVE"
             },
@@ -20,7 +20,10 @@
                 "xve",
                 "customers",
                 "config",
-                "setup"
+                "setup",
+                "engineering",
+                "tdd",
+                "debugging"
             ]
         }
     ]
