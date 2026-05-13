@@ -76,13 +76,29 @@
       "Bash(mkfs *)",
       "Bash(fdisk *)"
     ],
-    "defaultMode": "acceptEdits"
+    "defaultMode": "auto"
   },
   "model": "opusplan",
   "effortLevel": "xhigh",
   "advisorModel": "opus",
   "autoMemoryDirectory": "~/.claude/memory/",
   "skipDangerousModePermissionPrompt": true,
+  "skipAutoPermissionPrompt": true,
+  "autoMode": {
+    "environment": [
+      "$defaults"
+    ],
+    "allow": [
+      "$defaults"
+    ],
+    "soft_deny": [
+      "$defaults"
+    ],
+    "hard_deny": [
+      "$defaults",
+      "Accessing .env files or credential stores"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {

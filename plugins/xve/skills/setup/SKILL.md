@@ -23,11 +23,52 @@ Key things applied:
 - env vars (ENABLE_TOOL_SEARCH, BASH_DEFAULT_TIMEOUT_MS, CLAUDE_CODE_MAX_OUTPUT_TOKENS, etc.)
 - permissions allow/deny lists
 - model: sonnet, effortLevel: xhigh, advisorModel: opus
+- autoMode: `$defaults` only — trusted infrastructure configured interactively in Step 2b
 - UserPromptSubmit hook → assertion checker
 
 **Advisor strategy:** `model: sonnet` (fast executor) + `advisorModel: opus` (strategic oversight via Opus 4.7) + `effortLevel: xhigh` + `DISABLE_ADAPTIVE_THINKING: 1`. Sonnet handles execution; Opus advises before major decisions. ~11% cheaper than Opus-only with near-identical quality on agentic tasks. Adaptive thinking disabled on Sonnet intentionally — the advisor covers that layer.
 
 Call advisor: before writing code, when stuck, before declaring done. Not after every step.
+
+## Step 2b — Configure autoMode trusted infrastructure (confirm first)
+
+Ask the user:
+> "Auto mode is now active. The classifier doesn't know which GitHub orgs, domains, or hosting providers are yours yet — without this it may pause on routine pushes, your own API calls, or SSH/rsync deployments asking for confirmation.
+>
+> Add your trusted infrastructure now? [Y/n]"
+
+If **no**: tell the user they can run `/xve:automode-env` at any time to configure this later.
+
+If **yes**, ask three follow-up questions in sequence:
+
+**1. GitHub orgs**
+> "GitHub orgs to trust? Enter one per line, e.g. `github.com/your-org` — or Enter to skip."
+
+For each org provided, append to `~/.claude/settings.json`:
+```bash
+jq --arg e "Source control: github.com/ORG and all repos under it" \
+  '.autoMode.environment += [$e]' ~/.claude/settings.json > /tmp/s.json && mv /tmp/s.json ~/.claude/settings.json
+```
+
+**2. Internal domains**
+> "Internal domains to trust? Enter one per line, e.g. `*.example.com` — or Enter to skip."
+
+For each domain:
+```bash
+jq --arg e "Trusted internal domains: DOMAIN" \
+  '.autoMode.environment += [$e]' ~/.claude/settings.json > /tmp/s.json && mv /tmp/s.json ~/.claude/settings.json
+```
+
+**3. Hosting / deployment targets**
+> "Hosting providers or deployment targets? Describe in plain language, e.g. `Combell (combell.com) — PHP/WordPress deployments via SSH and rsync` — or Enter to skip."
+
+For each entry:
+```bash
+jq --arg e "Trusted hosting provider: DESCRIPTION" \
+  '.autoMode.environment += [$e]' ~/.claude/settings.json > /tmp/s.json && mv /tmp/s.json ~/.claude/settings.json
+```
+
+After all entries are applied, run `claude auto-mode config` and show the user their effective environment block to confirm.
 
 ## Step 3 — Install session-start hook (confirm first)
 
@@ -294,6 +335,7 @@ echo "Updated CLAUDE.md sections. Old version: $BACKUP"
 XVE Claude Code Setup
 ─────────────────────
 settings.json:        ✓ applied
+autoMode env:         ✓ configured / ✗ skipped (run /xve:automode-env to set up later)
 session-start.sh:     ✓ / ✗
 env-guard.sh:         ✓ / ✗
 writing-guard.sh:     ✓ / ✗
