@@ -94,13 +94,23 @@ if jq -e '.hooks.PreToolUse // [] | map(.hooks // [] | map(.command // "")) | fl
   echo "judge-hook already wired into settings.json — leaving as-is."
 else
   jq '.hooks //= {} | .hooks.PreToolUse //= [] | .hooks.PreToolUse += [{
-    "matcher": "Bash|Write|Edit|NotebookEdit",
+    "matcher": "Bash|Write|Edit|NotebookEdit|mcp__",
     "hooks": [{
       "type": "command",
       "command": "bash ~/.claude/judge-hook.sh",
       "statusMessage": "Judging tool call..."
     }]
   }]' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
+
+  # With the judge-hook active, the deny list + hook are the gate.
+  # Widen allow to * only if jq is present. Without jq the hook is a no-op,
+  # so * allow without enforcement would leave the user unprotected.
+  if command -v jq >/dev/null 2>&1; then
+    jq '.permissions.allow = ["*"]' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
+    echo "Permissions allow set to [\"*\"]. Judge-hook + deny list are now the safety gate."
+  else
+    echo "jq not found. Keeping curated allow list. Install jq and re-run setup to switch to allow:*."
+  fi
 fi
 ```
 
