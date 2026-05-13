@@ -277,6 +277,7 @@
             <router-link to="/setup" class="nav-link">Setup</router-link>
             <router-link to="/hud" class="nav-link">Statusline</router-link>
             <router-link to="/council" class="nav-link">LLM Council</router-link>
+            <router-link to="/notifications" class="nav-link">Notifications</router-link>
         </nav>
         <router-view></router-view>
     </div>
@@ -379,28 +380,46 @@
 
             setupFlow: `flowchart TD
     START(["/xve:setup"])
-    DETECT["Find repo location"]
-    SETTINGS["Apply settings.json"]
-    HOOKS{"Install hooks?"}
-    HOOK_YES["session-start.sh + env-guard.sh installed"]
-    ENVVARS["Check env vars"]
-    KARPATHY["Install karpathy-skills"]
-    SUMMARY["Summary checklist"]
+    DETECT["1 · Find repo"]
+    SETTINGS["2 · Apply settings.json"]
+    AUTOMODE{"2b · autoMode env?"}
+    AUTOMODE_YES["Orgs, domains, hosting added"]
+    HOOKS{"3 · Session hooks?"}
+    HOOK_YES["session-start + env-guard + writing-guard"]
+    JUDGE{"3b · Judge-hook?"}
+    JUDGE_YES["judge-hook.sh + rules"]
+    NOTIFY{"3c · Notify hooks?"}
+    NOTIFY_YES["notify.sh + 6 hooks"]
+    HUD{"4 · xve-hud?"}
+    HUD_YES["statusLine wired"]
+    ENVVARS["5 · Check env vars"]
+    CLAUDEMD["6 · Refresh CLAUDE.md"]
+    SUMMARY["7 · Summary"]
+    DOCS["8 · Open docs"]
 
-    START --> DETECT --> SETTINGS --> HOOKS
-    HOOKS -->|"Yes"| HOOK_YES --> ENVVARS
-    HOOKS -->|"No"| ENVVARS
-    ENVVARS --> KARPATHY --> SUMMARY
+    START --> DETECT --> SETTINGS --> AUTOMODE
+    AUTOMODE -->|"Yes"| AUTOMODE_YES --> HOOKS
+    AUTOMODE -->|"Skip"| HOOKS
+    HOOKS -->|"Yes"| HOOK_YES --> JUDGE
+    HOOKS -->|"Skip"| JUDGE
+    JUDGE -->|"Yes"| JUDGE_YES --> NOTIFY
+    JUDGE -->|"Skip"| NOTIFY
+    NOTIFY -->|"Yes"| NOTIFY_YES --> HUD
+    NOTIFY -->|"Skip"| HUD
+    HUD -->|"Yes"| HUD_YES --> ENVVARS
+    HUD -->|"Skip"| ENVVARS
+    ENVVARS --> CLAUDEMD --> SUMMARY --> DOCS
 
     classDef blue   fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
     classDef green  fill:#dcfce7,stroke:#16a34a,color:#14532d
     classDef amber  fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef purple fill:#ede9fe,stroke:#7c3aed,color:#4c1d95
     classDef muted  fill:#f1f5f9,stroke:#94a3b8,color:#475569
 
-    class START,SUMMARY green
-    class SETTINGS,HOOK_YES,KARPATHY blue
-    class ENVVARS amber
-    class DETECT,HOOKS muted`,
+    class START,SUMMARY,DOCS green
+    class SETTINGS,HOOK_YES,JUDGE_YES,NOTIFY_YES,HUD_YES,AUTOMODE_YES blue
+    class ENVVARS,CLAUDEMD amber
+    class DETECT,HOOKS,AUTOMODE,JUDGE,NOTIFY,HUD muted`,
 
             hudFlow: `flowchart TD
     START([Every ~300ms Claude Code invokes the statusline])
@@ -678,43 +697,77 @@ Always use conventional commits: type(scope): message</code>
                             <span class="step-num">1</span>
                             <div class="step-content">
                                 <strong>Find repo location</strong>
-                                <span>Detects where the marketplace is checked out so it can reference files. Asks if it can't find it automatically.</span>
+                                <span>Detects where the marketplace is checked out so scripts and config files can be referenced by path.</span>
                             </div>
                         </div>
                         <div class="step-row">
                             <span class="step-num">2</span>
                             <div class="step-content">
                                 <strong>Apply settings.json</strong>
-                                <span>Merges XVE config into <code>~/.claude/settings.json</code>. Sets model strategy (Sonnet executor + Opus advisor), permissions, and token limits.</span>
+                                <span>Merges XVE config into <code>~/.claude/settings.json</code>. Sets model (<code>sonnet[1m]</code>), Opus advisor, <code>bypassPermissions</code> mode, allow/deny lists, and token limits.</span>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <span class="step-num">2b</span>
+                            <div class="step-content">
+                                <strong>Configure autoMode trusted infrastructure</strong>
+                                <span>Adds your GitHub orgs, internal domains, and hosting providers to the autoMode classifier so it doesn't pause on routine pushes or SSH deployments.</span>
                             </div>
                         </div>
                         <div class="step-row">
                             <span class="step-num">3</span>
                             <div class="step-content">
-                                <strong>Install hooks (asks first)</strong>
-                                <span><code>session-start.sh</code> — injects context at the start of every session.<br>
-                                <code>env-guard.sh</code> — blocks Claude from reading or writing <code>.env</code> files.</span>
+                                <strong>Install session hooks (asks first)</strong>
+                                <span><code>session-start.sh</code>: advisor toggle via env var. <code>env-guard.sh</code>: blocks .env file access. <code>writing-guard.sh</code>: flags AI writing tells in generated files.</span>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <span class="step-num">3b</span>
+                            <div class="step-content">
+                                <strong>Install judge-hook (opt-in)</strong>
+                                <span>PreToolUse hook that pattern-matches risky inputs before they run. Deterministic regex layer with optional Haiku escalation for context-sensitive calls.</span>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <span class="step-num">3c</span>
+                            <div class="step-content">
+                                <strong>Install notification hooks (opt-in)</strong>
+                                <span>Native OS notifications for 6 lifecycle events: PreCompact, PostCompact, Stop, StopFailure, TeammateIdle, and idle_prompt. Lets you step away during long runs.</span>
                             </div>
                         </div>
                         <div class="step-row">
                             <span class="step-num">4</span>
                             <div class="step-content">
-                                <strong>Check env vars</strong>
-                                <span>Reports which vars are set and which are missing.</span>
+                                <strong>Install xve-hud statusline (asks first)</strong>
+                                <span>Wires the context-usage banner into the Claude Code statusline. Amber at 60%, red at 85%, early warning if quota is burning fast.</span>
                             </div>
                         </div>
                         <div class="step-row">
                             <span class="step-num">5</span>
                             <div class="step-content">
-                                <strong>Install karpathy-skills</strong>
-                                <span>Installs four coding principles automatically — no prompt needed.</span>
+                                <strong>Check env vars</strong>
+                                <span>Reports <code>DISABLE_ADVISOR</code> and other relevant vars. Read-only, no changes made.</span>
                             </div>
                         </div>
                         <div class="step-row">
                             <span class="step-num">6</span>
                             <div class="step-content">
+                                <strong>Refresh CLAUDE.md sections</strong>
+                                <span>Force-overwrites the 6 XVE-managed sections in <code>~/.claude/CLAUDE.md</code> with canonical content. Backs up the old file first.</span>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <span class="step-num">7</span>
+                            <div class="step-content">
                                 <strong>Summary checklist</strong>
                                 <span>Prints what was applied, what was skipped, and what still needs attention.</span>
+                            </div>
+                        </div>
+                        <div class="step-row">
+                            <span class="step-num">8</span>
+                            <div class="step-content">
+                                <strong>Open docs</strong>
+                                <span>Opens the XVE getting started guide in the browser via <code>/xve:docs</code>.</span>
                             </div>
                         </div>
                     </div>
@@ -980,12 +1033,91 @@ Always use conventional commits: type(scope): message</code>
             `
         };
 
+        const NotificationsPage = {
+            template: `
+            <div class="page-content">
+                <h1>Notification Hooks</h1>
+                <p class="subtitle">XVE · Native OS desktop notifications for Claude Code lifecycle events</p>
+                <p class="intro">
+                    Installed via Step 3c in <code>/xve:setup</code>. Fires a native notification when Claude finishes a turn, hits an API error, is about to compact context, and more. Works on macOS, Windows, and Linux.
+                </p>
+
+                <section>
+                    <h2>Hook Events</h2>
+                    <div class="box" style="padding: 0; overflow: hidden;">
+                        <table>
+                            <thead>
+                                <tr><th>Hook</th><th>When it fires</th><th>Notes</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><code>PreCompact</code></td><td>Context window compaction about to start</td><td>Prompts you to switch to <code>sonnet[1m]</code> if not already</td></tr>
+                                <tr><td><code>PostCompact</code></td><td>Compaction done, context reset</td><td></td></tr>
+                                <tr><td><code>Stop</code></td><td>Claude completed a turn</td><td>Fires on every response; can be noisy</td></tr>
+                                <tr><td><code>StopFailure</code></td><td>Turn ended due to API error</td><td>Includes error type: rate_limit, billing, server_error</td></tr>
+                                <tr><td><code>TeammateIdle</code></td><td>Agent team teammate going idle</td><td>Includes agent type name</td></tr>
+                                <tr><td><code>Notification</code></td><td>Claude idle, waiting for input</td><td>Scoped to <code>idle_prompt</code> only</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Platform Support</h2>
+                    <div class="cards">
+                        <div class="card blue">
+                            <h3>macOS</h3>
+                            <p class="tagline">osascript display notification</p>
+                            <ul><li>Native Notification Center banners</li><li>Suppressed if Do Not Disturb is on</li></ul>
+                        </div>
+                        <div class="card green">
+                            <h3>Windows</h3>
+                            <p class="tagline">PowerShell NotifyIcon</p>
+                            <ul><li>System tray balloon notifications</li><li>Runs as background process (non-blocking)</li></ul>
+                        </div>
+                        <div class="card amber">
+                            <h3>Linux</h3>
+                            <p class="tagline">notify-send</p>
+                            <ul><li>Works with any libnotify-compatible desktop</li><li>Falls back silently if missing</li></ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Installation</h2>
+                    <div class="tip"><strong>Recommended:</strong> Run <code>/xve:setup</code> and say yes at Step 3c. It installs <code>notify.sh</code> and wires all 6 hooks idempotently.</div>
+                    <div class="box">
+                        <p style="margin-bottom: 12px;">Or wire manually in <code>~/.claude/settings.json</code>:</p>
+                        <pre><code>{
+  "hooks": {
+    "PreCompact":   [{"hooks": [{"type": "command", "command": "bash ~/.claude/notify.sh"}]}],
+    "PostCompact":  [{"hooks": [{"type": "command", "command": "bash ~/.claude/notify.sh"}]}],
+    "Stop":         [{"hooks": [{"type": "command", "command": "bash ~/.claude/notify.sh"}]}],
+    "StopFailure":  [{"hooks": [{"type": "command", "command": "bash ~/.claude/notify.sh"}]}],
+    "TeammateIdle": [{"hooks": [{"type": "command", "command": "bash ~/.claude/notify.sh"}]}],
+    "Notification": [{"matcher": "idle_prompt", "hooks": [{"type": "command", "command": "bash ~/.claude/notify.sh"}]}]
+  }
+}</code></pre>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Customization</h2>
+                    <div class="tip">
+                        <strong>Stop fires on every turn.</strong> Remove it if that's too noisy:<br>
+                        <code>jq 'del(.hooks.Stop)' ~/.claude/settings.json > /tmp/s.json &amp;&amp; mv /tmp/s.json ~/.claude/settings.json</code>
+                    </div>
+                </section>
+            </div>
+            `
+        };
+
         const routes = [
             { path: '/', redirect: '/help' },
             { path: '/help', component: HelpPage },
             { path: '/setup', component: SetupPage },
             { path: '/hud', component: HudPage },
             { path: '/council', component: CouncilPage },
+            { path: '/notifications', component: NotificationsPage },
         ];
 
         const router = VueRouter.createRouter({

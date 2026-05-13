@@ -39,6 +39,7 @@ Claude will guide you through the rest.
 | [Repository structure](docs/structure.md) | File layout and what each file does |
 | [LLM Council](docs/llm-council.md) | Multi-advisor decision framework — when and how to use it |
 | [Setup guide](docs/setup.md) | What `/xve:setup` does, step by step |
+| [Notification hooks](docs/notification-hooks.md) | OS notifications for lifecycle events (Stop, StopFailure, PreCompact, TeammateIdle, etc.) |
 
 ---
 
