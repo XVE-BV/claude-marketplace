@@ -155,6 +155,19 @@ else
 fi
 ```
 
+Then ask:
+> "Switch default permission mode to `bypassPermissions`? Judge-hook + deny list are now the active safety gate, so per-call prompts add friction without adding protection. `bypassPermissions` eliminates all prompts: no Shift+Tab, no confirmations. On Sonnet 4.6 with a Max plan, `auto` mode (the previous default) does not work and silently falls back to prompting anyway.
+>
+> Recommended if judge-hook is installed. [Y/n]"
+
+If yes:
+```bash
+jq '.permissions.defaultMode = "bypassPermissions"' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
+echo "defaultMode set to bypassPermissions."
+```
+
+If no: leave `defaultMode` unset. Claude Code will prompt for each tool call as normal.
+
 Tell the user to:
 1. **Review `~/.claude/judge-rules.json`** before the next session. The shipped example denies common destructive patterns; their environment may need additions (org-specific branches, prod hostnames, custom file paths).
 2. **Test rules** against the eval scaffold: `cd "$REPO_DIR/hooks/judge-eval" && ./run-evals.sh`.

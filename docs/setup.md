@@ -74,6 +74,12 @@ A `PreToolUse` hook that pattern-matches risky tool inputs before they execute. 
 - Optional LLM escalation via Haiku (~$0.001 per fire, ~2s latency) for context-sensitive decisions
 - Widens `permissions.allow` to `["*"]` when installed; the deny list and hook rules become the safety gate
 
+If judge-hook is installed, setup immediately asks a follow-up:
+
+> Switch `defaultMode` to `bypassPermissions`?
+
+With judge-hook active, per-call permission prompts add friction without adding protection. `bypassPermissions` removes them. On Sonnet 4.6 + Max plan, the previous default (`auto`) silently did nothing anyway. Recommended: yes.
+
 Full guide: [judge-hook.md](judge-hook.md)
 
 ### 3c: Install notification hooks (opt-in, default Yes)
