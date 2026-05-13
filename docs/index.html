@@ -725,7 +725,7 @@ Always use conventional commits: type(scope): message</code>
                             <span class="step-num">3b</span>
                             <div class="step-content">
                                 <strong>Install judge-hook (opt-in)</strong>
-                                <span>PreToolUse hook that pattern-matches risky inputs before they run. Deterministic regex layer with optional Haiku escalation for context-sensitive calls.</span>
+                                <span>PreToolUse hook that pattern-matches risky inputs before they run. If installed, immediately asks whether to set <code>defaultMode: bypassPermissions</code>, since judge-hook + deny list are now the safety gate and <code>auto</code> mode silently does nothing on Sonnet 4.6 + Max.</span>
                             </div>
                         </div>
                         <div class="step-row">
