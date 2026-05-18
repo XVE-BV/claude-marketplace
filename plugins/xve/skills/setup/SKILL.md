@@ -291,7 +291,11 @@ awk '
     managed["## Review Mindset"] = 1
     managed["## Writing Guidelines"] = 1
     in_strip = 0
+    in_user_custom = 0
   }
+  /^<!-- xve-user-custom-begin -->/ { in_user_custom = 1; print; next }
+  /^<!-- xve-user-custom-end -->/ { in_user_custom = 0; print; next }
+  in_user_custom { print; next }
   $0 in managed { in_strip = 1; next }
   in_strip && /^## / { in_strip = 0 }
   !in_strip { print }

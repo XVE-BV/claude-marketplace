@@ -12,6 +12,8 @@ End-of-session summary for `/clear`. Audience is the next agent, not a stakehold
 1. Plan files referenced this session
 2. TodoWrite state — in-progress or pending tasks
 3. Background processes started with `run_in_background` — shell IDs matter
+> If this is a Solo project, prefer `xve:solo-processes` for process state and `xve:solo-handoff` for scratchpad-based handoff. Solo persists across sessions, `run_in_background` does not.
+
 4. Files created or modified this session
 5. Memory files written or updated
 6. Unresolved questions from the conversation

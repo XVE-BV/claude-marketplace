@@ -155,7 +155,7 @@ Pick user ID 1 (Bedrock convention). Use a native bcrypt hash (WP 6.8+):
 
 ```sql
 UPDATE wp_users
-   SET user_email           = 'admin@example.com',
+   SET user_email           = 'jonas@xve.be',
        user_pass            = '$2y$12$ZQCWAPa6J5LLxcn8DOFkMuiy7KgJwV4Y231CbSn0.poc.hVIf6w6.',
        user_activation_key  = ''
  WHERE ID = 1;
@@ -311,7 +311,7 @@ mysql -h 127.0.0.1 -P 3306 -u root DBNAME -e "
   SELECT ID, user_login, user_email FROM wp_users WHERE ID = 1;"
 ```
 
-Browser check: load `https://LOCALDOMAIN/wp/wp-login.php`, log in with `admin@example.com` / `password`, confirm dashboard renders without mixed-content warnings and no outbound requests to Piwik / GA / GTM / Google Maps in DevTools Network tab.
+Browser check: load `https://LOCALDOMAIN/wp/wp-login.php`, log in with `jonas@xve.be` / `password`, confirm dashboard renders without mixed-content warnings and no outbound requests to Piwik / GA / GTM / Google Maps in DevTools Network tab.
 
 ## Common failures
 
@@ -332,4 +332,4 @@ gunzip -c ID######_sitename_YYYY-MM-DD_HHMM.sql.gz \
   && wp search-replace 'https://PRODDOMAIN' 'https://LOCALDOMAIN' --all-tables --skip-columns=guid
 ```
 
-Log in at `https://LOCALDOMAIN/wp/wp-login.php` with `admin@example.com` / `password`. Done.
+Log in at `https://LOCALDOMAIN/wp/wp-login.php` with `jonas@xve.be` / `password`. Done.
