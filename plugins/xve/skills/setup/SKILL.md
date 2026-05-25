@@ -419,3 +419,7 @@ CLAUDE.md sections:   ✓ refreshed (backup: ~/.claude/CLAUDE.md.bak.<timestamp>
 ## Step 8: Open the guide
 
 Run `/xve:docs` to open the XVE docs in the browser so the user has the getting started guide on screen.
+
+## Known limitations
+
+**`/plan` emits a "BLOCKED: resolves outside working dir" warning.** The `/plan` feature stores plan files in `~/.claude/plans/`, which is outside any project's working directory. The Claude Code harness emits a non-blocking warning on each plan write (visible as `Failed with non-blocking status code: BLOCKED: ...` in the session output). The writes succeed and plans work normally; the warning is cosmetic. This is a harness-level behavior, not caused by any installed hook. No workaround exists on the setup side.
