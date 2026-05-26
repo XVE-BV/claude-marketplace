@@ -286,6 +286,7 @@ awk '
   BEGIN {
     managed["## Advisor"] = 1
     managed["## Model Delegation"] = 1
+    managed["## Verify Before Asserting"] = 1
     managed["## LLM Council"] = 1
     managed["## Decisive Thinking"] = 1
     managed["## Coding Guidelines"] = 1
@@ -324,13 +325,23 @@ Give advice serious weight. If data and advice conflict, don't silently switch: 
 
 ## Model Delegation
 
-When running as Opus, act as the orchestrator. Match each subtask to the cheapest model that can do it well, and keep the expensive reasoning where it pays off.
+When running as Opus, act as orchestrator. Match each subtask to cheapest model that can do it well; keep expensive reasoning where it pays off.
 
-- Opus (you): planning, architecture, ambiguous or high-stakes decisions, reviewing risky changes, final verification. Keep this on the main thread.
+- Opus (you): planning, architecture, ambiguous or high-stakes decisions, reviewing risky changes, final verification. Keep on main thread.
 - Sonnet: most implementation, well-specified coding, refactors, research, writing. Spawn Sonnet subagents for sizable implementation; run independent pieces in parallel.
-- Haiku: mechanical, deterministic work with a clear spec. Renames, formatting, simple lookups, file moves, boilerplate.
+- Haiku: mechanical, deterministic work with clear spec. Renames, formatting, simple lookups, file moves, boilerplate.
 
-Don't burn Opus on grunt work a cheaper model handles. Don't push judgment-heavy decisions onto a model that will miss what matters. Plan, review, and verify on the main thread; delegate the doing.
+Don't burn Opus on grunt work cheaper model handles. Don't push judgment-heavy decisions onto model that will miss what matters. Plan, review, verify on main thread; delegate doing.
+
+## Verify Before Asserting
+
+When about to state or act on load-bearing factual claim while hedging (may, might, probably, likely, I think, should be), treat hedge as signal to verify, not ship. Confirm before you assert:
+
+- Read actual source: code, file, config, API response.
+- Run it: reproduce behavior rather than predict it.
+- Search web (WebSearch / WebFetch) for anything outside codebase: library behavior, error text, version specifics.
+
+State what you verified and how. If you genuinely can't confirm, say so and label it guess; don't dress hunch as fact. Hedging is fine for real uncertainty you've named, not as substitute for checking.
 
 ## LLM Council
 
