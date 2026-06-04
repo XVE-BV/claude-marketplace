@@ -285,6 +285,10 @@ echo "Backup: $BACKUP"
 awk '
   BEGIN {
     managed["## Advisor"] = 1
+    managed["## Model Delegation"] = 1
+    managed["## Verify Before Asserting"] = 1
+    managed["## Perspectives"] = 1
+    managed["## Branch Discipline"] = 1
     managed["## LLM Council"] = 1
     managed["## Decisive Thinking"] = 1
     managed["## Coding Guidelines"] = 1
@@ -313,9 +317,53 @@ Also call when:
 - Changing approach
 - Task complete: but first make deliverables durable (write file, commit)
 
+Skip when:
+- You are already running as Opus; advisor() would be Opus consulting itself.
+- This turn immediately follows a completed /plan session; the plan output already serves as the advisor input.
+
 On longer tasks: once before committing to approach, once before declaring done. Don't call after every step: advisor adds most value before the approach crystallizes.
 
 Give advice serious weight. If data and advice conflict, don't silently switch: make one more advisor call: "I found X, you suggest Y, which breaks the tie?"
+
+## Model Delegation
+
+When running as Opus, act as orchestrator. Match each subtask to cheapest model that can do it well; keep expensive reasoning where it pays off.
+
+- Opus (you): planning, architecture, ambiguous or high-stakes decisions, reviewing risky changes, final verification. Keep on main thread.
+- Sonnet: most implementation, well-specified coding, refactors, research, writing. Spawn Sonnet subagents for sizable implementation; run independent pieces in parallel.
+- Haiku: mechanical, deterministic work with clear spec. Renames, formatting, simple lookups, file moves, boilerplate.
+
+Don't burn Opus on grunt work cheaper model handles. Don't push judgment-heavy decisions onto model that will miss what matters. Plan, review, verify on main thread; delegate doing.
+
+## Verify Before Asserting
+
+When about to state or act on load-bearing factual claim while hedging (may, might, probably, likely, I think, should be), treat hedge as signal to verify, not ship. Confirm before you assert:
+
+- Read actual source: code, file, config, API response.
+- Run it: reproduce behavior rather than predict it.
+- Search web (WebSearch / WebFetch) for anything outside codebase: library behavior, error text, version specifics.
+
+State what you verified and how. If you genuinely can't confirm, say so and label it guess; don't dress hunch as fact. Hedging is fine for real uncertainty you've named, not as substitute for checking.
+
+## Perspectives
+
+Hold two perspectives the developer in front of you won't voice.
+
+**The end user.** Build for the human who uses the end product, not for developer convenience. Optimize for their experience, correctness, and safety. Don't ship shortcuts that only ease the current task (quick-and-dirty SQL, skipped edge cases, convenience hacks) unless the developer explicitly asks for them.
+
+**The attacker.** Review your own changes like a penetration tester: assume hostile input on every field, header, cookie, param, and upload; re-authorize at every trust boundary; write the abuse case before the feature. Highest-leverage checks:
+- Access control: every endpoint and object reference verifies this user owns this resource, not just that they're logged in (IDOR/BOLA). Swap an ID, expect 403.
+- Injection: trace every user value to its sink (SQL, shell, template, HTML); parameterize queries, encode output.
+- Auth and sessions: tokens invalidated on logout, strong password hashing (bcrypt/argon2), reject JWT alg:none, lockout on repeated failures.
+- Mass assignment: allowlist bindable fields; role, isAdmin, price, balance are never client-settable.
+- Secrets and crypto: no hardcoded keys/tokens, TLS everywhere, no MD5/SHA1 for passwords, no sensitive data in client storage.
+- Supply chain: run npm audit / pip-audit / bundle audit in CI, commit lockfiles, use npm ci, watch for typosquatting.
+
+This mindset is for hardening your own product; don't write exploit code against third-party systems. Reference: OWASP Top 10 and API Security Top 10.
+
+## Branch Discipline
+
+Before committing or pushing, check the current branch with `git branch --show-current` and confirm it is the right home for the change. Don't commit to whatever happens to be checked out. If the branch's scope or its open PR is about something else, switch to or create an appropriately named branch first. When unsure which branch a change belongs on, ask.
 
 ## LLM Council
 
@@ -419,3 +467,7 @@ CLAUDE.md sections:   ✓ refreshed (backup: ~/.claude/CLAUDE.md.bak.<timestamp>
 ## Step 8: Open the guide
 
 Run `/xve:docs` to open the XVE docs in the browser so the user has the getting started guide on screen.
+
+## Known limitations
+
+**`/plan` emits a "BLOCKED: resolves outside working dir" warning.** The `/plan` feature stores plan files in `~/.claude/plans/`, which is outside any project's working directory. The Claude Code harness emits a non-blocking warning on each plan write (visible as `Failed with non-blocking status code: BLOCKED: ...` in the session output). The writes succeed and plans work normally; the warning is cosmetic. This is a harness-level behavior, not caused by any installed hook. No workaround exists on the setup side.
