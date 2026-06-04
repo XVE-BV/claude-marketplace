@@ -101,6 +101,16 @@
   "hooks": {
     "PreToolUse": [
       {
+        "matcher": "mcp__skyline.*__skyline_edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/writing-guard.sh",
+            "statusMessage": "Checking writing guidelines..."
+          }
+        ]
+      },
+      {
         "matcher": "Bash|Read|Edit|Write|NotebookEdit|Grep",
         "hooks": [
           {

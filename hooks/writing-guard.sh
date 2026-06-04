@@ -14,22 +14,44 @@ FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 # Write tool uses .content; Edit tool uses .new_string.
 CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // .tool_input.new_string // empty')
 
+# skyline_edit (PreToolUse) carries a patch instead of file_path/content:
+# scan only the added body rows (the + prefixed ones) and take paths from
+# the section headers, so the gate fires before the write instead of after.
+MODE=post
+PATCH=$(echo "$INPUT" | jq -r '.tool_input.patch // empty')
+if [ -n "$PATCH" ]; then
+  MODE=pre
+  CONTENT=$(printf '%s\n' "$PATCH" | sed -n 's/^+//p')
+  PATHS=$(printf '%s\n' "$PATCH" | sed -n 's/^¶//p' | sed 's/#[A-Fa-f0-9]*$//')
+  SKIP_EXT='\.(json|jsonc|yaml|yml|toml|xml|csv|tsv|lock|lockb|lockfile|sum|mod|svg|map|min\.js|min\.css|png|jpg|jpeg|gif|webp|ico|pdf|zip|gz|tar|docx|xlsx|pptx|doc|xls|ppt|key|numbers|pages)$'
+  LIVE_PATHS=$(printf '%s\n' "$PATHS" | grep -viE "$SKIP_EXT" || true)
+  [ -z "$LIVE_PATHS" ] && exit 0
+  FILE_PATH=$(printf '%s\n' "$LIVE_PATHS" | head -1)
+  if printf '%s\n' "$LIVE_PATHS" | grep -qiE '\.(md|mdx|markdown|html|htm|txt|rst|adoc|tex|rtf)$'; then
+    IS_PROSE=1
+  else
+    IS_PROSE=0
+  fi
+fi
+
 [ -z "$FILE_PATH" ] && exit 0
 [ -z "$CONTENT" ] && exit 0
 
-# Skip data, config, lock, and binary files where these checks are pure noise.
-case "$FILE_PATH" in
-  *.json|*.jsonc|*.yaml|*.yml|*.toml|*.xml|*.csv|*.tsv|*.lock|*.lockb|*.lockfile|*.sum|*.mod|*.svg|*.map|*.min.js|*.min.css) exit 0 ;;
-  *.png|*.jpg|*.jpeg|*.gif|*.webp|*.ico|*.pdf|*.zip|*.gz|*.tar|*.docx|*.xlsx|*.pptx|*.doc|*.xls|*.ppt|*.key|*.numbers|*.pages) exit 0 ;;
-esac
+if [ "$MODE" = "post" ]; then
+  # Skip data, config, lock, and binary files where these checks are pure noise.
+  case "$FILE_PATH" in
+    *.json|*.jsonc|*.yaml|*.yml|*.toml|*.xml|*.csv|*.tsv|*.lock|*.lockb|*.lockfile|*.sum|*.mod|*.svg|*.map|*.min.js|*.min.css) exit 0 ;;
+    *.png|*.jpg|*.jpeg|*.gif|*.webp|*.ico|*.pdf|*.zip|*.gz|*.tar|*.docx|*.xlsx|*.pptx|*.doc|*.xls|*.ppt|*.key|*.numbers|*.pages) exit 0 ;;
+  esac
 
-# Identify prose files for the full vocab/phrase scan. Other files (code, configs)
-# only get the strict em-dash check, since vocab/phrase regex on identifiers and
-# strings is too noisy.
-case "$FILE_PATH" in
-  *.md|*.mdx|*.markdown|*.html|*.htm|*.txt|*.rst|*.adoc|*.tex|*.rtf) IS_PROSE=1 ;;
-  *) IS_PROSE=0 ;;
-esac
+  # Identify prose files for the full vocab/phrase scan. Other files (code,
+  # configs) only get the strict em-dash check, since vocab/phrase regex on
+  # identifiers and strings is too noisy.
+  case "$FILE_PATH" in
+    *.md|*.mdx|*.markdown|*.html|*.htm|*.txt|*.rst|*.adoc|*.tex|*.rtf) IS_PROSE=1 ;;
+    *) IS_PROSE=0 ;;
+  esac
+fi
 
 # Strip code blocks and inline code so quoted code in prose doesn't trip the regex.
 STRIPPED=$(echo "$CONTENT" | awk '
@@ -62,6 +84,10 @@ fi
 
 [ -z "$VIOLATIONS" ] && exit 0
 
-REASON=$(printf "Wrote to %s but content violates ## Writing Guidelines (~/.claude/CLAUDE.md):\n\n%b\nEdit the file to remove these tells. Do not acknowledge or apologize, just produce a corrected version." "$FILE_PATH" "$VIOLATIONS")
-
-jq -n --arg reason "$REASON" '{decision: "block", reason: $reason}'
+if [ "$MODE" = "pre" ]; then
+  REASON=$(printf "skyline_edit patch touching %s violates ## Writing Guidelines (~/.claude/CLAUDE.md):\n\n%b\nRewrite the patch without these tells and retry." "$FILE_PATH" "$VIOLATIONS")
+  jq -n --arg reason "$REASON" '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: $reason}}'
+else
+  REASON=$(printf "Wrote to %s but content violates ## Writing Guidelines (~/.claude/CLAUDE.md):\n\n%b\nEdit the file to remove these tells. Do not acknowledge or apologize, just produce a corrected version." "$FILE_PATH" "$VIOLATIONS")
+  jq -n --arg reason "$REASON" '{decision: "block", reason: $reason}'
+fi
