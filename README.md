@@ -5,7 +5,7 @@ Claude Code plugins for XVE.
 | Plugin | What it does |
 |--------|--------------|
 | `starter` | Empty for now. |
-| `destructive` | Skills that delete Claude Code state. `purge-claude-user-scope` removes `~/.claude` (settings, memory, plugins, hooks, sessions, history) and keeps the `claude` binary installed. It asks you to type `PURGE` before it deletes anything. |
+| `destructive` | Skills that delete Claude Code state. `purge-claude-user-scope` removes `~/.claude` (settings, memory, plugins, hooks, sessions, history) and keeps the `claude` binary installed; you confirm by typing `PURGE`. `uninstall-claude` also uninstalls the binary (brew, npm or direct) and strips Claude lines from your shell rc or PowerShell profile; you confirm by typing `DELETE`. |
 
 ## Install
 
