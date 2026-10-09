@@ -33,6 +33,19 @@
                 "purge",
                 "reset"
             ]
+        },
+        {
+            "name": "claudecodemonitor-hud-mod",
+            "source": "./plugins/claudecodemonitor-hud-mod",
+            "description": "Claude Code monitor HUD mod. Empty for now.",
+            "version": "0.1.0",
+            "author": {
+                "name": "XVE"
+            },
+            "tags": [
+                "hud",
+                "monitor"
+            ]
         }
     ]
 }
