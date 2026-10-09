@@ -8,7 +8,7 @@ Every skill file written is read by LLM, never skimmed by human. Optimize compre
 
 Root = nearest ancestor of cwd holding `.claude-plugin/marketplace.json` named `xve-claude-marketplace`. No root -> ask for clone path; write nowhere else.
 
-Layout: `plugins/<plugin>/skills/<skill>/SKILL.md`; bundled scripts and reference files sit beside SKILL.md. One skill per directory. Directory name = frontmatter `name` = lowercase letters, digits, hyphens. `name` never repeats plugin name (invocation is `/<plugin>:<skill>`).
+Layout: `plugins/<plugin>/skills/<skill>/SKILL.md`; bundled scripts and reference files sit beside SKILL.md. One skill per directory. Directory name = frontmatter `name` = lowercase letters, digits, hyphens, at most 64 characters. `name` never contains `anthropic` or `claude` because claude.ai and Skills API reject those; never repeats plugin name (invocation is `/<plugin>:<skill>`).
 
 Unknown purpose, trigger, target plugin, or side effects -> ask, only what request and repo leave open. Discrete choice -> AskUserQuestion, recommended option first. Request states it -> never ask.
 
