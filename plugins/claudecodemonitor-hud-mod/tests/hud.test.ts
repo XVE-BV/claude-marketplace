@@ -51,9 +51,9 @@ test('shows session and config values before any request', async ($, on) => {
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   const line = await band($)
   expect(line).toContain(' ◆ Opus 5.5 ')
-  expect(line).toContain(' (Haiku)')
+  expect(line).toContain(' Haiku')
   expect(line).toContain('▱▱▱▱▱ —')
-  expect(line).toContain(' (default)')
+  expect(line).toContain(' default')
   expect(line).toContain('Fable · 0 calls')
 })
 
@@ -62,7 +62,7 @@ test('colors the model pill by family and grays the config value', async ($, on)
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   const texts = (await (await mount($)).findAll({ type: 'Text' })) as any[]
   expect(texts.find(t => t.text === ' ◆ Opus 5.5 ')?.props?.backgroundColor).toBe('magenta')
-  expect(texts.find(t => t.text === ' (Haiku)')?.props?.dimColor).toBe(true)
+  expect(texts.find(t => t.text === ' Haiku')?.props?.dimColor).toBe(true)
 })
 
 test('takes the effort and advisor calls from main-loop requests only', async ($, on) => {
@@ -72,8 +72,8 @@ test('takes the effort and advisor calls from main-loop requests only', async ($
   await step($, 'xhigh')
   await step($, 'low', 'subagent-1')
   const line = await band($)
-  expect(line).toContain(' ◆ Opus 5.5  (Opus)')
-  expect(line).toContain('▰▰▰▰▱ xhigh (high)')
+  expect(line).toContain(' ◆ Opus 5.5  Opus')
+  expect(line).toContain('▰▰▰▰▱ xhigh high')
   expect(line).not.toContain(' low')
   expect(line).toContain(' · 1 call')
 })
@@ -87,7 +87,7 @@ test('re-reads the effort as soon as /effort is done', async ($, on) => {
   })
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   await $.command.run({ command: 'effort', args: 'high' } as any)
-  expect(await band($)).toContain('▰▰▰▱▱ high (high)')
+  expect(await band($)).toContain('▰▰▰▱▱ high high')
 })
 
 test('catches settings that land just after /effort', async ($, on) => {
@@ -98,7 +98,7 @@ test('catches settings that land just after /effort', async ($, on) => {
   await $.command.run({ command: 'effort', args: 'low' } as any)
   settings.effortLevel = 'low'
   await clock.advance(300)
-  expect(await band($)).toContain('▰▱▱▱▱ low (low)')
+  expect(await band($)).toContain('▰▱▱▱▱ low low')
 })
 
 test('re-reads when a settings file changes', async ($, on) => {
@@ -108,13 +108,13 @@ test('re-reads when a settings file changes', async ($, on) => {
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   settings.effortLevel = 'max'
   await ($ as any).classic.ConfigChange({ hook_event_name: 'ConfigChange', source: 'user_settings' })
-  expect(await band($)).toContain('▰▰▰▰▰ max (max)')
+  expect(await band($)).toContain('▰▰▰▰▰ max max')
 })
 
 test('reads the effort /effort saves for the session model', async ($, on) => {
   world(on, { effortLevel: 'high', modelSettings: { 'claude-opus-5-5': { effortLevel: 'medium' }, 'claude-fable-5-1': { effortLevel: 'max' } } })
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
-  expect(await band($)).toContain(' medium (medium)')
+  expect(await band($)).toContain(' medium medium')
 })
 
 test('keeps the session effort across a model switch', async ($, on) => {
@@ -126,12 +126,12 @@ test('keeps the session effort across a model switch', async ($, on) => {
     return {}
   })
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
-  expect(await band($)).toContain('▰▰▰▰▱ xhigh (xhigh)')
+  expect(await band($)).toContain('▰▰▰▰▱ xhigh xhigh')
   await $.command.run({ command: 'model', args: 'fable' } as any)
   await clock.advance(300)
   const line = await band($)
   expect(line).toContain(' ◆ Fable 5.1 ')
-  expect(line).toContain('▰▰▰▰▱ xhigh (high)')
+  expect(line).toContain('▰▰▰▰▱ xhigh high')
 })
 
 test('shows /effort <level> the moment it runs', async ($, on) => {
@@ -164,5 +164,5 @@ test('shows the advisor as off when no advisor model is set', async ($, on) => {
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   const line = await band($)
   expect(line).toContain('advisor off')
-  expect(line).toContain(' (default)')
+  expect(line).toContain(' default')
 })

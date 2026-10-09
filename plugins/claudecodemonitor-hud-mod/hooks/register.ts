@@ -151,7 +151,7 @@ export const register: Register = on => {
     const { Box, Text } = $.ui.resolve(e)
     const dim = (s: string) => Text({ dimColor: true, children: [s] })
     // What the settings hold, in gray beside the session's value.
-    const saved = (value: string | undefined) => dim(` (${value ?? 'default'})`)
+    const saved = (value: string | undefined) => dim(` ${value ?? 'default'}`)
 
     const modelColor = FAMILY_COLORS[family(sessionModel) ?? ''] ?? 'white'
     const level = LEVELS.indexOf(sessionEffort ?? '')
