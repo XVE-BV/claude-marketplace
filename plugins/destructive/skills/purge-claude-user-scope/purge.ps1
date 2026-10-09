@@ -1,50 +1,19 @@
 #Requires -Version 5.1
-$ErrorActionPreference = "Stop"
+# Delete ~/.claude (the Claude Code user scope). Keeps the claude binary.
+# The user runs this from a terminal after quitting Claude Code. No prompts.
+$ErrorActionPreference = 'Stop'
 
-$claudeDir = Join-Path $env:USERPROFILE ".claude"
-$claudeBinInfo = Get-Command claude -ErrorAction SilentlyContinue
-$claudeBin = if ($claudeBinInfo) { $claudeBinInfo.Source } else { $null }
+# Windows locks files a running Claude Code holds open, so a partial delete is
+# the likely result if one is still running.
+if (Get-Process -Name claude -ErrorAction SilentlyContinue) {
+    'Claude Code is still running. Close every Claude Code window, then run this again.'
+    exit 1
+}
 
-Write-Host ""
-Write-Host "Claude Code User-Scope Purge" -ForegroundColor White
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-Write-Host ""
-Write-Host "Will remove:" -ForegroundColor White
-if (Test-Path $claudeDir) {
-    Write-Host "  x $claudeDir  (settings, memory, plugins, hooks, sessions, history)" -ForegroundColor Red
+$target = Join-Path $env:USERPROFILE '.claude'
+if (Test-Path -LiteralPath $target) {
+    Remove-Item -LiteralPath $target -Recurse -Force
+    "removed $target"
 } else {
-    Write-Host "  - $claudeDir  (not found, nothing to purge)"
+    "not found: $target"
 }
-Write-Host ""
-Write-Host "Will keep:" -ForegroundColor White
-if ($claudeBin) {
-    Write-Host "  + $claudeBin  (binary stays installed)" -ForegroundColor Green
-} else {
-    Write-Host "  + claude binary  (not in PATH, not touched either way)" -ForegroundColor Green
-}
-Write-Host "  + PowerShell profile  (not touched)" -ForegroundColor Green
-
-if (-not (Test-Path $claudeDir)) {
-    Write-Host ""
-    Write-Host "Nothing to do."
-    exit 0
-}
-
-Write-Host ""
-Write-Host "This cannot be undone. The binary remains; only user-scope state is wiped." -ForegroundColor Yellow
-Write-Host ""
-$confirm = Read-Host "Type PURGE to confirm, or anything else to cancel"
-
-if ($confirm -ne "PURGE") {
-    Write-Host "Cancelled."
-    exit 0
-}
-
-Write-Host ""
-Write-Host "Removing $claudeDir ..."
-Remove-Item -Recurse -Force $claudeDir
-Write-Host "  done" -ForegroundColor Green
-
-Write-Host ""
-Write-Host "Done. User-scope state purged. The claude binary is still installed. Next launch starts fresh." -ForegroundColor Green
-Write-Host ""
