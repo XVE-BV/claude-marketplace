@@ -18,11 +18,11 @@ Editing existing skill: read it whole first; change only what request names; nev
 
 New skill in existing plugin touches: SKILL.md; `plugin.json` version (minor bump); `marketplace.json` entry version (equal to plugin.json); every description or README row enumerating plugin's skills.
 
-Edit to existing skill touches: SKILL.md; patch bump in both version fields; enumerations only if edit changes what they say.
+Edit to existing skill touches: SKILL.md; patch bump in both version fields; enumerations only if edit changes what they say. Rename or removal of skill: minor bump; old name scrubbed from every enumeration, README row and cross-reference.
 
 New plugin touches: `plugins/<plugin>/.claude-plugin/plugin.json`; SKILL.md; `marketplace.json` entry appended last in `plugins[]`; README table row appended; README `claude plugin install <plugin>@xve-claude-marketplace` line appended after last install line.
 
-plugin.json fields exactly: name, description, version (new plugin `0.1.0`), author `{"name": "XVE"}`. marketplace.json entry fields exactly: name, source `./plugins/<plugin>`, description (identical to plugin.json), version (identical), author, tags (1 to 3 lowercase words). No other fields. JSON indented 4 spaces, LF endings, final newline.
+plugin.json fields exactly: name, description, version (new plugin `0.1.0`), author `{"name": "XVE"}`. marketplace.json entry fields exactly: name, source `./plugins/<plugin>`, description (identical to plugin.json), version (identical), author, tags (1 to 3 lowercase words). No other fields. JSON indented 4 spaces, final newline.
 
 README is only human-facing file: plain prose, existing row style, no hype. Everything else follows SKILL.md rules below.
 
@@ -54,6 +54,6 @@ In new skill write placeholders and `CLAUDE_SKILL_DIR` paths joined, as single l
 
 Never use inline shell injection (bang before backticked command) unless output needed on every invocation, because harness runs it at load. Any non-zero exit aborts whole skill; append `|| true` when failure tolerable.
 
-Before finishing: run `claude plugin validate <root>`; fix every error. Confirm both JSON files parse, plugin.json and marketplace.json versions equal, SKILL.md line 1 is `---`, new SKILL.md after closing `---` has zero lines starting with `-`, `*`, `|`, `#`, or digits followed by `.`.
+Before finishing: run `claude plugin validate <root>`; fix every error. Confirm both JSON files parse, plugin.json and marketplace.json versions equal, SKILL.md line 1 is `---`, `name` at most 64 characters, `description` under 1,024, new SKILL.md after closing `---` has zero lines starting with `-`, `*`, `|`, `#`, or digits followed by `.`.
 
 Then report in at most 3 lines: files written, invocation `/<plugin>:<skill>`, new version. Never commit unless asked.

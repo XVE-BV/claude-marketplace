@@ -51,7 +51,7 @@
             "name": "meta",
             "source": "./plugins/meta",
             "description": "Skills that author this marketplace's own parts: create-skill writes skills, plugin files, marketplace entry and README rows to strict LLM-optimized rules.",
-            "version": "0.1.2",
+            "version": "0.1.3",
             "author": {
                 "name": "XVE"
             },
