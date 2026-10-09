@@ -45,8 +45,11 @@ async function refresh($: EngineInterface) {
   const next = [fullModel, nonEmpty(settings.model), effort, nonEmpty(settings.advisorModel)]
   const now = [sessionModel, configModel, configEffort, advisorModel]
   if (next.every((value, i) => value === now[i])) return
-  // /effort saves to the settings: take a new level now, not at the next request.
-  if (next[2] !== configEffort && next[2] !== undefined) sessionEffort = next[2]
+  // /effort saves to the settings: take a new level now, not at the next
+  // request. Not on a model switch: the session keeps its level, and the
+  // new model's saved entry is just what now shows beside it.
+  const sameModel = sessionModel === undefined || fullModel === sessionModel
+  if (sameModel && next[2] !== configEffort && next[2] !== undefined) sessionEffort = next[2]
   ;[sessionModel, configModel, configEffort, advisorModel] = next
   $.ui.invalidate('ui.render')
 }

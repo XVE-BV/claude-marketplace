@@ -1,9 +1,10 @@
 import { test, expect, mock } from 'claude-code/testing'
 
-function world(on: any, settings: Record<string, unknown>, model = 'claude-opus-5-5') {
+// `model` may be a function, for a test that switches the session's model.
+function world(on: any, settings: Record<string, unknown>, model: string | (() => string) = 'claude-opus-5-5') {
   const clock = mock.clock(on, { now: 0 })
   on('session.start', (_$: any, e: any) => ({ cwd: e.cwd ?? '/tmp' }))
-  on('session.model', () => ({ value: model }))
+  on('session.model', () => ({ value: typeof model === 'function' ? model() : model }))
   on('settings.read', () => ({ value: settings }))
   on('ui.invalidate', () => ({ value: undefined }))
   on('ui.render', ($: any, e: any) => $.ui.resolve(e).Box({ children: [] }))
@@ -112,6 +113,23 @@ test('reads the effort /effort saves for the session model', async ($, on) => {
   world(on, { effortLevel: 'high', modelSettings: { 'claude-opus-5-5': { effortLevel: 'medium' }, 'claude-fable-5-1': { effortLevel: 'max' } } })
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   expect(await band($)).toContain(' medium ✓ saved')
+})
+
+test('keeps the session effort across a model switch', async ($, on) => {
+  let model = 'claude-opus-5-5'
+  const settings = { modelSettings: { 'claude-opus-5-5': { effortLevel: 'xhigh' }, 'claude-fable-5-1': { effortLevel: 'high' } } }
+  const clock = world(on, settings, () => model)
+  on('command.run', () => {
+    model = 'claude-fable-5-1'
+    return {}
+  })
+  await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
+  expect(await band($)).toContain('▰▰▰▰▱ xhigh ✓ saved')
+  await $.command.run({ command: 'model', args: 'fable' } as any)
+  await clock.advance(300)
+  const line = await band($)
+  expect(line).toContain(' ◆ Fable 5.1 ')
+  expect(line).toContain('▰▰▰▰▱ xhigh ≠ saved high')
 })
 
 test('shows /effort <level> the moment it runs', async ($, on) => {
