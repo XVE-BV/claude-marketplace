@@ -61,8 +61,8 @@ test('reset label and handoff banner, as the old HUD wrote them', async () => {
   expect(resetLabel(new Date(2026, 9, 16, 9, 0).toISOString(), now)).toBe('resets Fri 09:00')
   expect(resetLabel(undefined, now)).toBe('')
   expect(handoff(40, 50)).toBeUndefined()
-  expect(handoff(55, 35)?.text).toBe('● handoff soon (hot burn)')
-  expect(handoff(62, 0)?.text).toBe('● handoff soon')
+  expect(handoff(55, 35)?.text).toBe('● handoff')
+  expect(handoff(62, 0)?.text).toBe('● handoff')
   expect(handoff(86, 0)?.text).toBe('● handoff NOW: auto-compact imminent')
 })
 
