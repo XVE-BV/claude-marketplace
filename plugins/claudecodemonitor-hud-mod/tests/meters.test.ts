@@ -73,7 +73,6 @@ const USAGE = {
     { kind: 'five_hour', percentUsed: 21, resetsAt: new Date(154 * MINUTE).toISOString() },
     { kind: 'seven_day', percentUsed: 58, resetsAt: new Date(3 * 24 * HOUR).toISOString() },
   ],
-  cost: { usd: 1.23 },
 }
 
 function world(on: any) {
@@ -94,7 +93,7 @@ async function lines($: any) {
   return ((await ui.findAll({ type: 'Text' })) as any[]).map(t => t.text).join('')
 }
 
-test('the meters line: context, limits against the clock, cost', async ($, on) => {
+test('the meters line: context and limits against the clock', async ($, on) => {
   world(on)
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   const text = await lines($)
@@ -102,7 +101,7 @@ test('the meters line: context, limits against the clock, cost', async ($, on) =
   expect(text).not.toContain('handoff')
   expect(text).toContain(` │ 5h ▸ ━╍╍─── 21% · ${resetLabel(USAGE.rateLimits[0]!.resetsAt, 0)}`)
   expect(text).toContain(` │ 7d ▸ ━━━─── 58% · ${resetLabel(USAGE.rateLimits[1]!.resetsAt, 0)}`)
-  expect(text).toContain(' · $1.23')
+  expect(text).not.toContain('$')
 })
 
 test('the meters line draws in the Desktop app too', async ($, on) => {

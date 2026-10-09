@@ -1,9 +1,9 @@
-// The meters line: context bar, 5h and 7d limits with burn rate and run-out
-// verdict, session cost. Pure functions over readings; register.ts feeds them.
+// The meters line: context, 5h and 7d limits with burn rate and run-out
+// verdict. Pure functions over readings; register.ts feeds them.
 
 export type Limit = { kind: string; percentUsed: number; resetsAt?: string }
 export type Sample = { at: number; five?: number; seven?: number }
-export type Reading = { tokens?: number; window: number; percent?: number; rateLimits: Limit[]; costUsd?: number }
+export type Reading = { tokens?: number; window: number; percent?: number; rateLimits: Limit[] }
 
 export const MINUTE = 60_000
 export const HOUR = 60 * MINUTE

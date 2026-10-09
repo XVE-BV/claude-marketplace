@@ -1,6 +1,6 @@
 import type { EngineInterface, Register } from 'claude-code'
 
-import { addSample, burnRate, clock, compact, contextColor, handoff, paceArrow, paceBar, resetLabel, runOut, HOUR, MINUTE, PACE_CELLS } from './meters'
+import { addSample, burnRate, clock, compact, contextColor, handoff, paceArrow, paceBar, resetLabel, runOut, PACE_CELLS } from './meters'
 import type { Reading, Sample } from './meters'
 
 // The meters: the latest reading and the limit samples behind the burn rate.
@@ -8,8 +8,6 @@ import type { Reading, Sample } from './meters'
 const SAMPLES_KEY = 'samples'
 let reading: Reading | undefined
 let samples: Sample[] = []
-// When the session began, for the cost per hour.
-let startedAt: number | undefined
 
 // What the band shows. Session values come from the engine as the session
 // runs; config values from the settings files, merged as the engine reads them.
@@ -60,9 +58,9 @@ async function refresh($: EngineInterface) {
 }
 
 // Takes a measurement into the reading and the samples, and redraws.
-async function measure($: EngineInterface, usage: { context: { tokens?: number; window: number; percent?: number }; rateLimits: readonly { kind: string; percentUsed: number; resetsAt?: string }[]; cost?: { usd: number } }) {
+async function measure($: EngineInterface, usage: { context: { tokens?: number; window: number; percent?: number }; rateLimits: readonly { kind: string; percentUsed: number; resetsAt?: string }[] }) {
   const now = await $.clock.now()
-  reading = { ...usage.context, rateLimits: [...usage.rateLimits], costUsd: usage.cost?.usd }
+  reading = { ...usage.context, rateLimits: [...usage.rateLimits] }
   const five = usage.rateLimits.find(l => l.kind === 'five_hour')?.percentUsed
   const seven = usage.rateLimits.find(l => l.kind === 'seven_day')?.percentUsed
   if (five !== undefined || seven !== undefined) {
@@ -83,10 +81,7 @@ export const register: Register = on => {
     if (Array.isArray(saved)) samples = saved as Sample[]
     await refresh($)
     const usage = await $.session.usage().catch(() => undefined)
-    if (usage) {
-      startedAt = usage.startedAt
-      await measure($, usage)
-    }
+    if (usage) await measure($, usage)
     // The countdowns and the burn rate move with the clock.
     $.clock.every(30_000, () => $.ui.invalidate('ui.render'))
     // A safety net for anything the two hooks below miss. Both reads are
@@ -224,14 +219,7 @@ export const register: Register = on => {
         ]
       }
 
-      // The session cost, and per hour once the session is five minutes old.
-      const cost: ReturnType<typeof dim>[] = []
-      if (reading.costUsd !== undefined && reading.costUsd > 0) {
-        const hours = startedAt !== undefined ? (now - startedAt) / HOUR : 0
-        const perHour = hours * HOUR > 5 * MINUTE ? ` ($${(reading.costUsd / hours).toFixed(1)}/h)` : ''
-        cost.push(dim(` · $${reading.costUsd.toFixed(2)}${perHour}`))
-      }
-      rows.push(Box({ flexDirection: 'row', flexWrap: 'wrap', children: [...context, ...limit('5h', 'five_hour', 'five'), ...limit('7d', 'seven_day', 'seven'), ...cost] }))
+      rows.push(Box({ flexDirection: 'row', flexWrap: 'wrap', children: [...context, ...limit('5h', 'five_hour', 'five'), ...limit('7d', 'seven_day', 'seven')] }))
     }
 
     // Keep what the mods after this one draw in the band, under these lines.
