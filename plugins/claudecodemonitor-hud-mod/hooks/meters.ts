@@ -71,21 +71,39 @@ export function paceBar(percentUsed: number, kind: string, resetsAt: string | un
   return { used: '━'.repeat(low), gap: '╍'.repeat(high - low), rest: '─'.repeat(cells - high), color, ahead }
 }
 
+// The burn rate against the pace that would spend the whole window exactly by
+// its reset (100% over 5 h is 20 %/h), as the old status-line HUD drew it:
+// ↑ red past 1.5×, ↗ amber past 1.1×, → plain past 0.5×, ↘ dim below.
+export function paceArrow(rate: number | undefined, kind: string): { arrow: string; color?: string; dim?: boolean } | undefined {
+  const span = SPANS[kind]
+  if (rate === undefined || rate <= 0 || !span) return undefined
+  const sustainable = 100 / (span / HOUR)
+  if (rate > sustainable * 1.5) return { arrow: '↑', color: 'red' }
+  if (rate > sustainable * 1.1) return { arrow: '↗', color: 'yellow' }
+  if (rate > sustainable * 0.5) return { arrow: '→' }
+  return { arrow: '↘', dim: true }
+}
+
+// "resets 14:20" today, "resets Fri 09:00" on another day; "" when unknown.
+export function resetLabel(iso: string | undefined, now: number): string {
+  const at = iso ? Date.parse(iso) : NaN
+  if (!Number.isFinite(at)) return ''
+  const sameDay = new Date(at).toDateString() === new Date(now).toDateString()
+  const day = new Date(at).toLocaleDateString('en-US', { weekday: 'short' })
+  return `resets ${sameDay ? '' : `${day} `}${clock(at)}`
+}
+
+// The old HUD's handoff banner: soon from 60% (or 50% on a hot 5h burn), now from 85%.
+export function handoff(percent: number, fiveHourRate: number | undefined): { text: string; color: string; bold?: boolean } | undefined {
+  if (percent >= CONTEXT_HANDOFF) return { text: '● handoff NOW: auto-compact imminent', color: 'red', bold: true }
+  if (percent >= CONTEXT_WARN) return { text: '● handoff soon', color: 'yellow' }
+  if (percent >= 50 && (fiveHourRate ?? 0) > 30) return { text: '● handoff soon (hot burn)', color: 'yellow' }
+  return undefined
+}
+
 export const contextColor = (percent: number) => (percent >= CONTEXT_HANDOFF ? 'red' : percent >= CONTEXT_WARN ? 'yellow' : 'green')
 
-export const compact = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n))
-
-// "38 min" / "2h34" / "14h54" / "3d02h" until a time; "" when it is past or unknown.
-export function until(iso: string | undefined, now: number): string {
-  const at = iso ? Date.parse(iso) : NaN
-  if (!Number.isFinite(at) || at <= now) return ''
-  const minutes = Math.round((at - now) / MINUTE)
-  if (minutes < 60) return `${minutes} min`
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  if (h >= 48) return `${Math.floor(h / 24)}d${String(h % 24).padStart(2, '0')}h`
-  return `${h}h${String(m).padStart(2, '0')}`
-}
+export const compact = (n: number) => (n >= 1_000_000 ? `${+(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n))
 
 export function clock(at: number): string {
   const d = new Date(at)

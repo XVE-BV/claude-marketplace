@@ -1,6 +1,6 @@
 import { test, expect, mock } from 'claude-code/testing'
 
-import { addSample, burnRate, paceBar, runOut, until, MINUTE, HOUR } from '../hooks/meters'
+import { addSample, burnRate, handoff, paceArrow, paceBar, resetLabel, runOut, MINUTE, HOUR } from '../hooks/meters'
 
 test('burn rate: percent per hour over the last ten minutes', async () => {
   const now = 100 * MINUTE
@@ -44,13 +44,28 @@ test('pace bar: used, the gap to the time elapsed, the rest', async () => {
   expect(paceBar(92, 'seven_day', new Date(now + HOUR).toISOString(), now).color).toBe('red')
 })
 
-test('countdown', async () => {
-  const now = Date.UTC(2026, 9, 9, 12, 0)
-  expect(until(new Date(now + 38 * MINUTE).toISOString(), now)).toBe('38 min')
-  expect(until(new Date(now + 154 * MINUTE).toISOString(), now)).toBe('2h34')
-  expect(until(new Date(now + 3 * 24 * HOUR + 2 * HOUR).toISOString(), now)).toBe('3d02h')
-  expect(until(new Date(now - MINUTE).toISOString(), now)).toBe('')
+test('pace arrow against the sustainable rate (20 %/h for 5h)', async () => {
+  expect(paceArrow(31, 'five_hour')?.arrow).toBe('↑')
+  expect(paceArrow(31, 'five_hour')?.color).toBe('red')
+  expect(paceArrow(23, 'five_hour')?.arrow).toBe('↗')
+  expect(paceArrow(15, 'five_hour')?.arrow).toBe('→')
+  expect(paceArrow(5, 'five_hour')?.arrow).toBe('↘')
+  expect(paceArrow(0, 'five_hour')).toBeUndefined()
+  // 7d: 100% over 168 h is about 0.6 %/h
+  expect(paceArrow(1, 'seven_day')?.arrow).toBe('↑')
 })
+
+test('reset label and handoff banner, as the old HUD wrote them', async () => {
+  const now = new Date(2026, 9, 9, 12, 0).getTime()
+  expect(resetLabel(new Date(2026, 9, 9, 14, 20).toISOString(), now)).toBe('resets 14:20')
+  expect(resetLabel(new Date(2026, 9, 16, 9, 0).toISOString(), now)).toBe('resets Fri 09:00')
+  expect(resetLabel(undefined, now)).toBe('')
+  expect(handoff(40, 50)).toBeUndefined()
+  expect(handoff(55, 35)?.text).toBe('● handoff soon (hot burn)')
+  expect(handoff(62, 0)?.text).toBe('● handoff soon')
+  expect(handoff(86, 0)?.text).toBe('● handoff NOW: auto-compact imminent')
+})
+
 const USAGE = {
   startedAt: 0,
   context: { tokens: 470_000, window: 1_000_000, percent: 47 },
@@ -83,14 +98,23 @@ test('the meters line: context, limits against the clock, cost', async ($, on) =
   world(on)
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   const text = await lines($)
-  expect(text).toContain('ctx ━━━─── 47% · 470k')
-  expect(text).not.toContain('HANDOFF')
-  expect(text).toContain(' │ 5h ━╍╍─── 21% · 2h34')
-  expect(text).toContain(' │ 7d ━━━─── 58% · 3d00h')
-  expect(text).toContain(' │ $1.23')
+  expect(text).toContain('ctx ━━━─── 47% of 1M · 530k safe')
+  expect(text).not.toContain('handoff')
+  expect(text).toContain(` │ 5h ▸ ━╍╍─── 21% · ${resetLabel(USAGE.rateLimits[0]!.resetsAt, 0)}`)
+  expect(text).toContain(` │ 7d ▸ ━━━─── 58% · ${resetLabel(USAGE.rateLimits[1]!.resetsAt, 0)}`)
+  expect(text).toContain(' · $1.23')
 })
 
-test('the run-out verdict after a fast burn, and the handoff tag', async ($, on) => {
+test('the meters line draws in the Desktop app too', async ($, on) => {
+  world(on)
+  await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
+  const ui = await $.ui.mount({ plugin: 'claudecodemonitor-hud-mod', surface: 'desktop', component: 'AbovePrompt', props: { bodyColumns: 120 } as any })
+  const text = ((await ui.findAll({ type: 'Text' })) as any[]).map(t => t.text).join('')
+  expect(text).toContain('47% of 1M · 530k safe')
+  expect(text).toContain('5h ▸ ')
+})
+
+test('the run-out verdict after a fast burn, and the handoff banner', async ($, on) => {
   const clock = world(on)
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   // 21% -> 61% in 10 minutes: 240 %/h, 100% in under 10 minutes, long before the reset
@@ -101,7 +125,8 @@ test('the run-out verdict after a fast burn, and the handoff tag', async ($, on)
     changed: ['context', 'rateLimits'],
   } as any)
   const text = await lines($)
-  expect(text).toContain('HANDOFF')
-  expect(text).toContain('5h ━━━╍── 61% ⚠ limit ')
+  expect(text).toContain('● handoff NOW: auto-compact imminent')
+  expect(text).toContain('5h ▸ ━━━╍── 61% ↑240.0%/h ⚠ limit ~')
+  expect(text).toContain(' before reset')
   expect(text).not.toContain('7d')
 })

@@ -1,6 +1,6 @@
 import type { EngineInterface, Register } from 'claude-code'
 
-import { addSample, burnRate, clock, compact, contextColor, paceBar, runOut, until, CONTEXT_HANDOFF, PACE_CELLS } from './meters'
+import { addSample, burnRate, clock, compact, contextColor, handoff, paceArrow, paceBar, resetLabel, runOut, HOUR, MINUTE, PACE_CELLS } from './meters'
 import type { Reading, Sample } from './meters'
 
 // The meters: the latest reading and the limit samples behind the burn rate.
@@ -8,6 +8,8 @@ import type { Reading, Sample } from './meters'
 const SAMPLES_KEY = 'samples'
 let reading: Reading | undefined
 let samples: Sample[] = []
+// When the session began, for the cost per hour.
+let startedAt: number | undefined
 
 // What the band shows. Session values come from the engine as the session
 // runs; config values from the settings files, merged as the engine reads them.
@@ -86,7 +88,11 @@ export const register: Register = on => {
     const saved = await $.store.get(SAMPLES_KEY).catch(() => undefined)
     if (Array.isArray(saved)) samples = saved as Sample[]
     await refresh($)
-    await measure($, await $.session.usage()).catch(() => undefined)
+    const usage = await $.session.usage().catch(() => undefined)
+    if (usage) {
+      startedAt = usage.startedAt
+      await measure($, usage)
+    }
     // The countdowns and the burn rate move with the clock.
     $.clock.every(30_000, () => $.ui.invalidate('ui.render'))
     // A safety net for anything the two hooks below miss. Both reads are
@@ -188,40 +194,56 @@ export const register: Register = on => {
       const pct = reading.percent ?? (reading.tokens !== undefined ? Math.round((100 * reading.tokens) / reading.window) : 0)
       const color = contextColor(pct)
       const sep = () => dim(' │ ')
-      // The context in the same glyphs: `━` filled, `─` free.
+      // The context bar in the limits' glyphs: `━` filled, `─` free.
       const filled = Math.min(PACE_CELLS, Math.round((pct / 100) * PACE_CELLS))
+      // The text follows the old status-line HUD: "47% of 1M · 530k safe",
+      // then its handoff banner; the bar is the token-weather style.
+      const banner = handoff(pct, burnRate(samples, 'five', now))
+      const left = reading.tokens !== undefined ? reading.window - reading.tokens : Math.round(((100 - pct) / 100) * reading.window)
       const context = [
         dim('ctx '),
         Text({ color, children: ['━'.repeat(filled)] }),
         dim('─'.repeat(PACE_CELLS - filled)),
-        Text({ color, bold: true, children: [` ${pct}%`] }),
-        dim(reading.tokens !== undefined ? ` · ${compact(reading.tokens)}` : ''),
-        ...(pct >= CONTEXT_HANDOFF ? [Text({ color: 'red', bold: true, inverse: true, children: [' HANDOFF '] })] : []),
+        Text({ bold: true, children: [` ${pct}%`] }),
+        dim(` of ${compact(reading.window)} · ${compact(left)} safe`),
+        ...(banner ? [Text({ color: banner.color, bold: banner.bold, children: [`  ${banner.text}`] })] : []),
       ]
 
-      // One limit against the clock: the pace bar, used%, then the time to the
-      // reset, or a red warning when the burn rate runs out before it.
+      // One limit, as the old HUD wrote it: "5h ▸ 21% ↗24.0%/h · resets 14:20",
+      // with the pace bar in front of the percent and the run-out warning when
+      // the burn reaches 100% before the reset.
       const limit = (label: string, kind: string, key: 'five' | 'seven') => {
         const l = reading!.rateLimits.find(x => x.kind === kind)
         if (!l) return []
         const p = paceBar(l.percentUsed, kind, l.resetsAt, now)
-        const out = runOut(l.percentUsed, burnRate(samples, key, now), l.resetsAt, now)
-        const reset = until(l.resetsAt, now)
+        const rate = burnRate(samples, key, now)
+        const pace = paceArrow(rate, kind)
+        const out = runOut(l.percentUsed, rate, l.resetsAt, now)
+        const usedColor = l.percentUsed >= 90 ? 'red' : l.percentUsed >= 70 ? 'yellow' : 'green'
+        const reset = resetLabel(l.resetsAt, now)
         return [
           sep(),
-          dim(`${label} `),
+          dim(`${label} ▸ `),
           Text({ color: p.color, children: [p.used] }),
           p.ahead ? Text({ color: p.color, children: [p.gap] }) : dim(p.gap),
           dim(p.rest),
-          Text({ color: p.color, bold: true, children: [` ${Math.round(l.percentUsed)}%`] }),
-          out !== undefined
-            ? Text({ color: 'red', bold: true, children: [` ⚠ limit ${clock(out)}`] })
-            : dim(reset ? ` · ${reset}` : ''),
+          Text({ color: usedColor, bold: true, children: [` ${Math.round(l.percentUsed)}%`] }),
+          ...(pace && rate !== undefined
+            ? [Text({ ...(pace.color ? { color: pace.color } : {}), ...(pace.dim ? { dimColor: true } : {}), children: [` ${pace.arrow}${rate.toFixed(1)}%/h`] })]
+            : []),
+          ...(out !== undefined ? [Text({ color: 'red', bold: true, children: [` ⚠ limit ~${clock(out)} before reset`] })] : []),
+          ...(reset ? [dim(` · ${reset}`)] : []),
         ]
       }
 
-      const cost = reading.costUsd !== undefined && reading.costUsd > 0 ? [sep(), dim(`$${reading.costUsd.toFixed(2)}`)] : []
-      rows.push(Box({ flexDirection: 'row', children: [...context, ...limit('5h', 'five_hour', 'five'), ...limit('7d', 'seven_day', 'seven'), ...cost] }))
+      // The session cost, and per hour once the session is five minutes old.
+      const cost: ReturnType<typeof dim>[] = []
+      if (reading.costUsd !== undefined && reading.costUsd > 0) {
+        const hours = startedAt !== undefined ? (now - startedAt) / HOUR : 0
+        const perHour = hours * HOUR > 5 * MINUTE ? ` ($${(reading.costUsd / hours).toFixed(1)}/h)` : ''
+        cost.push(dim(` · $${reading.costUsd.toFixed(2)}${perHour}`))
+      }
+      rows.push(Box({ flexDirection: 'row', flexWrap: 'wrap', children: [...context, ...limit('5h', 'five_hour', 'five'), ...limit('7d', 'seven_day', 'seven'), ...cost] }))
     }
 
     // Keep what the mods after this one draw in the band, under these lines.
