@@ -3,6 +3,8 @@ import { test, expect, mock } from 'claude-code/testing'
 // `model` may be a function, for a test that switches the session's model.
 function world(on: any, settings: Record<string, unknown>, model: string | (() => string) = 'claude-opus-5-5') {
   const clock = mock.clock(on, { now: 0 })
+  mock.store(on, {})
+  on('session.usage', () => ({ value: { startedAt: 0, context: { window: 1_000_000 }, rateLimits: [] } }))
   on('session.start', (_$: any, e: any) => ({ cwd: e.cwd ?? '/tmp' }))
   on('session.model', () => ({ value: typeof model === 'function' ? model() : model }))
   on('settings.read', () => ({ value: settings }))

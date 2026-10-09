@@ -1,5 +1,14 @@
 import type { EngineInterface, Register } from 'claude-code'
 
+import { addSample, bar, burnRate, clock, compact, contextColor, runOut, sparkline, until, CONTEXT_HANDOFF } from './meters'
+import type { Reading, Sample } from './meters'
+
+// The meters: the latest reading and the limit samples behind the burn rate.
+// Samples live in $.store so a reload or a new session keeps the rate.
+const SAMPLES_KEY = 'samples'
+let reading: Reading | undefined
+let samples: Sample[] = []
+
 // What the band shows. Session values come from the engine as the session
 // runs; config values from the settings files, merged as the engine reads them.
 let sessionModel: string | undefined
@@ -54,11 +63,32 @@ async function refresh($: EngineInterface) {
   $.ui.invalidate('ui.render')
 }
 
+// Takes a measurement into the reading and the samples, and redraws.
+async function measure($: EngineInterface, usage: { context: { tokens?: number; window: number; percent?: number }; rateLimits: readonly { kind: string; percentUsed: number; resetsAt?: string }[]; cost?: { usd: number } }) {
+  const now = await $.clock.now()
+  reading = { ...usage.context, rateLimits: [...usage.rateLimits], costUsd: usage.cost?.usd }
+  const five = usage.rateLimits.find(l => l.kind === 'five_hour')?.percentUsed
+  const seven = usage.rateLimits.find(l => l.kind === 'seven_day')?.percentUsed
+  if (five !== undefined || seven !== undefined) {
+    const next = addSample(samples, { at: now, five, seven })
+    if (next !== samples) {
+      samples = next
+      await $.store.set(SAMPLES_KEY, samples).catch(() => undefined)
+    }
+  }
+  $.ui.invalidate('ui.render')
+}
+
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     sessionEffort = undefined
     advisorCalls = 0
+    const saved = await $.store.get(SAMPLES_KEY).catch(() => undefined)
+    if (Array.isArray(saved)) samples = saved as Sample[]
     await refresh($)
+    await measure($, await $.session.usage()).catch(() => undefined)
+    // The countdowns and the burn rate move with the clock.
+    $.clock.every(30_000, () => $.ui.invalidate('ui.render'))
     // A safety net for anything the two hooks below miss. Both reads are
     // in-process and cheap, and refresh redraws only when a value moved.
     $.clock.every(1000, () => refresh($))
@@ -86,6 +116,18 @@ export const register: Register = on => {
   on('classic.ConfigChange', async ($, e, next) => {
     const result = await next(e)
     await refresh($)
+    return result
+  })
+
+  // The engine pushes a measurement after each turn and when a limit moves a
+  // point; a compaction changes the context at once.
+  on('session.measure', async ($, e, next) => {
+    await measure($, e)
+    return next(e)
+  })
+  on('session.compact', async ($, e, next) => {
+    const result = await next(e)
+    if (!e.agentId) await measure($, await $.session.usage()).catch(() => undefined)
     return result
   })
 
@@ -140,8 +182,48 @@ export const register: Register = on => {
       ],
     })
 
-    // Keep what the mods after this one draw in the band, under this line.
+    const rows = [line]
+    if (reading) {
+      const now = await $.clock.now()
+      const pct = reading.percent ?? (reading.tokens !== undefined ? Math.round((100 * reading.tokens) / reading.window) : 0)
+      const color = contextColor(pct)
+      const context = [
+        dim('ctx '),
+        Text({ color, children: [bar(pct)] }),
+        Text({ color, bold: true, children: [` ${pct}%`] }),
+        dim(` of ${compact(reading.window)}`),
+        ...(reading.tokens !== undefined ? [dim(` · ${compact(reading.window - reading.tokens)} left`)] : []),
+        ...(pct >= CONTEXT_HANDOFF ? [Text({ color: 'red', bold: true, inverse: true, children: [' HANDOFF '] })] : []),
+      ]
+
+      // One limit: used%, burn rate, the sparkline for 5h, the verdict, the reset.
+      const limit = (label: string, kind: string, key: 'five' | 'seven') => {
+        const l = reading!.rateLimits.find(x => x.kind === kind)
+        if (!l) return []
+        const rate = burnRate(samples, key, now)
+        const out = runOut(l.percentUsed, rate, l.resetsAt, now)
+        const usedColor = l.percentUsed >= 90 ? 'red' : l.percentUsed >= 70 ? 'yellow' : 'green'
+        const reset = until(l.resetsAt, now)
+        return [
+          dim(`   ${label} `),
+          Text({ color: usedColor, bold: true, children: [`${Math.round(l.percentUsed)}%`] }),
+          ...(rate !== undefined ? [dim(` ${rate.toFixed(1)}%/h`)] : []),
+          ...(key === 'five' ? [dim(' '), Text({ color: usedColor, children: [sparkline(samples, now)] })] : []),
+          ...(out !== undefined
+            ? [Text({ color: 'red', bold: true, children: [` ⚠ limit ${clock(out)}`] })]
+            : reset
+              ? [dim(` → ${reset}`)]
+              : []),
+        ]
+      }
+
+      const cost = reading.costUsd !== undefined && reading.costUsd > 0 ? [dim(`   $${reading.costUsd.toFixed(2)}`)] : []
+      rows.push(Box({ flexDirection: 'row', children: [...context, ...limit('5h', 'five_hour', 'five'), ...limit('7d', 'seven_day', 'seven'), ...cost] }))
+    }
+
+    // Keep what the mods after this one draw in the band, under these lines.
     const below = await next(e)
-    return below ? Box({ flexDirection: 'column', children: [line, below] }) : line
+    if (below) rows.push(below)
+    return rows.length === 1 ? line : Box({ flexDirection: 'column', children: rows })
   })
 }
