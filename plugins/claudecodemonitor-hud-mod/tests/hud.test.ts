@@ -61,6 +61,20 @@ test('takes the effort and advisor calls from main-loop requests only', async ($
   expect(texts).toContain(' · 1 call')
 })
 
+test('re-reads the effort as soon as /effort is done', async ($, on) => {
+  const settings: Record<string, unknown> = { effortLevel: 'medium' }
+  world(on, settings)
+  on('command.run', () => {
+    settings.effortLevel = 'high'
+    return {}
+  })
+  await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
+  await $.command.run({ command: 'effort', args: 'high' } as any)
+  const texts = await band($)
+  expect(texts).toContain('high')
+  expect(texts).toContain(' · config high')
+})
+
 test('shows the configured effort before the first request', async ($, on) => {
   world(on, { effortLevel: 'medium' })
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)

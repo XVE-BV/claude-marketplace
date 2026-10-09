@@ -34,6 +34,13 @@ export const register: Register = on => {
     return next(e)
   })
 
+  // The commands that change what the band shows: re-read as soon as one is done.
+  on('command.run', async ($, e, next) => {
+    const result = await next(e)
+    if (['effort', 'model', 'advisor', 'config'].includes(e.command)) await refresh($)
+    return result
+  })
+
   // Each main-loop request carries the effort it asks for, and lists the
   // advisor calls the API ran inside it. Subagents' requests are skipped.
   on('turn.step', async function* ($, e, next) {
