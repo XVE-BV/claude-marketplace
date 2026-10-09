@@ -1,0 +1,38 @@
+{
+    "name": "xve-claude-marketplace",
+    "owner": {
+        "name": "XVE",
+        "contact": "github.com/jonasvanderhaegen-xve"
+    },
+    "metadata": {
+        "description": "XVE Claude Code marketplace."
+    },
+    "plugins": [
+        {
+            "name": "starter",
+            "source": "./plugins/starter",
+            "description": "Starter plugin. Empty for now.",
+            "version": "0.1.0",
+            "author": {
+                "name": "XVE"
+            },
+            "tags": [
+                "starter"
+            ]
+        },
+        {
+            "name": "destructive",
+            "source": "./plugins/destructive",
+            "description": "Skills that delete Claude Code state: purge-claude-user-scope wipes ~/.claude and keeps the claude binary.",
+            "version": "1.0.0",
+            "author": {
+                "name": "XVE"
+            },
+            "tags": [
+                "destructive",
+                "purge",
+                "reset"
+            ]
+        }
+    ]
+}
