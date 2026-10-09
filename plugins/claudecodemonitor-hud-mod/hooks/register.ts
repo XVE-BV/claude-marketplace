@@ -1,6 +1,6 @@
 import type { EngineInterface, Register } from 'claude-code'
 
-import { addSample, burnRate, clock, compact, contextColor, handoff, paceArrow, paceBar, resetLabel, runOut, PACE_CELLS } from './meters'
+import { addSample, burnRate, compact, contextColor, handoff, paceBar, resetLabel, PACE_CELLS } from './meters'
 import type { Reading, Sample } from './meters'
 
 // The meters: the latest reading and the limit samples behind the burn rate.
@@ -192,16 +192,12 @@ export const register: Register = on => {
         ...(banner ? [Text({ color: banner.color, bold: banner.bold, children: [`  ${banner.text}`] })] : []),
       ]
 
-      // One limit, as the old HUD wrote it: "5h ▸ 21% ↗24.0%/h · resets 14:20",
-      // with the pace bar in front of the percent and the run-out warning when
-      // the burn reaches 100% before the reset.
-      const limit = (label: string, kind: string, key: 'five' | 'seven', lead: ReturnType<typeof dim>) => {
+      // One limit, as the old HUD wrote it: "5h ▸ 21% · resets 14:20",
+      // with the pace bar in front of the percent.
+      const limit = (label: string, kind: string, lead: ReturnType<typeof dim>) => {
         const l = reading!.rateLimits.find(x => x.kind === kind)
         if (!l) return []
         const p = paceBar(l.percentUsed, kind, l.resetsAt, now)
-        const rate = burnRate(samples, key, now)
-        const pace = paceArrow(rate, kind)
-        const out = runOut(l.percentUsed, rate, l.resetsAt, now)
         const usedColor = l.percentUsed >= 90 ? 'red' : l.percentUsed >= 70 ? 'yellow' : 'green'
         const reset = resetLabel(l.resetsAt, now)
         return [
@@ -211,15 +207,11 @@ export const register: Register = on => {
           p.ahead ? Text({ color: p.color, children: [p.gap] }) : dim(p.gap),
           dim(p.rest),
           Text({ color: usedColor, bold: true, children: [` ${Math.round(l.percentUsed)}%`] }),
-          ...(pace && rate !== undefined
-            ? [Text({ ...(pace.color ? { color: pace.color } : {}), ...(pace.dim ? { dimColor: true } : {}), children: [` ${pace.arrow}${rate.toFixed(1)}%/h`] })]
-            : []),
-          ...(out !== undefined ? [Text({ color: 'red', bold: true, children: [` ⚠ limit ~${clock(out)} before reset`] })] : []),
           ...(reset ? [dim(` · ${reset}`)] : []),
         ]
       }
 
-      rows.push(Box({ flexDirection: 'row', flexWrap: 'wrap', children: [...context, ...limit('5h', 'five_hour', 'five', sep()), ...limit('7d', 'seven_day', 'seven', dim('   '))] }))
+      rows.push(Box({ flexDirection: 'row', flexWrap: 'wrap', children: [...context, ...limit('5h', 'five_hour', sep()), ...limit('7d', 'seven_day', dim('   '))] }))
     }
 
     // Keep what the mods after this one draw in the band, under these lines.

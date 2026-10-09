@@ -1,5 +1,5 @@
-// The meters line: context, 5h and 7d limits with burn rate and run-out
-// verdict. Pure functions over readings; register.ts feeds them.
+// The meters line: context, 5h and 7d limits against the clock. Pure
+// functions over readings; register.ts feeds them.
 
 export type Limit = { kind: string; percentUsed: number; resetsAt?: string }
 export type Sample = { at: number; five?: number; seven?: number }
@@ -7,8 +7,8 @@ export type Reading = { tokens?: number; window: number; percent?: number; rateL
 
 export const MINUTE = 60_000
 export const HOUR = 60 * MINUTE
-// Burn rate over the last ten minutes of samples, which reacts within a few
-// renders; the whole-window average would hide a sudden burst.
+// Burn rate over the last ten minutes of samples, behind the handoff banner;
+// it reacts within a few renders where the whole-window average would hide a burst.
 export const RATE_SPAN = 10 * MINUTE
 // One sample per 20 s at most, kept twice as long as the rate looks back.
 export const SAMPLE_GAP = 20_000
@@ -37,15 +37,6 @@ export function burnRate(history: Sample[], key: 'five' | 'seven', now: number):
   return (delta * HOUR) / (last.at - first.at)
 }
 
-// When usage reaches 100% at this rate, as a time; undefined when it won't
-// move or the window resets first.
-export function runOut(used: number, rate: number | undefined, resetsAt: string | undefined, now: number): number | undefined {
-  if (!rate || rate <= 0 || used >= 100) return undefined
-  const at = now + ((100 - used) / rate) * HOUR
-  const reset = resetsAt ? Date.parse(resetsAt) : NaN
-  return Number.isFinite(reset) && at >= reset ? undefined : at
-}
-
 export const SPANS: Record<string, number> = { five_hour: 5 * HOUR, seven_day: 7 * 24 * HOUR }
 export const PACE_CELLS = 6
 export const PACE_ALERT = 15
@@ -69,19 +60,6 @@ export function paceBar(percentUsed: number, kind: string, resetsAt: string | un
   const low = Math.min(used, elapsed)
   const high = Math.max(used, elapsed)
   return { used: '━'.repeat(low), gap: '╍'.repeat(high - low), rest: '─'.repeat(cells - high), color, ahead }
-}
-
-// The burn rate against the pace that would spend the whole window exactly by
-// its reset (100% over 5 h is 20 %/h), as the old status-line HUD drew it:
-// ↑ red past 1.5×, ↗ amber past 1.1×, → plain past 0.5×, ↘ dim below.
-export function paceArrow(rate: number | undefined, kind: string): { arrow: string; color?: string; dim?: boolean } | undefined {
-  const span = SPANS[kind]
-  if (rate === undefined || rate <= 0 || !span) return undefined
-  const sustainable = 100 / (span / HOUR)
-  if (rate > sustainable * 1.5) return { arrow: '↑', color: 'red' }
-  if (rate > sustainable * 1.1) return { arrow: '↗', color: 'yellow' }
-  if (rate > sustainable * 0.5) return { arrow: '→' }
-  return { arrow: '↘', dim: true }
 }
 
 // "resets 14:20" today, "resets Fri 09:00" on another day; "" when unknown.

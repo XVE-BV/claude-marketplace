@@ -1,6 +1,6 @@
 import { test, expect, mock } from 'claude-code/testing'
 
-import { addSample, burnRate, handoff, paceArrow, paceBar, resetLabel, runOut, MINUTE, HOUR } from '../hooks/meters'
+import { addSample, burnRate, handoff, paceBar, resetLabel, MINUTE, HOUR } from '../hooks/meters'
 
 test('burn rate: percent per hour over the last ten minutes', async () => {
   const now = 100 * MINUTE
@@ -12,17 +12,6 @@ test('burn rate: percent per hour over the last ten minutes', async () => {
   // one sample: no rate; samples 10 s apart: only the first is kept
   expect(burnRate([{ at: now, five: 25 }], 'five', now)).toBeUndefined()
   expect(addSample(h, { at: now + 10_000, five: 26 })).toBe(h)
-})
-
-test('run-out: before the reset is a verdict, after it is nothing', async () => {
-  const now = Date.UTC(2026, 9, 9, 12, 0)
-  const resetsAt = new Date(now + 2 * HOUR).toISOString()
-  // 40% used at 40 %/h: 100% in 1.5 h, before the 2 h reset
-  expect(runOut(40, 40, resetsAt, now)).toBe(now + 1.5 * HOUR)
-  // at 20 %/h it takes 3 h: the window resets first
-  expect(runOut(40, 20, resetsAt, now)).toBeUndefined()
-  expect(runOut(40, 0, resetsAt, now)).toBeUndefined()
-  expect(runOut(40, undefined, resetsAt, now)).toBeUndefined()
 })
 
 test('pace bar: used, the gap to the time elapsed, the rest', async () => {
@@ -42,17 +31,6 @@ test('pace bar: used, the gap to the time elapsed, the rest', async () => {
   expect(paceBar(55, 'five_hour', resets, now).color).toBe('yellow')
   // past 90% is red whatever the clock says
   expect(paceBar(92, 'seven_day', new Date(now + HOUR).toISOString(), now).color).toBe('red')
-})
-
-test('pace arrow against the sustainable rate (20 %/h for 5h)', async () => {
-  expect(paceArrow(31, 'five_hour')?.arrow).toBe('↑')
-  expect(paceArrow(31, 'five_hour')?.color).toBe('red')
-  expect(paceArrow(23, 'five_hour')?.arrow).toBe('↗')
-  expect(paceArrow(15, 'five_hour')?.arrow).toBe('→')
-  expect(paceArrow(5, 'five_hour')?.arrow).toBe('↘')
-  expect(paceArrow(0, 'five_hour')).toBeUndefined()
-  // 7d: 100% over 168 h is about 0.6 %/h
-  expect(paceArrow(1, 'seven_day')?.arrow).toBe('↑')
 })
 
 test('reset label and handoff banner, as the old HUD wrote them', async () => {
@@ -113,10 +91,10 @@ test('the meters line draws in the Desktop app too', async ($, on) => {
   expect(text).toContain('5h ▸ ')
 })
 
-test('the run-out verdict after a fast burn, and the handoff banner', async ($, on) => {
+test('a fast burn drives the handoff banner, never a rate or run-out segment', async ($, on) => {
   const clock = world(on)
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
-  // 21% -> 61% in 10 minutes: 240 %/h, 100% in under 10 minutes, long before the reset
+  // 21% -> 61% in 10 minutes: 240 %/h, which once drew a rate and a run-out warning
   await clock.advance(10 * MINUTE)
   await $.session.measure({
     context: { tokens: 900_000, window: 1_000_000, percent: 90 },
@@ -125,7 +103,8 @@ test('the run-out verdict after a fast burn, and the handoff banner', async ($, 
   } as any)
   const text = await lines($)
   expect(text).toContain('● handoff NOW')
-  expect(text).toContain('5h ▸ ━━━╍── 61% ↑240.0%/h ⚠ limit ~')
-  expect(text).toContain(' before reset')
+  expect(text).toContain(`5h ▸ ━━━╍── 61% · ${resetLabel(USAGE.rateLimits[0]!.resetsAt, 10 * MINUTE)}`)
+  expect(text).not.toContain('%/h')
+  expect(text).not.toContain('limit ~')
   expect(text).not.toContain('7d')
 })

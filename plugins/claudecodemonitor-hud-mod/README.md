@@ -9,15 +9,15 @@ A Claude Code mod that draws one line above the prompt:
 Under it, once the session has a reading, the meters line: token-weather-usage's bars with the old status-line HUD's text.
 
 ```
-ctx ━━━─── 47% of 1M · 530k safe │ 5h ▸ ━╍╍─── 21% ↗24.0%/h · resets 14:20   7d ▸ ━━━─── 58% · resets Fri 09:00
+ctx ━━━─── 47% of 1M · 530k safe │ 5h ▸ ━╍╍─── 21% · resets 14:20   7d ▸ ━━━─── 58% · resets Fri 09:00
 ```
 
 - **ctx**: context filled (green, yellow from 60%, red from 85%), the window, and the tokens left. Then the handoff banner: `● handoff` from 60% (or 50% while the 5h burn is past 30 %/h), `● handoff NOW` from 85%.
-- **5h / 7d**: each limit against the clock. `━` is what you used, `╍` the gap between that and the time elapsed in the window, `─` the rest; green while usage keeps behind the clock (the gap dim), yellow ahead of it (the gap in color), red more than 15 points ahead or past 90%. Then the percent used, the burn rate over the last 10 minutes with an arrow against the pace that would spend the window exactly by its reset (`↑` past 1.5×, `↗` past 1.1×, `→` past 0.5×, `↘` below), `⚠ limit ~HH:MM before reset` when that rate reaches 100% first, and the reset time.
+- **5h / 7d**: each limit against the clock. `━` is what you used, `╍` the gap between that and the time elapsed in the window, `─` the rest; green while usage keeps behind the clock (the gap dim), yellow ahead of it (the gap in color), red more than 15 points ahead or past 90%. Then the percent used and the reset time.
 
 The line wraps when the terminal is too narrow for it.
 
-Readings come from Claude Code after each turn and whenever a limit moves a point; the burn-rate samples live in the plugin's store so a reload keeps them. Rate limits appear only on a claude.ai subscription, after the first response.
+Readings come from Claude Code after each turn and whenever a limit moves a point; the 5h burn-rate samples behind the handoff banner live in the plugin's store so a reload keeps them. Rate limits appear only on a claude.ai subscription, after the first response.
 
 The model is a pill colored by family (Opus magenta, Sonnet blue, Haiku green, Fable yellow). Effort is a five-step meter from green (low) to red (max). Beside each, in gray, is the value your settings hold (`default` when unset).
 
