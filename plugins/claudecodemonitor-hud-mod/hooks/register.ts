@@ -11,17 +11,38 @@ let advisorCalls = 0
 
 const nonEmpty = (value: unknown) => (typeof value === 'string' && value !== '' ? value : undefined)
 
+const LEVELS = ['low', 'medium', 'high', 'xhigh', 'max']
+const LEVEL_COLORS = ['green', 'cyan', 'yellow', 'magenta', 'red']
+const FAMILY_COLORS: Record<string, string> = { opus: 'magenta', sonnet: 'blue', haiku: 'green', fable: 'yellow' }
+
+const family = (name: string) => /opus|sonnet|haiku|fable/.exec(name.toLowerCase())?.[0]
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
+// "claude-opus-5-5[1m]" reads "Opus 5.5 [1m]"; an alias such as "haiku" reads "Haiku".
+function pretty(name: string) {
+  const id = /^(?:claude-)?([a-z]+)-(\d+)-(\d+)(.*)$/.exec(name)
+  if (!id) return capitalize(name)
+  const [, base = '', major, minor, rest = ''] = id
+  return `${capitalize(base)} ${major}.${minor}${rest ? ` ${rest}` : ''}`
+}
+
+// Whether a saved model names the session's: by family, since an alias such
+// as "opus" resolves to an id. Undefined when the alias can't be compared.
+function sameModel(saved: string | undefined, session: string) {
+  const savedFamily = family(saved ?? '')
+  return savedFamily ? savedFamily === family(session) : undefined
+}
+
 // Re-reads what can change with no event this mod receives: /model and edits
 // to the settings files. Redraws only when something moved.
 async function refresh($: EngineInterface) {
   const settings = await $.settings.read()
   const fullModel = await $.session.model()
-  const model = fullModel.replace(/^claude-/, '')
   // /effort saves per model, under modelSettings.<model id>.effortLevel; the
   // top-level effortLevel applies to models without an entry of their own.
   const perModel = settings.modelSettings as Record<string, { effortLevel?: unknown }> | undefined
   const effort = nonEmpty(perModel?.[fullModel.replace(/\[.*\]$/, '')]?.effortLevel) ?? nonEmpty(settings.effortLevel)
-  const next = [model, nonEmpty(settings.model), effort, nonEmpty(settings.advisorModel)]
+  const next = [fullModel, nonEmpty(settings.model), effort, nonEmpty(settings.advisorModel)]
   const now = [sessionModel, configModel, configEffort, advisorModel]
   if (next.every((value, i) => value === now[i])) return
   // /effort saves to the settings: take a new level now, not at the next request.
@@ -84,19 +105,34 @@ export const register: Register = on => {
     if (e.props.hasSurvey || sessionModel === undefined) return next(e)
     const { Box, Text } = $.ui.resolve(e)
     const dim = (s: string) => Text({ dimColor: true, children: [s] })
-    const plain = (s: string) => Text({ children: [s] })
+    // What the settings hold beside the session's value: a quiet tick when
+    // they agree, a yellow warning when they don't.
+    const saved = (same: boolean | undefined, value: string | undefined) =>
+      same === true
+        ? dim(' ✓ saved')
+        : same === false
+          ? Text({ color: 'yellow', children: [` ≠ saved ${value}`] })
+          : dim(` saved ${value ?? 'default'}`)
+
+    const modelColor = FAMILY_COLORS[family(sessionModel) ?? ''] ?? 'white'
+    const level = LEVELS.indexOf(sessionEffort ?? '')
+    const meter = '▰'.repeat(level + 1) + '▱'.repeat(LEVELS.length - level - 1)
+    // An unknown level draws dimmed rather than in a level's color.
+    const effortStyle = level >= 0 ? { color: LEVEL_COLORS[level] } : { dimColor: true }
 
     const line = Box({
       flexDirection: 'row',
       children: [
-        dim('model '),
-        plain(sessionModel),
-        dim(` · config ${configModel ?? 'default'}`),
-        dim(' │ effort '),
-        plain(sessionEffort ?? '—'),
-        dim(` · config ${configEffort ?? 'default'}`),
-        dim(' │ advisor '),
-        plain(advisorModel ?? 'off'),
+        Text({ backgroundColor: modelColor, color: 'black', bold: true, children: [` ◆ ${pretty(sessionModel)} `] }),
+        saved(sameModel(configModel, sessionModel), configModel && pretty(configModel)),
+        dim('   effort '),
+        Text({ ...effortStyle, children: [meter] }),
+        Text({ ...effortStyle, bold: true, children: [` ${sessionEffort ?? '—'}`] }),
+        saved(configEffort === undefined || sessionEffort === undefined ? undefined : configEffort === sessionEffort, configEffort),
+        dim('   advisor '),
+        advisorModel
+          ? Text({ color: 'cyan', bold: true, children: [pretty(advisorModel)] })
+          : dim('off'),
         dim(` · ${advisorCalls} ${advisorCalls === 1 ? 'call' : 'calls'}`),
       ],
     })

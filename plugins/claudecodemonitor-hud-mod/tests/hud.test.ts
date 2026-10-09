@@ -10,14 +10,20 @@ function world(on: any, settings: Record<string, unknown>, model = 'claude-opus-
   return clock as any
 }
 
-async function band($: any) {
-  const ui = await $.ui.mount({
+
+async function mount($: any) {
+  return $.ui.mount({
     plugin: 'claudecodemonitor-hud-mod',
     surface: 'terminal',
     component: 'AbovePrompt',
     props: { bodyColumns: 200 } as any,
   })
-  return ((await ui.findAll({ type: 'Text' })) as any[]).map(t => t.text)
+}
+
+// The band's line as one string.
+async function band($: any) {
+  const ui = await mount($)
+  return ((await ui.findAll({ type: 'Text' })) as any[]).map(t => t.text).join('')
 }
 
 // The engine's answers to the requests, in order: each with this many advisor calls.
@@ -40,13 +46,20 @@ async function step($: any, effort: string | undefined, agentId?: string) {
 test('shows session and config values before any request', async ($, on) => {
   world(on, { model: 'haiku', advisorModel: 'fable' })
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
-  const texts = await band($)
-  expect(texts).toContain('opus-5-5')
-  expect(texts).toContain(' · config haiku')
-  expect(texts).toContain('—')
-  expect(texts).toContain(' · config default')
-  expect(texts).toContain('fable')
-  expect(texts).toContain(' · 0 calls')
+  const line = await band($)
+  expect(line).toContain(' ◆ Opus 5.5 ')
+  expect(line).toContain(' ≠ saved Haiku')
+  expect(line).toContain('▱▱▱▱▱ —')
+  expect(line).toContain(' saved default')
+  expect(line).toContain('Fable · 0 calls')
+})
+
+test('colors the model pill by family and flags a mismatch in yellow', async ($, on) => {
+  world(on, { model: 'haiku' })
+  await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
+  const texts = (await (await mount($)).findAll({ type: 'Text' })) as any[]
+  expect(texts.find(t => t.text === ' ◆ Opus 5.5 ')?.props?.backgroundColor).toBe('magenta')
+  expect(texts.find(t => t.text === ' ≠ saved Haiku')?.props?.color).toBe('yellow')
 })
 
 test('takes the effort and advisor calls from main-loop requests only', async ($, on) => {
@@ -55,11 +68,11 @@ test('takes the effort and advisor calls from main-loop requests only', async ($
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   await step($, 'xhigh')
   await step($, 'low', 'subagent-1')
-  const texts = await band($)
-  expect(texts).toContain('xhigh')
-  expect(texts).not.toContain('low')
-  expect(texts).toContain(' · config high')
-  expect(texts).toContain(' · 1 call')
+  const line = await band($)
+  expect(line).toContain(' ◆ Opus 5.5  ✓ saved')
+  expect(line).toContain('▰▰▰▰▱ xhigh ≠ saved high')
+  expect(line).not.toContain(' low')
+  expect(line).toContain(' · 1 call')
 })
 
 test('re-reads the effort as soon as /effort is done', async ($, on) => {
@@ -71,9 +84,7 @@ test('re-reads the effort as soon as /effort is done', async ($, on) => {
   })
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   await $.command.run({ command: 'effort', args: 'high' } as any)
-  const texts = await band($)
-  expect(texts).toContain('high')
-  expect(texts).toContain(' · config high')
+  expect(await band($)).toContain('▰▰▰▱▱ high ✓ saved')
 })
 
 test('catches settings that land just after /effort', async ($, on) => {
@@ -84,9 +95,7 @@ test('catches settings that land just after /effort', async ($, on) => {
   await $.command.run({ command: 'effort', args: 'low' } as any)
   settings.effortLevel = 'low'
   await clock.advance(300)
-  const texts = await band($)
-  expect(texts).toContain('low')
-  expect(texts).toContain(' · config low')
+  expect(await band($)).toContain('▰▱▱▱▱ low ✓ saved')
 })
 
 test('re-reads when a settings file changes', async ($, on) => {
@@ -96,17 +105,13 @@ test('re-reads when a settings file changes', async ($, on) => {
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   settings.effortLevel = 'max'
   await ($ as any).classic.ConfigChange({ hook_event_name: 'ConfigChange', source: 'user_settings' })
-  const texts = await band($)
-  expect(texts).toContain('max')
-  expect(texts).toContain(' · config max')
+  expect(await band($)).toContain('▰▰▰▰▰ max ✓ saved')
 })
 
 test('reads the effort /effort saves for the session model', async ($, on) => {
   world(on, { effortLevel: 'high', modelSettings: { 'claude-opus-5-5': { effortLevel: 'medium' }, 'claude-fable-5-1': { effortLevel: 'max' } } })
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
-  const texts = await band($)
-  expect(texts).toContain('medium')
-  expect(texts).toContain(' · config medium')
+  expect(await band($)).toContain(' medium ✓ saved')
 })
 
 test('shows /effort <level> the moment it runs', async ($, on) => {
@@ -114,21 +119,30 @@ test('shows /effort <level> the moment it runs', async ($, on) => {
   on('command.run', () => ({}))
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   await $.command.run({ command: 'effort', args: 'low' } as any)
-  expect(await band($)).toContain('low')
+  expect(await band($)).toContain('▰▱▱▱▱ low')
 })
 
 test('shows the configured effort before the first request', async ($, on) => {
   world(on, { effortLevel: 'medium' })
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
-  const texts = await band($)
-  expect(texts).toContain('medium')
-  expect(texts).not.toContain('—')
+  const line = await band($)
+  expect(line).toContain('▰▰▱▱▱ medium')
+  expect(line).not.toContain('—')
+})
+
+test('draws the same line in the Desktop app', async ($, on) => {
+  world(on, { model: 'haiku', advisorModel: 'fable' })
+  await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
+  const ui = await $.ui.mount({ plugin: 'claudecodemonitor-hud-mod', surface: 'desktop', component: 'AbovePrompt', props: { bodyColumns: 200 } as any })
+  const line = ((await ui.findAll({ type: 'Text' })) as any[]).map(t => t.text).join('')
+  expect(line).toContain(' ◆ Opus 5.5 ')
+  expect(line).toContain('Fable')
 })
 
 test('shows the advisor as off when no advisor model is set', async ($, on) => {
   world(on, {})
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
-  const texts = await band($)
-  expect(texts).toContain('off')
-  expect(texts).toContain(' · config default')
+  const line = await band($)
+  expect(line).toContain('advisor off')
+  expect(line).toContain(' saved default')
 })

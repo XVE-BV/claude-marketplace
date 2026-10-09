@@ -3,8 +3,10 @@
 A Claude Code mod that draws one line above the prompt:
 
 ```
-model opus-5-5 · config haiku │ effort xhigh · config default │ advisor fable · 2 calls
+ ◆ Opus 5.5  ≠ saved Haiku   effort ▰▰▰▰▱ xhigh ✓ saved   advisor Fable · 2 calls
 ```
+
+The model is a pill colored by family (Opus magenta, Sonnet blue, Haiku green, Fable yellow). Effort is a five-step meter from green (low) to red (max). Beside each, `✓ saved` means your settings hold the same value; a yellow `≠ saved …` names the different one they hold.
 
 | Part | Session value | Config value |
 |------|---------------|--------------|
