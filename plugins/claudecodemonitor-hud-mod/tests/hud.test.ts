@@ -101,6 +101,22 @@ test('re-reads when a settings file changes', async ($, on) => {
   expect(texts).toContain(' · config max')
 })
 
+test('reads the effort /effort saves for the session model', async ($, on) => {
+  world(on, { effortLevel: 'high', modelSettings: { 'claude-opus-5-5': { effortLevel: 'medium' }, 'claude-fable-5-1': { effortLevel: 'max' } } })
+  await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
+  const texts = await band($)
+  expect(texts).toContain('medium')
+  expect(texts).toContain(' · config medium')
+})
+
+test('shows /effort <level> the moment it runs', async ($, on) => {
+  world(on, {})
+  on('command.run', () => ({}))
+  await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
+  await $.command.run({ command: 'effort', args: 'low' } as any)
+  expect(await band($)).toContain('low')
+})
+
 test('shows the configured effort before the first request', async ($, on) => {
   world(on, { effortLevel: 'medium' })
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)

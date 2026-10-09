@@ -15,8 +15,13 @@ const nonEmpty = (value: unknown) => (typeof value === 'string' && value !== '' 
 // to the settings files. Redraws only when something moved.
 async function refresh($: EngineInterface) {
   const settings = await $.settings.read()
-  const model = (await $.session.model()).replace(/^claude-/, '')
-  const next = [model, nonEmpty(settings.model), nonEmpty(settings.effortLevel), nonEmpty(settings.advisorModel)]
+  const fullModel = await $.session.model()
+  const model = fullModel.replace(/^claude-/, '')
+  // /effort saves per model, under modelSettings.<model id>.effortLevel; the
+  // top-level effortLevel applies to models without an entry of their own.
+  const perModel = settings.modelSettings as Record<string, { effortLevel?: unknown }> | undefined
+  const effort = nonEmpty(perModel?.[fullModel.replace(/\[.*\]$/, '')]?.effortLevel) ?? nonEmpty(settings.effortLevel)
+  const next = [model, nonEmpty(settings.model), effort, nonEmpty(settings.advisorModel)]
   const now = [sessionModel, configModel, configEffort, advisorModel]
   if (next.every((value, i) => value === now[i])) return
   // /effort saves to the settings: take a new level now, not at the next request.
@@ -39,6 +44,12 @@ export const register: Register = on => {
   // The commands that change what the band shows: re-read as soon as one is done.
   on('command.run', async ($, e, next) => {
     const result = await next(e)
+    // `/effort <level>` applies at once: show it without waiting for the save.
+    const level = e.args.trim().toLowerCase()
+    if (e.command === 'effort' && ['low', 'medium', 'high', 'xhigh', 'max'].includes(level) && level !== sessionEffort) {
+      sessionEffort = level
+      $.ui.invalidate('ui.render')
+    }
     if (['effort', 'model', 'advisor', 'config'].includes(e.command)) {
       await refresh($)
       // The settings may reach the engine a moment after the command saved them.
