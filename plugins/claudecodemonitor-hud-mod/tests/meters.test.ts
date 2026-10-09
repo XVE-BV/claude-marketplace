@@ -63,7 +63,7 @@ test('reset label and handoff banner, as the old HUD wrote them', async () => {
   expect(handoff(40, 50)).toBeUndefined()
   expect(handoff(55, 35)?.text).toBe('● handoff')
   expect(handoff(62, 0)?.text).toBe('● handoff')
-  expect(handoff(86, 0)?.text).toBe('● handoff NOW: auto-compact imminent')
+  expect(handoff(86, 0)?.text).toBe('● handoff NOW')
 })
 
 const USAGE = {
@@ -125,7 +125,7 @@ test('the run-out verdict after a fast burn, and the handoff banner', async ($, 
     changed: ['context', 'rateLimits'],
   } as any)
   const text = await lines($)
-  expect(text).toContain('● handoff NOW: auto-compact imminent')
+  expect(text).toContain('● handoff NOW')
   expect(text).toContain('5h ▸ ━━━╍── 61% ↑240.0%/h ⚠ limit ~')
   expect(text).toContain(' before reset')
   expect(text).not.toContain('7d')

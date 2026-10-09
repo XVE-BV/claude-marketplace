@@ -95,7 +95,7 @@ export function resetLabel(iso: string | undefined, now: number): string {
 
 // The old HUD's handoff banner: soon from 60% (or 50% on a hot 5h burn), now from 85%.
 export function handoff(percent: number, fiveHourRate: number | undefined): { text: string; color: string; bold?: boolean } | undefined {
-  if (percent >= CONTEXT_HANDOFF) return { text: '● handoff NOW: auto-compact imminent', color: 'red', bold: true }
+  if (percent >= CONTEXT_HANDOFF) return { text: '● handoff NOW', color: 'red', bold: true }
   if (percent >= CONTEXT_WARN) return { text: '● handoff', color: 'yellow' }
   if (percent >= 50 && (fiveHourRate ?? 0) > 30) return { text: '● handoff', color: 'yellow' }
   return undefined
