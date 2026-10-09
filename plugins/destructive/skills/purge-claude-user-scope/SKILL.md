@@ -1,16 +1,19 @@
 ---
-name: purge-claude-user-scope-skill
+name: purge-claude-user-scope
 description: Wipe all Claude Code user-scope files (~/.claude, ~/.claude.json) while leaving the claude binary installed. Less destructive than uninstall.
 disable-model-invocation: true
 ---
 
-Deletes the Claude Code user scope: `~/.claude` and `~/.claude.json` (Windows: under `%USERPROFILE%`), meaning settings, memory, plugins, hooks, sessions, history, MCP servers and account state. The `claude` binary stays installed. To remove the binary too, use the uninstall-claude skill instead.
+Never run script because running Claude Code keeps writing to `~/.claude` and, on Windows, locks files in it; user runs script after quitting Claude Code.
 
-Do not run the script yourself. A running Claude Code keeps writing to `~/.claude` and, on Windows, locks files in it. The user runs the script after quitting Claude Code.
+Script deletes `~/.claude` and `~/.claude.json` (Windows: under `%USERPROFILE%`): settings, memory, plugins, hooks, sessions, history, MCP servers, account state. `claude` binary stays installed; binary removal -> `uninstall-claude` skill.
 
-1. Confirm with AskUserQuestion: delete `<full path of ~/.claude>` with everything in it, and `<full path of ~/.claude.json>`. If they decline, stop.
-2. Find the OS. Windows if `$env:OS` is `Windows_NT` or `uname -s` starts with `MINGW`, `MSYS` or `CYGWIN`. Otherwise macOS or Linux.
-3. Build the command. `<skill dir>` is the absolute "Base directory for this skill" shown when this skill loaded. Do not use `$CLAUDE_PLUGIN_ROOT`: tool shells don't have it.
-   - Windows: `powershell -NoProfile -ExecutionPolicy Bypass -File "<skill dir>\purge.ps1"`
-   - macOS / Linux: `bash "<skill dir>/purge.sh"`
-4. Give the user the command in a code block and tell them: quit Claude Code (every window), open a terminal, paste it. It prints one line per path it removed. Then stop.
+Before building command: AskUserQuestion confirming deletion of `<full path of ~/.claude>` with everything in it and `<full path of ~/.claude.json>`. Decline -> stop, build nothing.
+
+OS is Windows if `$env:OS` is `Windows_NT` or `uname -s` starts with `MINGW`, `MSYS` or `CYGWIN`; else macOS or Linux.
+
+Windows command: `powershell -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/purge.ps1"`
+
+macOS or Linux command: `bash "${CLAUDE_SKILL_DIR}/purge.sh"`
+
+After building command: give it to user in code block; tell user to quit Claude Code (every window), open terminal, paste it; script prints one line per path removed. Then stop.
