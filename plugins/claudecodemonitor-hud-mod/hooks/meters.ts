@@ -10,18 +10,15 @@ export const HOUR = 60 * MINUTE
 // Burn rate over the last ten minutes of samples, which reacts within a few
 // renders; the whole-window average would hide a sudden burst.
 export const RATE_SPAN = 10 * MINUTE
-// One sample per 20 s at most, and the sparkline's eight 3-minute buckets.
+// One sample per 20 s at most, kept twice as long as the rate looks back.
 export const SAMPLE_GAP = 20_000
-export const SPARK_BUCKETS = 8
-export const SPARK_BUCKET_MS = 3 * MINUTE
-export const KEEP_MS = SPARK_BUCKETS * SPARK_BUCKET_MS + RATE_SPAN
+export const KEEP_MS = 2 * RATE_SPAN
 
-export const BAR_CELLS = 24
 export const CONTEXT_WARN = 60
 export const CONTEXT_HANDOFF = 85
 
 // Appends a sample unless the last one is too recent, and drops what is older
-// than the sparkline's span. Returns the new history.
+// than KEEP_MS. Returns the new history.
 export function addSample(history: Sample[], sample: Sample): Sample[] {
   const last = history[history.length - 1]
   if (last && sample.at - last.at < SAMPLE_GAP) return history
@@ -49,39 +46,41 @@ export function runOut(used: number, rate: number | undefined, resetsAt: string 
   return Number.isFinite(reset) && at >= reset ? undefined : at
 }
 
-// Eight 3-minute buckets of 5h-quota deltas, newest on the right, as bars.
-export function sparkline(history: Sample[], now: number): string {
-  const deltas: number[] = []
-  for (let i = SPARK_BUCKETS - 1; i >= 0; i--) {
-    const end = now - i * SPARK_BUCKET_MS
-    const inBucket = history.filter(s => s.five !== undefined && s.at > end - SPARK_BUCKET_MS && s.at <= end)
-    const first = inBucket[0]
-    const last = inBucket[inBucket.length - 1]
-    deltas.push(first && last ? Math.max(0, (last.five as number) - (first.five as number)) : 0)
-  }
-  const peak = Math.max(...deltas)
-  const bars = '▁▂▃▄▅▆▇█'
-  return deltas.map(d => (peak > 0 ? bars[Math.min(7, Math.round((d / peak) * 7))] : '▁')).join('')
-}
+export const SPANS: Record<string, number> = { five_hour: 5 * HOUR, seven_day: 7 * 24 * HOUR }
+export const PACE_CELLS = 6
+export const PACE_ALERT = 15
 
-// A bar of BAR_CELLS cells with eighth-cell resolution on the last filled one.
-export function bar(percent: number, cells = BAR_CELLS): string {
-  const eighths = Math.round((Math.min(100, Math.max(0, percent)) / 100) * cells * 8)
-  const full = Math.floor(eighths / 8)
-  const partial = eighths % 8
-  const partials = ' ▏▎▍▌▋▊▉'
-  return '█'.repeat(full) + (partial > 0 ? partials[partial] : '') + ' '.repeat(cells - full - (partial > 0 ? 1 : 0))
+export type PaceBar = { used: string; gap: string; rest: string; color: string; ahead: boolean }
+
+// A limit against the clock, after token-weather-usage: `━` what is used,
+// `╍` the gap between usage and the time elapsed in the window, `─` the rest.
+// Behind the clock the gap is dim; ahead of it, it takes the bar's color.
+// Green while usage keeps behind time, yellow ahead, red more than 15 points
+// ahead or past 90%.
+export function paceBar(percentUsed: number, kind: string, resetsAt: string | undefined, now: number, cells = PACE_CELLS): PaceBar {
+  const span = SPANS[kind]
+  const reset = resetsAt ? Date.parse(resetsAt) : NaN
+  const elapsedPct = span && Number.isFinite(reset) ? Math.min(100, Math.max(0, (100 * (span - (reset - now))) / span)) : percentUsed
+  const toCells = (p: number) => Math.min(cells, Math.max(0, Math.round((p / 100) * cells)))
+  const used = toCells(percentUsed)
+  const elapsed = toCells(elapsedPct)
+  const ahead = percentUsed > elapsedPct
+  const color = percentUsed >= 90 || percentUsed - elapsedPct > PACE_ALERT ? 'red' : ahead ? 'yellow' : 'green'
+  const low = Math.min(used, elapsed)
+  const high = Math.max(used, elapsed)
+  return { used: '━'.repeat(low), gap: '╍'.repeat(high - low), rest: '─'.repeat(cells - high), color, ahead }
 }
 
 export const contextColor = (percent: number) => (percent >= CONTEXT_HANDOFF ? 'red' : percent >= CONTEXT_WARN ? 'yellow' : 'green')
 
 export const compact = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n))
 
-// "2h34" / "14h54" / "3d02h" until a time; "" when it is past or unknown.
+// "38 min" / "2h34" / "14h54" / "3d02h" until a time; "" when it is past or unknown.
 export function until(iso: string | undefined, now: number): string {
   const at = iso ? Date.parse(iso) : NaN
   if (!Number.isFinite(at) || at <= now) return ''
   const minutes = Math.round((at - now) / MINUTE)
+  if (minutes < 60) return `${minutes} min`
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
   if (h >= 48) return `${Math.floor(h / 24)}d${String(h % 24).padStart(2, '0')}h`

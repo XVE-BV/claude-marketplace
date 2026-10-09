@@ -1,6 +1,6 @@
 import type { EngineInterface, Register } from 'claude-code'
 
-import { addSample, bar, burnRate, clock, compact, contextColor, runOut, sparkline, until, CONTEXT_HANDOFF } from './meters'
+import { addSample, burnRate, clock, compact, contextColor, paceBar, runOut, until, CONTEXT_HANDOFF, PACE_CELLS } from './meters'
 import type { Reading, Sample } from './meters'
 
 // The meters: the latest reading and the limit samples behind the burn rate.
@@ -187,37 +187,40 @@ export const register: Register = on => {
       const now = await $.clock.now()
       const pct = reading.percent ?? (reading.tokens !== undefined ? Math.round((100 * reading.tokens) / reading.window) : 0)
       const color = contextColor(pct)
+      const sep = () => dim(' │ ')
+      // The context in the same glyphs: `━` filled, `─` free.
+      const filled = Math.min(PACE_CELLS, Math.round((pct / 100) * PACE_CELLS))
       const context = [
         dim('ctx '),
-        Text({ color, children: [bar(pct)] }),
+        Text({ color, children: ['━'.repeat(filled)] }),
+        dim('─'.repeat(PACE_CELLS - filled)),
         Text({ color, bold: true, children: [` ${pct}%`] }),
-        dim(` of ${compact(reading.window)}`),
-        ...(reading.tokens !== undefined ? [dim(` · ${compact(reading.window - reading.tokens)} left`)] : []),
+        dim(reading.tokens !== undefined ? ` · ${compact(reading.tokens)}` : ''),
         ...(pct >= CONTEXT_HANDOFF ? [Text({ color: 'red', bold: true, inverse: true, children: [' HANDOFF '] })] : []),
       ]
 
-      // One limit: used%, burn rate, the sparkline for 5h, the verdict, the reset.
+      // One limit against the clock: the pace bar, used%, then the time to the
+      // reset, or a red warning when the burn rate runs out before it.
       const limit = (label: string, kind: string, key: 'five' | 'seven') => {
         const l = reading!.rateLimits.find(x => x.kind === kind)
         if (!l) return []
-        const rate = burnRate(samples, key, now)
-        const out = runOut(l.percentUsed, rate, l.resetsAt, now)
-        const usedColor = l.percentUsed >= 90 ? 'red' : l.percentUsed >= 70 ? 'yellow' : 'green'
+        const p = paceBar(l.percentUsed, kind, l.resetsAt, now)
+        const out = runOut(l.percentUsed, burnRate(samples, key, now), l.resetsAt, now)
         const reset = until(l.resetsAt, now)
         return [
-          dim(`   ${label} `),
-          Text({ color: usedColor, bold: true, children: [`${Math.round(l.percentUsed)}%`] }),
-          ...(rate !== undefined ? [dim(` ${rate.toFixed(1)}%/h`)] : []),
-          ...(key === 'five' ? [dim(' '), Text({ color: usedColor, children: [sparkline(samples, now)] })] : []),
-          ...(out !== undefined
-            ? [Text({ color: 'red', bold: true, children: [` ⚠ limit ${clock(out)}`] })]
-            : reset
-              ? [dim(` → ${reset}`)]
-              : []),
+          sep(),
+          dim(`${label} `),
+          Text({ color: p.color, children: [p.used] }),
+          p.ahead ? Text({ color: p.color, children: [p.gap] }) : dim(p.gap),
+          dim(p.rest),
+          Text({ color: p.color, bold: true, children: [` ${Math.round(l.percentUsed)}%`] }),
+          out !== undefined
+            ? Text({ color: 'red', bold: true, children: [` ⚠ limit ${clock(out)}`] })
+            : dim(reset ? ` · ${reset}` : ''),
         ]
       }
 
-      const cost = reading.costUsd !== undefined && reading.costUsd > 0 ? [dim(`   $${reading.costUsd.toFixed(2)}`)] : []
+      const cost = reading.costUsd !== undefined && reading.costUsd > 0 ? [sep(), dim(`$${reading.costUsd.toFixed(2)}`)] : []
       rows.push(Box({ flexDirection: 'row', children: [...context, ...limit('5h', 'five_hour', 'five'), ...limit('7d', 'seven_day', 'seven'), ...cost] }))
     }
 

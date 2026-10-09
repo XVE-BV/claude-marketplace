@@ -6,16 +6,15 @@ A Claude Code mod that draws one line above the prompt:
  ◆ Opus 5.5  ≠ saved Haiku   effort ▰▰▰▰▱ xhigh ✓ saved   advisor Fable · 2 calls
 ```
 
-Under it, once the session has a reading, the meters line:
+Under it, once the session has a reading, the meters line, in the style of token-weather-usage:
 
 ```
-ctx ███████████▎             47% of 1.0M · 530k left   5h 21% 12.0%/h ▁▂▁▃▅▂▁▁ → 2h34   7d 58% → 3d00h   $1.23
+ctx ━━━─── 47% · 470k │ 5h ━╍╍─── 21% · 2h34 │ 7d ━━━─── 58% · 3d00h │ $1.23
 ```
 
-- **ctx**: a 24-cell context bar, green under 60%, yellow to 85%, red above, with the tokens left and a red `HANDOFF` tag past 85%.
-- **5h / 7d**: percent used (green, yellow from 70%, red from 90%), the burn rate in %/h over the last 10 minutes, for 5h a sparkline of the last 24 minutes in 3-minute buckets, and the time to the reset. When that burn rate reaches 100% before the reset, the reset gives way to a red `⚠ limit HH:MM` with the projected time.
+- **ctx**: context filled, green under 60%, yellow to 85%, red above with a `HANDOFF` tag, then the tokens in it.
+- **5h / 7d**: each limit against the clock. `━` is what you used, `╍` the gap between that and the time elapsed in the window, `─` the rest. Green while usage keeps behind the clock (the gap dim), yellow when ahead of it (the gap in color), red more than 15 points ahead or past 90%. Then the percent used and the time to the reset. When the burn rate over the last 10 minutes reaches 100% before the reset, the reset gives way to a red `⚠ limit HH:MM`.
 - **$**: the session's cost as `/cost` totals it.
-
 Readings come from Claude Code after each turn and whenever a limit moves a point; the burn-rate samples live in the plugin's store so a reload keeps them. Rate limits appear only on a claude.ai subscription, after the first response.
 
 The model is a pill colored by family (Opus magenta, Sonnet blue, Haiku green, Fable yellow). Effort is a five-step meter from green (low) to red (max). Beside each, `✓ saved` means your settings hold the same value; a yellow `≠ saved …` names the different one they hold.

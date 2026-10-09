@@ -1,6 +1,6 @@
 import { test, expect, mock } from 'claude-code/testing'
 
-import { addSample, bar, burnRate, runOut, sparkline, until, MINUTE, HOUR } from '../hooks/meters'
+import { addSample, burnRate, paceBar, runOut, until, MINUTE, HOUR } from '../hooks/meters'
 
 test('burn rate: percent per hour over the last ten minutes', async () => {
   const now = 100 * MINUTE
@@ -25,35 +25,32 @@ test('run-out: before the reset is a verdict, after it is nothing', async () => 
   expect(runOut(40, undefined, resetsAt, now)).toBeUndefined()
 })
 
-test('sparkline: eight buckets, newest on the right, scaled to the peak', async () => {
-  const now = 100 * MINUTE
-  const h = [
-    // oldest bucket: 24 to 21 minutes ago
-    { at: now - 23 * MINUTE, five: 0 },
-    { at: now - 22 * MINUTE, five: 4 },
-    { at: now - 2 * MINUTE, five: 10 },
-    { at: now - MINUTE, five: 12 },
-  ]
-  const s = sparkline(h, now)
-  expect(s.length).toBe(8)
-  expect(s[0]).toBe('█')
-  // a delta of 2 against a peak of 4: 3.5 of 7 rounds to the fifth bar
-  expect(s[7]).toBe('▅')
-  expect(s.slice(1, 7)).toBe('▁▁▁▁▁▁')
+test('pace bar: used, the gap to the time elapsed, the rest', async () => {
+  const now = Date.UTC(2026, 9, 9, 12, 0)
+  // 5h window with 2h34 left: 49% of it elapsed, 3 of 6 cells
+  const resets = new Date(now + 154 * MINUTE).toISOString()
+  const behind = paceBar(21, 'five_hour', resets, now)
+  expect(behind.used + behind.gap + behind.rest).toBe('━╍╍───')
+  expect(behind.color).toBe('green')
+  expect(behind.ahead).toBe(false)
+  // 75% used at 49% elapsed: ahead by more than 15 points, the gap in red
+  const ahead = paceBar(75, 'five_hour', resets, now)
+  expect(ahead.used + ahead.gap + ahead.rest).toBe('━━━╍╍─')
+  expect(ahead.color).toBe('red')
+  expect(ahead.ahead).toBe(true)
+  // a little ahead: yellow
+  expect(paceBar(55, 'five_hour', resets, now).color).toBe('yellow')
+  // past 90% is red whatever the clock says
+  expect(paceBar(92, 'seven_day', new Date(now + HOUR).toISOString(), now).color).toBe('red')
 })
 
-test('bar and countdown', async () => {
-  expect(bar(0).length).toBe(24)
-  expect(bar(100)).toBe('█'.repeat(24))
-  expect(bar(50)).toBe('█'.repeat(12) + ' '.repeat(12))
-  // 52% of 24 cells is 12.48: twelve full cells and four eighths
-  expect(bar(52)).toBe('█'.repeat(12) + '▌' + ' '.repeat(11))
+test('countdown', async () => {
   const now = Date.UTC(2026, 9, 9, 12, 0)
+  expect(until(new Date(now + 38 * MINUTE).toISOString(), now)).toBe('38 min')
   expect(until(new Date(now + 154 * MINUTE).toISOString(), now)).toBe('2h34')
   expect(until(new Date(now + 3 * 24 * HOUR + 2 * HOUR).toISOString(), now)).toBe('3d02h')
   expect(until(new Date(now - MINUTE).toISOString(), now)).toBe('')
 })
-
 const USAGE = {
   startedAt: 0,
   context: { tokens: 470_000, window: 1_000_000, percent: 47 },
@@ -82,18 +79,15 @@ async function lines($: any) {
   return ((await ui.findAll({ type: 'Text' })) as any[]).map(t => t.text).join('')
 }
 
-test('the meters line: context bar, limits with reset, cost', async ($, on) => {
+test('the meters line: context, limits against the clock, cost', async ($, on) => {
   world(on)
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   const text = await lines($)
-  expect(text).toContain('ctx ' + '█'.repeat(11) + '▎')
-  expect(text).toContain(' 47% of 1.0M · 530k left')
+  expect(text).toContain('ctx ━━━─── 47% · 470k')
   expect(text).not.toContain('HANDOFF')
-  expect(text).toContain('5h 21%')
-  expect(text).toContain('→ 2h34')
-  expect(text).toContain('7d 58%')
-  expect(text).toContain('→ 3d00h')
-  expect(text).toContain('$1.23')
+  expect(text).toContain(' │ 5h ━╍╍─── 21% · 2h34')
+  expect(text).toContain(' │ 7d ━━━─── 58% · 3d00h')
+  expect(text).toContain(' │ $1.23')
 })
 
 test('the run-out verdict after a fast burn, and the handoff tag', async ($, on) => {
@@ -108,7 +102,6 @@ test('the run-out verdict after a fast burn, and the handoff tag', async ($, on)
   } as any)
   const text = await lines($)
   expect(text).toContain('HANDOFF')
-  expect(text).toContain('5h 61% 240.0%/h')
-  expect(text).toContain('⚠ limit ')
+  expect(text).toContain('5h ━━━╍── 61% ⚠ limit ')
   expect(text).not.toContain('7d')
 })
