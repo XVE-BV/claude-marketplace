@@ -30,14 +30,27 @@ export const register: Register = on => {
     sessionEffort = undefined
     advisorCalls = 0
     await refresh($)
-    $.clock.every(5000, () => refresh($))
+    // A safety net for anything the two hooks below miss. Both reads are
+    // in-process and cheap, and refresh redraws only when a value moved.
+    $.clock.every(1000, () => refresh($))
     return next(e)
   })
 
   // The commands that change what the band shows: re-read as soon as one is done.
   on('command.run', async ($, e, next) => {
     const result = await next(e)
-    if (['effort', 'model', 'advisor', 'config'].includes(e.command)) await refresh($)
+    if (['effort', 'model', 'advisor', 'config'].includes(e.command)) {
+      await refresh($)
+      // The settings may reach the engine a moment after the command saved them.
+      $.clock.after(250, () => refresh($))
+    }
+    return result
+  })
+
+  // A settings file changed: /effort saving, or an edit by hand.
+  on('classic.ConfigChange', async ($, e, next) => {
+    const result = await next(e)
+    await refresh($)
     return result
   })
 

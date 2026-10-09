@@ -1,12 +1,13 @@
 import { test, expect, mock } from 'claude-code/testing'
 
 function world(on: any, settings: Record<string, unknown>, model = 'claude-opus-5-5') {
-  mock.clock(on, { now: 0 })
+  const clock = mock.clock(on, { now: 0 })
   on('session.start', (_$: any, e: any) => ({ cwd: e.cwd ?? '/tmp' }))
   on('session.model', () => ({ value: model }))
   on('settings.read', () => ({ value: settings }))
   on('ui.invalidate', () => ({ value: undefined }))
   on('ui.render', ($: any, e: any) => $.ui.resolve(e).Box({ children: [] }))
+  return clock as any
 }
 
 async function band($: any) {
@@ -73,6 +74,31 @@ test('re-reads the effort as soon as /effort is done', async ($, on) => {
   const texts = await band($)
   expect(texts).toContain('high')
   expect(texts).toContain(' · config high')
+})
+
+test('catches settings that land just after /effort', async ($, on) => {
+  const settings: Record<string, unknown> = { effortLevel: 'medium' }
+  const clock = world(on, settings)
+  on('command.run', () => ({}))
+  await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
+  await $.command.run({ command: 'effort', args: 'low' } as any)
+  settings.effortLevel = 'low'
+  await clock.advance(300)
+  const texts = await band($)
+  expect(texts).toContain('low')
+  expect(texts).toContain(' · config low')
+})
+
+test('re-reads when a settings file changes', async ($, on) => {
+  const settings: Record<string, unknown> = { effortLevel: 'medium' }
+  world(on, settings)
+  on('classic.ConfigChange', () => ({}))
+  await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
+  settings.effortLevel = 'max'
+  await ($ as any).classic.ConfigChange({ hook_event_name: 'ConfigChange', source: 'user_settings' })
+  const texts = await band($)
+  expect(texts).toContain('max')
+  expect(texts).toContain(' · config max')
 })
 
 test('shows the configured effort before the first request', async ($, on) => {

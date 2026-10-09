@@ -12,7 +12,7 @@ model opus-5-5 · config haiku │ effort xhigh · config default │ advisor fa
 | effort | The effort the last main-loop request asked for (`—` before the first request) | `effortLevel` in your settings |
 | advisor | How many times the advisor ran this session | `advisorModel` in your settings, or `off` |
 
-Config values are your settings files merged the way Claude Code reads them (user, project, local, managed). `default` means the setting isn't set. The session model and the settings are re-read every 5 seconds, so `/model` and settings edits show up while idle. Effort and advisor calls update after each request. Subagents' requests don't count.
+Config values are your settings files merged the way Claude Code reads them (user, project, local, managed). `default` means the setting isn't set. The band updates right after `/model`, `/effort` or `/advisor`, when a settings file changes, and at most a second later otherwise, so changes show up while idle. Effort and advisor calls also update after each request. Subagents' requests don't count.
 
 Other mods' bands stay visible under this line.
 
