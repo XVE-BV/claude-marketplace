@@ -40,6 +40,10 @@ Body form, this file is reference: one rule per line, no hard wrapping, related 
 
 Order-dependent actions: state as `Before X: Y.` or `After X: Y.` lines; never number them.
 
+Flow with two or more decision points, or any node reached by more than one edge -> one ```mermaid fenced `flowchart` replacing those prose lines, never both. Single condition -> action and fan-out without rejoin stay lines. Never ASCII art.
+
+Diagram nodes name literal tools, files, commands, states; edges carry conditions; labels holding `$ { } / : ( ) ,` go in `["..."]`; never angle brackets or double quotes inside labels; command strings needing quotes stay prose lines that diagram nodes name.
+
 Wording: drop articles, filler, hedges, pleasantries, intros, outros, persona lines, restatements of description. Never use should, could, may, might, can, consider, try, prefer (as soft advice), please, you. Use imperatives, `Never`, `Always`, `Must`, `condition -> action`. Every rule checkable: pass or fail decidable from output alone.
 
 Precision: name exact tools, flags, paths, field names, literal strings in backticks. Never write vague references like "relevant file". Define term once; never alias it. State positive action; negate only for hard prohibitions.
@@ -54,6 +58,6 @@ In new skill write placeholders and `CLAUDE_SKILL_DIR` paths joined, as single l
 
 Never use inline shell injection (bang before backticked command) unless output needed on every invocation, because harness runs it at load. Any non-zero exit aborts whole skill; append `|| true` when failure tolerable.
 
-Before finishing: run `claude plugin validate <root>`; fix every error. Confirm both JSON files parse, plugin.json and marketplace.json versions equal, SKILL.md line 1 is `---`, `name` at most 64 characters, `description` under 1,024, new SKILL.md after closing `---` has zero lines starting with `-`, `*`, `|`, `#`, or digits followed by `.`.
+Before finishing: run `claude plugin validate <root>`; fix every error. Confirm both JSON files parse, plugin.json and marketplace.json versions equal, SKILL.md line 1 is `---`, `name` at most 64 characters, `description` under 1,024, new SKILL.md after closing `---` has zero lines outside fenced blocks starting with `-`, `*`, `|`, `#`, or digits followed by `.`.
 
 Then report in at most 3 lines: files written, invocation `/<plugin>:<skill>`, new version. Never commit unless asked.

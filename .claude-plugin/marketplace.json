@@ -24,7 +24,7 @@
             "name": "destructive",
             "source": "./plugins/destructive",
             "description": "Skills that delete Claude Code state: purge-user-scope wipes ~/.claude and ~/.claude.json and keeps the claude binary; uninstall-cli also removes the binary, its installed versions and its shell rc entries.",
-            "version": "1.1.0",
+            "version": "1.1.1",
             "author": {
                 "name": "XVE"
             },
@@ -51,7 +51,7 @@
             "name": "meta",
             "source": "./plugins/meta",
             "description": "Skills that author this marketplace's own parts: create-skill writes skills, plugin files, marketplace entry and README rows to strict LLM-optimized rules.",
-            "version": "0.1.3",
+            "version": "0.1.4",
             "author": {
                 "name": "XVE"
             },

@@ -1,7 +1,7 @@
 {
     "name": "destructive",
     "description": "Skills that delete Claude Code state: purge-user-scope wipes ~/.claude and ~/.claude.json and keeps the claude binary; uninstall-cli also removes the binary, its installed versions and its shell rc entries.",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "author": {
         "name": "XVE"
     }
