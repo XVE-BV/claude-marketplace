@@ -28,7 +28,7 @@ README is only human-facing file: plain prose, existing row style, no hype. Ever
 
 Frontmatter: `---` is line 1, closed by `---`. Invalid YAML drops every field silently. Field names exact and hyphenated. Never invent field names because unknown names are ignored silently. Valid: name, description, when_to_use, argument-hint, arguments, disable-model-invocation, user-invocable, allowed-tools, disallowed-tools, model, effort, context, agent, background, hooks, paths, shell. Set only fields skill needs; default pair is name and description.
 
-description: starts with what skill does, then trigger phrases user says. Third person, no "I" or "you". Never summarizes body. Target under 300 characters; hard cap 1,536 shared with `when_to_use`. Name concrete nouns and verbs of task because routing sees only descriptions.
+description: starts with what skill does, then trigger phrases user says. Third person, no "I" or "you". Never summarizes body. Target under 300 characters; cap 1,024 because claude.ai and Skills API reject longer; Claude Code alone allows 1,536 shared with `when_to_use`. Name concrete nouns and verbs of task because routing sees only descriptions.
 
 Skill deletes, overwrites, pushes, deploys, sends, or spends -> `disable-model-invocation: true`. Skill only helps Claude, never user -> `user-invocable: false`. `allowed-tools` lists only tools skill's own commands need, never destructive command because permission prompt is its guard; grant ends at next user message.
 
@@ -46,9 +46,9 @@ Precision: name exact tools, flags, paths, field names, literal strings in backt
 
 Reasons: only when rule's edge-case behavior depends on it; one trailing clause starting `because`. Examples: only when exact output format needs one to be stated; then literal output alone.
 
-Body over 60 lines: move conditional detail to reference file beside SKILL.md; add rule `Before <trigger>: read <skill dir path>/<file>`, path written as in scripts rule. Reference files follow same form rules.
+Body over 60 lines: move conditional detail to reference file beside SKILL.md; add rule `Before <trigger>: read <skill dir path>/<file>`, path written as in scripts rule. Reference files follow same form rules; link only from SKILL.md, never from another reference file; over 100 lines -> open with one line naming every section, because partial reads stop near line 100.
 
-Scripts: bundled paths are `$` immediately followed by `{CLAUDE_SKILL_DIR}`, then `/<file>`; harness substitutes it before model reads body. Path unsubstituted -> use "Base directory for this skill" from load header. Never CLAUDE_PLUGIN_ROOT variable in shell command because tool shells lack it. Needed on Windows and POSIX -> ship `.ps1` and `.sh` with identical output, pick by OS.
+Scripts: bundled paths are `$` immediately followed by `{CLAUDE_SKILL_DIR}`, then `/<file>`, forward slashes on every OS; harness substitutes it before model reads body. Needed on Windows and POSIX -> ship `.ps1` and `.sh` with identical output, pick by OS.
 
 In new skill write placeholders and `CLAUDE_SKILL_DIR` paths joined, as single literal token. This body splits them only because harness substitutes it at load; never copy that split.
 
