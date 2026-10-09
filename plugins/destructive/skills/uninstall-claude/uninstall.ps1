@@ -1,6 +1,7 @@
 #Requires -Version 5.1
 # Uninstall Claude Code: the binary (npm package, or the file `claude` resolves
-# to), ~/.claude, and lines that reference Claude in PowerShell profiles and in
+# to), ~/.local/share/claude (native install versions), ~/.claude,
+# ~/.claude.json, and lines that reference Claude in PowerShell profiles and in
 # the Git Bash / zsh rc files under the user profile.
 # The user runs this from a terminal after quitting Claude Code. No prompts.
 $ErrorActionPreference = 'Stop'
@@ -28,10 +29,12 @@ if ($npmInstalled) {
     'claude binary not found in PATH'
 }
 
-$claudeDir = Join-Path $env:USERPROFILE '.claude'
-if (Test-Path -LiteralPath $claudeDir) {
-    Remove-Item -LiteralPath $claudeDir -Recurse -Force
-    "removed $claudeDir"
+foreach ($name in '.local\share\claude', '.claude', '.claude.json') {
+    $target = Join-Path $env:USERPROFILE $name
+    if (Test-Path -LiteralPath $target) {
+        Remove-Item -LiteralPath $target -Recurse -Force
+        "removed $target"
+    }
 }
 
 # Strip the fenced core:env block (pinned by /core:setup) and every line that

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Uninstall Claude Code: the binary (Homebrew cask, npm package, or the file
-# `claude` resolves to), ~/.claude, and shell rc lines that reference Claude.
+# `claude` resolves to), ~/.local/share/claude (native install versions),
+# ~/.claude, ~/.claude.json, and shell rc lines that reference Claude.
 # The user runs this from a terminal after quitting Claude Code. No prompts.
 set -eu
 
@@ -18,10 +19,12 @@ else
     echo "claude binary not found in PATH"
 fi
 
-if [ -e "$HOME/.claude" ]; then
-    rm -rf "$HOME/.claude"
-    echo "removed $HOME/.claude"
-fi
+for target in "$HOME/.local/share/claude" "$HOME/.claude" "$HOME/.claude.json"; do
+    if [ -e "$target" ]; then
+        rm -rf "$target"
+        echo "removed $target"
+    fi
+done
 
 # Strip the fenced core:env block (pinned by /core:setup) and every line that
 # references Claude, in each rc file that exists.

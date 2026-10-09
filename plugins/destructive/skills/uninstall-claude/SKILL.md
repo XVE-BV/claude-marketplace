@@ -6,12 +6,12 @@ disable-model-invocation: true
 
 Uninstalls Claude Code. The script removes:
 - the binary: Homebrew cask `claude-code` (macOS), npm package `@anthropic-ai/claude-code`, or else the file `claude` resolves to on PATH
-- `~/.claude` (Windows: `%USERPROFILE%\.claude`)
+- `~/.local/share/claude` (native install versions), `~/.claude` and `~/.claude.json` (Windows: under `%USERPROFILE%`)
 - lines that reference Claude, plus the `# >>> core:env >>>` block from /core:setup, in shell rc files (`.zshrc`, `.zprofile`, `.bashrc`, `.bash_profile`, `.profile`, fish `config.fish`) and, on Windows, the PowerShell profiles
 
 Do not run the script yourself. Windows cannot delete a running `claude.exe`, and a running Claude Code keeps writing to `~/.claude`. The user runs the script after quitting Claude Code.
 
-1. Confirm with AskUserQuestion: uninstall Claude Code and delete `<full path of ~/.claude>`. If they decline, stop.
+1. Confirm with AskUserQuestion: uninstall Claude Code and delete `<full path of ~/.claude>`, `<full path of ~/.claude.json>` and `<full path of ~/.local/share/claude>`. If they decline, stop.
 2. Find the OS. Windows if `$env:OS` is `Windows_NT` or `uname -s` starts with `MINGW`, `MSYS` or `CYGWIN`. Otherwise macOS or Linux.
 3. Build the command. `<skill dir>` is the absolute "Base directory for this skill" shown when this skill loaded. Do not use `$CLAUDE_PLUGIN_ROOT`: tool shells don't have it.
    - Windows: `powershell -NoProfile -ExecutionPolicy Bypass -File "<skill dir>\uninstall.ps1"`
