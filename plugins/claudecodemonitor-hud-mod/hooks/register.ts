@@ -37,12 +37,6 @@ function pretty(name: string) {
   return `${capitalize(base)} ${major}.${minor}${rest ? ` ${rest}` : ''}`
 }
 
-// Whether a saved model names the session's: by family, since an alias such
-// as "opus" resolves to an id. Undefined when the alias can't be compared.
-function sameModel(saved: string | undefined, session: string) {
-  const savedFamily = family(saved ?? '')
-  return savedFamily ? savedFamily === family(session) : undefined
-}
 
 // Re-reads what can change with no event this mod receives: /model and edits
 // to the settings files. Redraws only when something moved.
@@ -156,14 +150,8 @@ export const register: Register = on => {
     if (e.props.hasSurvey || sessionModel === undefined) return next(e)
     const { Box, Text } = $.ui.resolve(e)
     const dim = (s: string) => Text({ dimColor: true, children: [s] })
-    // What the settings hold beside the session's value: a quiet tick when
-    // they agree, a yellow warning when they don't.
-    const saved = (same: boolean | undefined, value: string | undefined) =>
-      same === true
-        ? dim(' ✓ saved')
-        : same === false
-          ? Text({ color: 'yellow', children: [` ≠ saved ${value}`] })
-          : dim(` saved ${value ?? 'default'}`)
+    // What the settings hold, in gray beside the session's value.
+    const saved = (value: string | undefined) => dim(` (${value ?? 'default'})`)
 
     const modelColor = FAMILY_COLORS[family(sessionModel) ?? ''] ?? 'white'
     const level = LEVELS.indexOf(sessionEffort ?? '')
@@ -175,11 +163,11 @@ export const register: Register = on => {
       flexDirection: 'row',
       children: [
         Text({ backgroundColor: modelColor, color: 'black', bold: true, children: [` ◆ ${pretty(sessionModel)} `] }),
-        saved(sameModel(configModel, sessionModel), configModel && pretty(configModel)),
+        saved(configModel && pretty(configModel)),
         dim('   effort '),
         Text({ ...effortStyle, children: [meter] }),
         Text({ ...effortStyle, bold: true, children: [` ${sessionEffort ?? '—'}`] }),
-        saved(configEffort === undefined || sessionEffort === undefined ? undefined : configEffort === sessionEffort, configEffort),
+        saved(configEffort),
         dim('   advisor '),
         advisorModel
           ? Text({ color: 'cyan', bold: true, children: [pretty(advisorModel)] })

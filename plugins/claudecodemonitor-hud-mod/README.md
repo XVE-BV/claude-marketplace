@@ -3,7 +3,7 @@
 A Claude Code mod that draws one line above the prompt:
 
 ```
- ◆ Opus 5.5  ≠ saved Haiku   effort ▰▰▰▰▱ xhigh ✓ saved   advisor Fable · 2 calls
+ ◆ Opus 5.5  (Haiku)   effort ▰▰▰▰▱ xhigh (xhigh)   advisor Fable · 2 calls
 ```
 
 Under it, once the session has a reading, the meters line: token-weather-usage's bars with the old status-line HUD's text.
@@ -20,7 +20,7 @@ The line wraps when the terminal is too narrow for it.
 
 Readings come from Claude Code after each turn and whenever a limit moves a point; the burn-rate samples live in the plugin's store so a reload keeps them. Rate limits appear only on a claude.ai subscription, after the first response.
 
-The model is a pill colored by family (Opus magenta, Sonnet blue, Haiku green, Fable yellow). Effort is a five-step meter from green (low) to red (max). Beside each, `✓ saved` means your settings hold the same value; a yellow `≠ saved …` names the different one they hold.
+The model is a pill colored by family (Opus magenta, Sonnet blue, Haiku green, Fable yellow). Effort is a five-step meter from green (low) to red (max). Beside each, in gray and in parentheses, is the value your settings hold (`default` when unset).
 
 | Part | Session value | Config value |
 |------|---------------|--------------|
