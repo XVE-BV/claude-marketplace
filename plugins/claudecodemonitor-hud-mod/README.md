@@ -9,7 +9,7 @@ A Claude Code mod that draws one line above the prompt:
 Under it, once the session has a reading, the meters line: token-weather-usage's bars with the old status-line HUD's text.
 
 ```
-ctx ━━━─── 47% of 1M · 530k safe │ 5h ▸ ━╍╍─── 21% ↗24.0%/h · resets 14:20 │ 7d ▸ ━━━─── 58% · resets Fri 09:00
+ctx ━━━─── 47% of 1M · 530k safe │ 5h ▸ ━╍╍─── 21% ↗24.0%/h · resets 14:20   7d ▸ ━━━─── 58% · resets Fri 09:00
 ```
 
 - **ctx**: context filled (green, yellow from 60%, red from 85%), the window, and the tokens left. Then the handoff banner: `● handoff` from 60% (or 50% while the 5h burn is past 30 %/h), `● handoff NOW` from 85%.

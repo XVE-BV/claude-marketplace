@@ -100,7 +100,7 @@ test('the meters line: context and limits against the clock', async ($, on) => {
   expect(text).toContain('ctx ━━━─── 47% of 1M · 530k safe')
   expect(text).not.toContain('handoff')
   expect(text).toContain(` │ 5h ▸ ━╍╍─── 21% · ${resetLabel(USAGE.rateLimits[0]!.resetsAt, 0)}`)
-  expect(text).toContain(` │ 7d ▸ ━━━─── 58% · ${resetLabel(USAGE.rateLimits[1]!.resetsAt, 0)}`)
+  expect(text).toContain(`   7d ▸ ━━━─── 58% · ${resetLabel(USAGE.rateLimits[1]!.resetsAt, 0)}`)
   expect(text).not.toContain('$')
 })
 

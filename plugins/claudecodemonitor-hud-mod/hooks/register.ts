@@ -195,7 +195,7 @@ export const register: Register = on => {
       // One limit, as the old HUD wrote it: "5h ▸ 21% ↗24.0%/h · resets 14:20",
       // with the pace bar in front of the percent and the run-out warning when
       // the burn reaches 100% before the reset.
-      const limit = (label: string, kind: string, key: 'five' | 'seven') => {
+      const limit = (label: string, kind: string, key: 'five' | 'seven', lead: ReturnType<typeof dim>) => {
         const l = reading!.rateLimits.find(x => x.kind === kind)
         if (!l) return []
         const p = paceBar(l.percentUsed, kind, l.resetsAt, now)
@@ -205,7 +205,7 @@ export const register: Register = on => {
         const usedColor = l.percentUsed >= 90 ? 'red' : l.percentUsed >= 70 ? 'yellow' : 'green'
         const reset = resetLabel(l.resetsAt, now)
         return [
-          sep(),
+          lead,
           dim(`${label} ▸ `),
           Text({ color: p.color, children: [p.used] }),
           p.ahead ? Text({ color: p.color, children: [p.gap] }) : dim(p.gap),
@@ -219,7 +219,7 @@ export const register: Register = on => {
         ]
       }
 
-      rows.push(Box({ flexDirection: 'row', flexWrap: 'wrap', children: [...context, ...limit('5h', 'five_hour', 'five'), ...limit('7d', 'seven_day', 'seven')] }))
+      rows.push(Box({ flexDirection: 'row', flexWrap: 'wrap', children: [...context, ...limit('5h', 'five_hour', 'five', sep()), ...limit('7d', 'seven_day', 'seven', dim('   '))] }))
     }
 
     // Keep what the mods after this one draw in the band, under these lines.
