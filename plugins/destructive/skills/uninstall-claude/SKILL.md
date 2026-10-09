@@ -1,19 +1,23 @@
 ---
-name: uninstall-claude-skill
+name: uninstall-claude
 description: Remove all Claude Code user-scope files and uninstall the claude binary from this machine.
 disable-model-invocation: true
 ---
 
-Uninstalls Claude Code. The script removes:
-- the binary: Homebrew cask `claude-code` (macOS), npm package `@anthropic-ai/claude-code`, or else the file `claude` resolves to on PATH
-- `~/.local/share/claude` (native install versions), `~/.claude` and `~/.claude.json` (Windows: under `%USERPROFILE%`)
-- lines that reference Claude, plus the `# >>> core:env >>>` block from /core:setup, in shell rc files (`.zshrc`, `.zprofile`, `.bashrc`, `.bash_profile`, `.profile`, fish `config.fish`) and, on Windows, the PowerShell profiles
+Never run script because Windows cannot delete running `claude.exe` and running Claude Code keeps writing to `~/.claude`; user runs script after quitting Claude Code.
 
-Do not run the script yourself. Windows cannot delete a running `claude.exe`, and a running Claude Code keeps writing to `~/.claude`. The user runs the script after quitting Claude Code.
+Script removes binary: Homebrew cask `claude-code` (macOS), npm package `@anthropic-ai/claude-code`, else file `claude` resolves to on PATH.
 
-1. Confirm with AskUserQuestion: uninstall Claude Code and delete `<full path of ~/.claude>`, `<full path of ~/.claude.json>` and `<full path of ~/.local/share/claude>`. If they decline, stop.
-2. Find the OS. Windows if `$env:OS` is `Windows_NT` or `uname -s` starts with `MINGW`, `MSYS` or `CYGWIN`. Otherwise macOS or Linux.
-3. Build the command. `<skill dir>` is the absolute "Base directory for this skill" shown when this skill loaded. Do not use `$CLAUDE_PLUGIN_ROOT`: tool shells don't have it.
-   - Windows: `powershell -NoProfile -ExecutionPolicy Bypass -File "<skill dir>\uninstall.ps1"`
-   - macOS / Linux: `bash "<skill dir>/uninstall.sh"`
-4. Give the user the command in a code block and tell them: quit Claude Code (every window), open a terminal, paste it. It prints one line per thing it removed. Then stop.
+Script removes data: `~/.local/share/claude` (native install versions), `~/.claude`, `~/.claude.json` (Windows: under `%USERPROFILE%`).
+
+Script removes lines referencing Claude, plus `# >>> core:env >>>` block from `/core:setup`, in shell rc files (`.zshrc`, `.zprofile`, `.bashrc`, `.bash_profile`, `.profile`, fish `config.fish`) and, on Windows, PowerShell profiles.
+
+Before building command: AskUserQuestion confirming Claude Code uninstall and deletion of `<full path of ~/.claude>`, `<full path of ~/.claude.json>`, `<full path of ~/.local/share/claude>`. Decline -> stop, build nothing.
+
+OS is Windows if `$env:OS` is `Windows_NT` or `uname -s` starts with `MINGW`, `MSYS` or `CYGWIN`; else macOS or Linux.
+
+Windows command: `powershell -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/uninstall.ps1"`
+
+macOS or Linux command: `bash "${CLAUDE_SKILL_DIR}/uninstall.sh"`
+
+After building command: give it to user in code block; tell user to quit Claude Code (every window), open terminal, paste it; script prints one line per thing removed. Then stop.
