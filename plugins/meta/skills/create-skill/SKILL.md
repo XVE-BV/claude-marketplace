@@ -34,7 +34,7 @@ Skill deletes, overwrites, pushes, deploys, sends, or spends -> `disable-model-i
 
 Skill takes input -> set `argument-hint`; reference input with arguments placeholder (`$` immediately followed by `ARGUMENTS`), indexed placeholder (`$` plus digit), or named `arguments`. No placeholder -> harness appends `ARGUMENTS: <value>`.
 
-Body cap 500 lines, target under 60, because body stays in context all session after load. Hardest rules first because compaction keeps only first 5,000 tokens.
+Body cap 500 lines, target under 60 non-blank lines, because body stays in context all session after load. Hardest rules first because compaction keeps only first 5,000 tokens.
 
 Body form, this file is reference: one rule per line, no hard wrapping, related constraints joined by semicolons when they fit one line. Never use bullets, numbered or ordered lists, tables, headings, bold, or blockquotes. Never use step, phase, workflow, option, menu, or checklist framing; skill is rules, not playbook.
 
@@ -50,7 +50,9 @@ Precision: name exact tools, flags, paths, field names, literal strings in backt
 
 Reasons: only when rule's edge-case behavior depends on it; one trailing clause starting `because`. Examples: only when exact output format needs one to be stated; then literal output alone.
 
-Body over 60 lines: move conditional detail to file in `references/`; add rule `Before <trigger>: read <skill dir path>/<file>`, path written as in scripts rule. Reference files follow same form rules; link only from SKILL.md, never from another reference file; over 100 lines -> open with one line naming every section, because partial reads stop near line 100.
+Body over 60 non-blank lines: move conditional detail to file in `references/`; add rule `Before <trigger>: read <skill dir path>/<file>`, path written as in scripts rule. Reference files follow same form rules; link only from SKILL.md, never from another reference file; over 100 lines -> open with one line naming every section, because partial reads stop near line 100.
+
+Before changing frontmatter, layout, or limit rules: read ${CLAUDE_SKILL_DIR}/references/sources.md.
 
 Scripts: bundled paths are `$` immediately followed by `{CLAUDE_SKILL_DIR}`, then `/<file>`, forward slashes on every OS; harness substitutes it before model reads body. Needed on Windows and POSIX -> ship `.ps1` and `.sh` with identical output, pick by OS.
 
