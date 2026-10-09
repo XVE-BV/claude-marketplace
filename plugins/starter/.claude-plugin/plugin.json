@@ -1,0 +1,8 @@
+{
+    "name": "starter",
+    "description": "Starter plugin. Empty for now.",
+    "version": "0.1.0",
+    "author": {
+        "name": "XVE"
+    }
+}
