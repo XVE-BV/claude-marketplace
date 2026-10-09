@@ -1,6 +1,6 @@
 ---
 name: create-skill
-description: Create or edit skill in xve-claude-marketplace repo (plugins/<plugin>/skills/<skill>/SKILL.md) with its plugin.json, marketplace.json entry and README row. Use when asked to add, write, scaffold or rewrite skill for this marketplace; use instead of generic skill-creator here.
+description: Create or edit skill in xve-claude-marketplace repo (plugins/*/skills/*/SKILL.md) with its plugin.json, marketplace.json entry and README row. Use when asked to add, write, scaffold or rewrite skill for this marketplace; use instead of generic skill-creator here. Not for other repos.
 argument-hint: "[what the skill does]"
 ---
 
@@ -8,7 +8,7 @@ Every skill file written is read by LLM, never skimmed by human. Optimize compre
 
 Root = nearest ancestor of cwd holding `.claude-plugin/marketplace.json` named `xve-claude-marketplace`. No root -> ask for clone path; write nowhere else.
 
-Layout: `plugins/<plugin>/skills/<skill>/SKILL.md`; bundled scripts and reference files sit beside SKILL.md. One skill per directory. Directory name = frontmatter `name` = lowercase letters, digits, hyphens, at most 64 characters. `name` never contains `anthropic` or `claude` because claude.ai and Skills API reject those; never repeats plugin name (invocation is `/<plugin>:<skill>`).
+Layout: `plugins/<plugin>/skills/<skill>/SKILL.md`; bundled files sit beside SKILL.md in `scripts/` (executables), `references/` (docs loaded on demand), `assets/` (templates, fonts, icons). File named exactly `SKILL.md`, case-sensitive. Never `README.md` inside skill directory because docs belong in SKILL.md or `references/`. One skill per directory. Directory name = frontmatter `name` = lowercase letters, digits, hyphens, at most 64 characters. `name` never contains `anthropic` or `claude` because claude.ai and Skills API reject those; never repeats plugin name (invocation is `/<plugin>:<skill>`).
 
 Unknown purpose, trigger, target plugin, or side effects -> ask, only what request and repo leave open. Discrete choice -> AskUserQuestion, recommended option first. Request states it -> never ask.
 
@@ -26,9 +26,9 @@ plugin.json fields exactly: name, description, version (new plugin `0.1.0`), aut
 
 README is only human-facing file: plain prose, existing row style, no hype. Everything else follows SKILL.md rules below.
 
-Frontmatter: `---` is line 1, closed by `---`. Invalid YAML drops every field silently. Field names exact and hyphenated. Never invent field names because unknown names are ignored silently. Valid: name, description, when_to_use, argument-hint, arguments, disable-model-invocation, user-invocable, allowed-tools, disallowed-tools, model, effort, context, agent, background, hooks, paths, shell. Set only fields skill needs; default pair is name and description.
+Frontmatter: `---` is line 1, closed by `---`. Invalid YAML drops every field silently. Field names exact and hyphenated. Never invent field names because unknown names are ignored silently. Valid: name, description, when_to_use, argument-hint, arguments, disable-model-invocation, user-invocable, allowed-tools, disallowed-tools, model, effort, context, agent, background, hooks, paths, shell. Set only fields skill needs; default pair is name and description. No `<` or `>` in any frontmatter value because frontmatter enters system prompt as injection path, and claude.ai and Skills API reject it.
 
-description: starts with what skill does, then trigger phrases user says. Third person, no "I" or "you". Never summarizes body. Target under 300 characters; cap 1,024 because claude.ai and Skills API reject longer; Claude Code alone allows 1,536 shared with `when_to_use`. Name concrete nouns and verbs of task because routing sees only descriptions.
+description: starts with what skill does, then trigger phrases user says. Third person, no "I" or "you". Never summarizes body. Target under 300 characters; cap 1,024 because claude.ai and Skills API reject longer; Claude Code alone allows 1,536 shared with `when_to_use`. Name concrete nouns and verbs of task because routing sees only descriptions. Another skill overlaps -> end with `Not for X; use Y.`
 
 Skill deletes, overwrites, pushes, deploys, sends, or spends -> `disable-model-invocation: true`. Skill only helps Claude, never user -> `user-invocable: false`. `allowed-tools` lists only tools skill's own commands need, never destructive command because permission prompt is its guard; grant ends at next user message.
 
@@ -50,9 +50,11 @@ Precision: name exact tools, flags, paths, field names, literal strings in backt
 
 Reasons: only when rule's edge-case behavior depends on it; one trailing clause starting `because`. Examples: only when exact output format needs one to be stated; then literal output alone.
 
-Body over 60 lines: move conditional detail to reference file beside SKILL.md; add rule `Before <trigger>: read <skill dir path>/<file>`, path written as in scripts rule. Reference files follow same form rules; link only from SKILL.md, never from another reference file; over 100 lines -> open with one line naming every section, because partial reads stop near line 100.
+Body over 60 lines: move conditional detail to file in `references/`; add rule `Before <trigger>: read <skill dir path>/<file>`, path written as in scripts rule. Reference files follow same form rules; link only from SKILL.md, never from another reference file; over 100 lines -> open with one line naming every section, because partial reads stop near line 100.
 
 Scripts: bundled paths are `$` immediately followed by `{CLAUDE_SKILL_DIR}`, then `/<file>`, forward slashes on every OS; harness substitutes it before model reads body. Needed on Windows and POSIX -> ship `.ps1` and `.sh` with identical output, pick by OS.
+
+Check with code-decidable outcome (format, count, existence, equality) -> bundled script, never prose, because code is deterministic and language interpretation is not.
 
 In new skill write placeholders and `CLAUDE_SKILL_DIR` paths joined, as single literal token. This body splits them only because harness substitutes it at load; never copy that split.
 
