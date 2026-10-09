@@ -61,6 +61,14 @@ test('takes the effort and advisor calls from main-loop requests only', async ($
   expect(texts).toContain(' · 1 call')
 })
 
+test('shows the configured effort before the first request', async ($, on) => {
+  world(on, { effortLevel: 'medium' })
+  await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
+  const texts = await band($)
+  expect(texts).toContain('medium')
+  expect(texts).not.toContain('—')
+})
+
 test('shows the advisor as off when no advisor model is set', async ($, on) => {
   world(on, {})
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)

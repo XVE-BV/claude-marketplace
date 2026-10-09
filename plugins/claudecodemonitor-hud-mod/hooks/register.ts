@@ -19,6 +19,8 @@ async function refresh($: EngineInterface) {
   const next = [model, nonEmpty(settings.model), nonEmpty(settings.effortLevel), nonEmpty(settings.advisorModel)]
   const now = [sessionModel, configModel, configEffort, advisorModel]
   if (next.every((value, i) => value === now[i])) return
+  // /effort saves to the settings: take a new level now, not at the next request.
+  if (next[2] !== configEffort && next[2] !== undefined) sessionEffort = next[2]
   ;[sessionModel, configModel, configEffort, advisorModel] = next
   $.ui.invalidate('ui.render')
 }
