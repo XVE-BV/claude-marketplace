@@ -28,7 +28,7 @@ get() {
   python3 -c 'import json,sys; d=json.load(open(sys.argv[1], encoding="utf-8-sig")); print(json.dumps(d[sys.argv[2]]) if sys.argv[2] in d else "unset")' "$file" "$1"
 }
 put() {
-  python3 -c 'import json,sys; d=json.load(open(sys.argv[1], encoding="utf-8-sig")); d[sys.argv[2]]=json.loads(sys.argv[3]); open(sys.argv[1] + ".tmp", "w", encoding="utf-8").write(json.dumps(d, indent=2, ensure_ascii=False) + "\n")' "$file" "$1" "$2"
+  python3 -c 'import json,sys; d=json.load(open(sys.argv[1], encoding="utf-8-sig")); d[sys.argv[2]]=json.loads(sys.argv[3]); open(sys.argv[1] + ".tmp", "w", encoding="utf-8", newline="\n").write(json.dumps(d, indent=2, ensure_ascii=False) + "\n")' "$file" "$1" "$2"
   mv "$file.tmp" "$file"
 }
 

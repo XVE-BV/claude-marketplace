@@ -1,7 +1,7 @@
 {
     "name": "starter",
     "description": "Starter settings for Claude Code: setup lets each person opt in to turning off auto memory, dynamic workflows, session recap and prompt suggestions in user-scope settings.json, and to the ultra-concise output style this plugin ships.",
-    "version": "0.3.3",
+    "version": "0.3.4",
     "author": {
         "name": "XVE"
     }

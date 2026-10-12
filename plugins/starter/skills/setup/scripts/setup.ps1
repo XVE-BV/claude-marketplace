@@ -49,7 +49,7 @@ foreach ($n in $Names) {
 }
 
 if ($changed -or -not $existed) {
-    $json = $cfg | ConvertTo-Json -Depth 100
+    $json = ($cfg | ConvertTo-Json -Depth 100) -replace "`r`n", "`n"
     [IO.File]::WriteAllText("$file.tmp", $json + "`n", (New-Object Text.UTF8Encoding $false))
     Move-Item -LiteralPath "$file.tmp" -Destination $file -Force
 }
