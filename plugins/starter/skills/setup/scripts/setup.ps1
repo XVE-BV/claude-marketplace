@@ -1,4 +1,4 @@
-# Opt-in user-scope Claude Code preferences. Args: workflows memory recap suggestions
+# Opt-in user-scope Claude Code preferences. Args: workflows memory recap suggestions style
 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Names)
 $ErrorActionPreference = 'Stop'
 
@@ -7,10 +7,11 @@ $spec = @{
     memory      = @('autoMemoryEnabled', $false)
     recap       = @('awaySummaryEnabled', $false)
     suggestions = @('promptSuggestionEnabled', $false)
+    style       = @('outputStyle', 'starter:ultra-concise')
 }
-if (-not $Names) { Write-Output 'usage: setup.ps1 workflows memory recap suggestions'; exit 2 }
+if (-not $Names) { Write-Output 'usage: setup.ps1 workflows memory recap suggestions style'; exit 2 }
 foreach ($n in $Names) {
-    if (-not $spec.ContainsKey($n)) { Write-Output "unknown name: $n (workflows memory recap suggestions)"; exit 2 }
+    if (-not $spec.ContainsKey($n)) { Write-Output "unknown name: $n (workflows memory recap suggestions style)"; exit 2 }
 }
 
 $dir = if ($env:CLAUDE_CONFIG_DIR) { $env:CLAUDE_CONFIG_DIR } else { Join-Path $HOME '.claude' }
@@ -33,9 +34,9 @@ $backed = $false
 $changed = $false
 foreach ($n in $Names) {
     $key, $val = $spec[$n]
-    $shown = "$key=$("$val".ToLower())"
+    $shown = "$key=$($val | ConvertTo-Json -Compress)"
     $cur = $cfg.PSObject.Properties[$key]
-    if ($cur -and $cur.Value -is [bool] -and $cur.Value -eq $val) { Write-Output "already $shown"; continue }
+    if ($cur -and $cur.Value -is $val.GetType() -and $cur.Value -ceq $val) { Write-Output "already $shown"; continue }
     if ($existed -and -not $backed) {
         $bak = "$file.bak.$(Get-Date -Format yyyyMMddHHmmss)"
         Copy-Item -LiteralPath $file -Destination $bak

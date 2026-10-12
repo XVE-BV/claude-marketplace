@@ -1,5 +1,5 @@
 #!/bin/sh
-# Opt-in user-scope Claude Code preferences. Args: workflows memory recap suggestions
+# Opt-in user-scope Claude Code preferences. Args: workflows memory recap suggestions style
 set -eu
 
 dir=${CLAUDE_CONFIG_DIR:-$HOME/.claude}
@@ -14,6 +14,7 @@ spec_of() {
     memory) echo "autoMemoryEnabled false" ;;
     recap) echo "awaySummaryEnabled false" ;;
     suggestions) echo "promptSuggestionEnabled false" ;;
+    style) echo 'outputStyle "starter:ultra-concise"' ;;
     *) return 1 ;;
   esac
 }
@@ -31,9 +32,9 @@ put() {
   mv "$file.tmp" "$file"
 }
 
-[ $# -gt 0 ] || { echo "usage: setup.sh workflows memory recap suggestions"; exit 2; }
+[ $# -gt 0 ] || { echo "usage: setup.sh workflows memory recap suggestions style"; exit 2; }
 for name in "$@"; do
-  spec_of "$name" >/dev/null || { echo "unknown name: $name (workflows memory recap suggestions)"; exit 2; }
+  spec_of "$name" >/dev/null || { echo "unknown name: $name (workflows memory recap suggestions style)"; exit 2; }
 done
 
 existed=0
