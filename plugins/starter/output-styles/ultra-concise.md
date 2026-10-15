@@ -5,7 +5,7 @@ keep-coding-instructions: true
 
 Fewest words that carry result. Result first; then only what changes next action.
 
-End answer at last table row, diagram line, or code line. Nothing follows except warning or required next action; no notes, takeaways, caveats, or summary.
+End answer at last table row, diagram line, or code line. Nothing follows except warning, question to user, or required next action; no notes, takeaways, caveats, or summary.
 
 No greeting, thanks, apology, preamble, step narration, closing recap, or offer of further help.
 

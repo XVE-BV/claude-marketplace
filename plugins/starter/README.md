@@ -2,7 +2,7 @@
 
 Starter settings for Claude Code: one skill, `/starter:setup`, which never triggers on its own, and one output style, `ultra-concise`.
 
-`setup` asks which user-scope preferences to apply, and writes only those to `settings.json` (in `CLAUDE_CONFIG_DIR`, else `~/.claude`):
+`setup` asks which user-scope preferences to apply, and writes only those to `settings.json` and `rules/` (in `CLAUDE_CONFIG_DIR`, else `~/.claude`):
 
 | Item | Key it sets | Effect |
 |------|-------------|--------|
@@ -11,6 +11,12 @@ Starter settings for Claude Code: one skill, `/starter:setup`, which never trigg
 | `recap` | `awaySummaryEnabled: false` | No one-line recap when you come back to the terminal. |
 | `suggestions` | `promptSuggestionEnabled: false` | No grayed-out predictions in the prompt. |
 | `style` | `outputStyle: "starter:ultra-concise"` | Selects the output style below. |
+| `advisor` | `rules/starter-advisor.md` | Advisor checkpoints, decisive thinking, compaction survival. About 350 tokens. |
+| `chat` | `rules/starter-chat.md` | TL;DR user-facing messages, questions only at the bottom. About 170 tokens. |
+| `coding` | `rules/starter-coding.md` | Think before coding, simplicity, surgical changes, goal-driven work, review mindset. About 320 tokens. |
+| `writing` | `rules/starter-writing.md` | Human prose with a banned-word list, for written artifacts only (commit messages, PR descriptions, READMEs, docs, code comments). About 270 tokens. |
+
+The four rule files go in `~/.claude/rules/`, the documented user-level rules folder, which loads at launch in every project. Each costs input tokens in every session, so pick only what you want; deleting a file removes it. The text is the guideline set from `core-claude`'s `CLAUDE.md` block, without its org-specific lines, and with the Writing rule limited to written artifacts so it does not fight an output style. `setup` never edits your `CLAUDE.md`. If that file already holds a `core:guidelines` block it skips the rule files, to avoid loading the same guidance twice. A changed rule file is backed up as `starter-NAME.md.bak.<timestamp>` before being replaced.
 
 ## ultra-concise
 

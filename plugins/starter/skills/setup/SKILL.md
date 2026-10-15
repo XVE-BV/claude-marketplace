@@ -1,12 +1,12 @@
 ---
 name: setup
-description: Turn off auto memory, dynamic workflows, session recap and prompt suggestions, and pick the ultra-concise output style, in user-scope Claude Code settings.json, each one opt-in. Use when setting up Claude Code on a new machine or when asked to run starter setup. Not for permissions.
+description: Opt-in user-scope Claude Code setup that turns off auto memory, workflows, session recap and prompt suggestions, picks the ultra-concise output style, and installs guideline rules. Use when setting up Claude Code on a new machine or when asked to run starter setup. Not for permissions.
 disable-model-invocation: true
 ---
 
-Never write key for unselected item; unselected items stay untouched, never set to opposite value. Every other settings key stays untouched.
+Never write key or rule file for unselected item; unselected items stay untouched, never set to opposite value. Every other settings key stays untouched.
 
-Items, each opt-in, nothing preselected, names exactly as listed. Second question is single-select with options `style` and `leave as is`; neither marked recommended.
+Items, each opt-in, nothing preselected, names exactly as listed. Second question is single-select with options `style` and `leave as is`; neither marked recommended. Third question is multi-select over four guideline items.
 
 Item `memory`: sets `autoMemoryEnabled` to false; Claude stops reading and writing auto memory, subagent memory included.
 
@@ -16,13 +16,21 @@ Item `recap`: sets `awaySummaryEnabled` to false; no one-line recap on return to
 
 Item `suggestions`: sets `promptSuggestionEnabled` to false; no grayed-out predictions in prompt.
 
-Item `style`: sets `outputStyle` to `starter:ultra-concise`, output style this plugin ships; fragments, result first, no preamble or recap; errors, warnings, destructive confirmations keep full detail. Applies to main conversation, not to other subagents.
+Item `style`: sets `outputStyle` to `starter:ultra-concise`, output style this plugin ships; fragments, result first, tables and diagrams over prose, no preamble or recap; errors, warnings, destructive confirmations keep full detail. Applies to main conversation, not to other subagents.
 
-Target is `settings.json` in `CLAUDE_CONFIG_DIR`, else `~/.claude`. Selected item overwrites existing value of its key. Script backs up to `settings.json.bak.<timestamp>` before first write, writes nothing when every selected key already holds its value, creates file when missing, exits 1 naming file on invalid JSON object.
+Item `advisor`: installs rule file `starter-advisor.md`; advisor checkpoints, decisive thinking, compaction survival.
+
+Item `chat`: installs rule file `starter-chat.md`; TL;DR user-facing messages, questions only at bottom.
+
+Item `coding`: installs rule file `starter-coding.md`; think before coding, simplicity, surgical changes, goal-driven work, review mindset.
+
+Item `writing`: installs rule file `starter-writing.md`; human prose with banned-word list, written artifacts only (commit messages, PR descriptions, READMEs, docs, code comments).
+
+Target is `settings.json` and `rules/` in `CLAUDE_CONFIG_DIR`, else `~/.claude`; `rules/` is user-level rules folder, loaded every session at launch. Selected settings item overwrites existing value of its key. Script backs up `settings.json` to `settings.json.bak.<timestamp>` before first write, writes nothing when every selected key already holds its value, creates file when missing, exits 1 naming file on invalid JSON object. Rule item copies its asset as LF; differing existing file is backed up as `starter-NAME.md.bak.<timestamp>`, which never loads because it does not end in `.md`. `CLAUDE.md` holding `core:guidelines` fence -> script skips every rule item.
 
 ```mermaid
 flowchart TD
-  ask["AskUserQuestion, two questions in one call: multiSelect memory, workflows, recap, suggestions; single-select style or leave as is"] --> any{"any item selected"}
+  ask["AskUserQuestion, three questions in one call: multiSelect memory, workflows, recap, suggestions; single-select style or leave as is; multiSelect advisor, chat, coding, writing"] --> any{"any item selected"}
   any -->|no| stop["stop, run nothing"]
   any -->|yes| os{"$env:OS is Windows_NT, or uname -s starts with MINGW, MSYS or CYGWIN"}
   os -->|yes| win["Windows command with selected names"]
@@ -32,14 +40,18 @@ flowchart TD
 
 Windows command: `powershell -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/scripts/setup.ps1"` followed by selected names, space-separated.
 
-macOS or Linux command: `sh "${CLAUDE_SKILL_DIR}/scripts/setup.sh"` followed by selected names, space-separated; needs `python3`.
+macOS or Linux command: `sh "${CLAUDE_SKILL_DIR}/scripts/setup.sh"` followed by selected names, space-separated; settings items need `python3`.
 
-Script prints `created PATH`, `backup PATH`, `written KEY=VALUE`, `already KEY=VALUE`. Line starting `invalid JSON object` or `needs python3` -> relay verbatim, stop.
+Script prints `created PATH`, `backup PATH`, `written KEY=VALUE`, `already KEY=VALUE`, `written rule PATH`, `already rule PATH`, `skipped rules: ...`. Line starting `invalid JSON object`, `missing asset` or `needs python3` -> relay verbatim, stop.
 
-After script: report per selected item written or already held; list unselected items as untouched; quote backup path.
+After script: report per selected item written or already held; list unselected items as untouched; quote backup paths.
+
+After `skipped rules`: tell user `CLAUDE.md` already holds core guidelines, so no rule file was written.
+
+After rule item written: tell user each rule file costs input tokens every session (about 350 advisor, 170 chat, 320 coding, 270 writing), loads from next session, and deleting `rules/starter-NAME.md` removes it.
 
 After `style` written or held: tell user `/output-style` lists it as `starter:ultra-concise`, it loads only while this plugin is enabled, and project settings override user scope.
 
 After `memory` written or held: tell user repository settings file overrides user scope when it sets `autoMemoryEnabled`, and existing memory files stay on disk unloaded.
 
-After any write: tell user running sessions reload settings on save; `/status` shows loaded sources and `claude doctor` lists rejected entries.
+After any settings write: tell user running sessions reload settings on save; `/status` shows loaded sources and `claude doctor` lists rejected entries.
