@@ -28,7 +28,7 @@ Item `coding`: installs rule file `starter-coding.md`; think before coding, simp
 
 Item `writing`: installs rule file `starter-writing.md`; human prose with banned-word list, written artifacts only (commit messages, PR descriptions, READMEs, docs, code comments).
 
-Target is `settings.json` and `rules/` in `CLAUDE_CONFIG_DIR`, else `~/.claude`; `rules/` is user-level rules folder, loaded every session at launch. Selected settings item overwrites existing value of its key. Script backs up `settings.json` to `settings.json.bak.<timestamp>` before first write, writes nothing when every selected key already holds its value, creates file when missing, exits 1 naming file on invalid JSON object. Rule item copies its asset as LF; differing existing file is backed up as `starter-NAME.md.bak.<timestamp>`, which never loads because it does not end in `.md`. `CLAUDE.md` holding `core:guidelines` fence -> script skips every rule item.
+Target is `settings.json` and `rules/` in `CLAUDE_CONFIG_DIR`, else `~/.claude`; `rules/` is user-level rules folder, loaded every session at launch. Selected settings item overwrites existing value of its key. Script creates no backup files and replaces `settings.json` atomically; writes nothing when every selected key already holds its value, creates file when missing, exits 1 naming file on invalid JSON object. Rule item copies its asset as LF and overwrites differing existing file. `CLAUDE.md` holding `core:guidelines` fence -> script skips every rule item.
 
 ```mermaid
 flowchart TD
@@ -44,9 +44,9 @@ Windows command: `powershell -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_
 
 macOS or Linux command: `sh "${CLAUDE_SKILL_DIR}/scripts/setup.sh"` followed by selected names, space-separated; settings items need `python3`.
 
-Script prints `created PATH`, `backup PATH`, `written KEY=VALUE`, `already KEY=VALUE`, `written rule PATH`, `already rule PATH`, `skipped rules: ...`. Line starting `invalid JSON object`, `missing asset` or `needs python3` -> relay verbatim, stop.
+Script prints `created PATH`, `written KEY=VALUE`, `already KEY=VALUE`, `written rule PATH`, `already rule PATH`, `skipped rules: ...`. Line starting `invalid JSON object`, `missing asset` or `needs python3` -> relay verbatim, stop.
 
-After script: report per selected item written or already held; list unselected items as untouched; quote backup paths.
+After script: report per selected item written or already held; list unselected items as untouched.
 
 After `skipped rules`: tell user `CLAUDE.md` already holds core guidelines, so no rule file was written.
 

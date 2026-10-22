@@ -42,7 +42,7 @@ put() {
   mv "$file.tmp" "$file"
 }
 
-# install_rule NAME: copy asset to $dir/rules as LF; backup first when content differs.
+# install_rule NAME: copy asset to $dir/rules as LF; overwrite when content differs.
 install_rule() {
   f=$(rule_of "$1")
   s=$src/$f
@@ -56,9 +56,6 @@ install_rule() {
       echo "already rule $t"
       return 0
     fi
-    bak=$t.bak.$(date +%Y%m%d%H%M%S)
-    cp "$t" "$bak"
-    echo "backup $bak"
   fi
   mv "$t.tmp" "$t"
   echo "written rule $t"
@@ -74,11 +71,9 @@ for name in "$@"; do
   fi
 done
 
-existed=0
 if [ $settings = 1 ]; then
   python3 -c 'pass' >/dev/null 2>&1 || { echo "needs python3: xcode-select --install (macOS), apt install python3 (Linux)"; exit 1; }
   if [ -f "$file" ]; then
-    existed=1
     [ -s "$file" ] && ! is_object && { echo "invalid JSON object: $file"; exit 1; }
     [ -s "$file" ] || printf '{}\n' > "$file"
   else
@@ -94,7 +89,6 @@ if [ $ruleitems = 1 ] && [ -f "$dir/CLAUDE.md" ] && grep -q 'BEGIN core:guidelin
   skip_rules=1
 fi
 
-backed=0
 for name in "$@"; do
   if spec=$(spec_of "$name" 2>/dev/null); then
     key=${spec% *}
@@ -102,12 +96,6 @@ for name in "$@"; do
     if [ "$(get "$key")" = "$val" ]; then
       echo "already $key=$val"
       continue
-    fi
-    if [ $existed = 1 ] && [ $backed = 0 ]; then
-      bak=$file.bak.$(date +%Y%m%d%H%M%S)
-      cp "$file" "$bak"
-      echo "backup $bak"
-      backed=1
     fi
     put "$key" "$val"
     echo "written $key=$val"

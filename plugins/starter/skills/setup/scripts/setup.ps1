@@ -42,7 +42,7 @@ if ($hasSettings) {
     }
 }
 
-# Install-Rule NAME: copy asset to $dir\rules as LF; backup first when content differs.
+# Install-Rule NAME: copy asset to $dir\rules as LF; overwrite when content differs.
 function Install-Rule([string]$name) {
     $f = "starter-$name.md"
     $s = Join-Path $src $f
@@ -53,9 +53,6 @@ function Install-Rule([string]$name) {
     if (Test-Path -LiteralPath $t) {
         $cur = [IO.File]::ReadAllText($t) -replace "`r`n", "`n"
         if ($cur -ceq $text) { Write-Output "already rule $t"; return }
-        $bak = "$t.bak.$(Get-Date -Format yyyyMMddHHmmss)"
-        Copy-Item -LiteralPath $t -Destination $bak
-        Write-Output "backup $bak"
     }
     [IO.File]::WriteAllText($t, $text, $utf8)
     Write-Output "written rule $t"
@@ -68,7 +65,6 @@ if ($hasRules -and (Test-Path -LiteralPath $claudeMd) -and (Select-String -Liter
     $skipRules = $true
 }
 
-$backed = $false
 $changed = $false
 foreach ($n in $Names) {
     if ($rules -contains $n) {
@@ -79,12 +75,6 @@ foreach ($n in $Names) {
     $shown = "$key=$($val | ConvertTo-Json -Compress)"
     $cur = $cfg.PSObject.Properties[$key]
     if ($cur -and $cur.Value -is $val.GetType() -and $cur.Value -ceq $val) { Write-Output "already $shown"; continue }
-    if ($existed -and -not $backed) {
-        $bak = "$file.bak.$(Get-Date -Format yyyyMMddHHmmss)"
-        Copy-Item -LiteralPath $file -Destination $bak
-        Write-Output "backup $bak"
-        $backed = $true
-    }
     $cfg | Add-Member -NotePropertyName $key -NotePropertyValue $val -Force
     $changed = $true
     Write-Output "written $shown"
