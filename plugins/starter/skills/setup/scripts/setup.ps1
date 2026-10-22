@@ -1,14 +1,15 @@
 # Opt-in user-scope Claude Code preferences.
-# Args: workflows memory recap suggestions style advisor chat coding writing
+# Args: workflows memory recap suggestions idlecompact style advisor chat coding writing
 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Names)
 $ErrorActionPreference = 'Stop'
 
-$list = 'workflows memory recap suggestions style advisor chat coding writing'
+$list = 'workflows memory recap suggestions idlecompact style advisor chat coding writing'
 $spec = @{
     workflows   = @('disableWorkflows', $true)
     memory      = @('autoMemoryEnabled', $false)
     recap       = @('awaySummaryEnabled', $false)
     suggestions = @('promptSuggestionEnabled', $false)
+    idlecompact = @('idleCompaction', $false)
     style       = @('outputStyle', 'starter:ultra-concise')
 }
 $rules = @('advisor', 'chat', 'coding', 'writing')

@@ -10,6 +10,7 @@ Starter settings for Claude Code: one skill, `/starter:setup`, which never trigg
 | `workflows` | `disableWorkflows: true` | Dynamic workflows and the bundled workflow commands are off. |
 | `recap` | `awaySummaryEnabled: false` | No one-line recap when you come back to the terminal. |
 | `suggestions` | `promptSuggestionEnabled: false` | No grayed-out predictions in the prompt. |
+| `idlecompact` | `idleCompaction: false` | No compaction of a long conversation while the terminal sits idle. Needs Claude Code 2.1.290 or later. The first message after the one-hour prompt cache expires then resends the whole conversation uncached; `/compact` and auto-compact still work. |
 | `style` | `outputStyle: "starter:ultra-concise"` | Selects the output style below. |
 | `advisor` | `rules/starter-advisor.md` | Advisor checkpoints, decisive thinking, compaction survival. About 350 tokens. |
 | `chat` | `rules/starter-chat.md` | TL;DR user-facing messages, questions only at the bottom. About 170 tokens. |

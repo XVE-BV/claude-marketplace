@@ -1,12 +1,12 @@
 #!/bin/sh
 # Opt-in user-scope Claude Code preferences.
-# Args: workflows memory recap suggestions style advisor chat coding writing
+# Args: workflows memory recap suggestions idlecompact style advisor chat coding writing
 set -eu
 
 dir=${CLAUDE_CONFIG_DIR:-$HOME/.claude}
 file=$dir/settings.json
 src=$(cd "$(dirname "$0")" && pwd)/../assets/rules
-names="workflows memory recap suggestions style advisor chat coding writing"
+names="workflows memory recap suggestions idlecompact style advisor chat coding writing"
 
 # settings item: name -> "key value"
 spec_of() {
@@ -15,6 +15,7 @@ spec_of() {
     memory) echo "autoMemoryEnabled false" ;;
     recap) echo "awaySummaryEnabled false" ;;
     suggestions) echo "promptSuggestionEnabled false" ;;
+    idlecompact) echo "idleCompaction false" ;;
     style) echo 'outputStyle "starter:ultra-concise"' ;;
     *) return 1 ;;
   esac

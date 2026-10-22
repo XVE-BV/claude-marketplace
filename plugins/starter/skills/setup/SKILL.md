@@ -1,12 +1,12 @@
 ---
 name: setup
-description: Opt-in user-scope Claude Code setup that turns off auto memory, workflows, session recap and prompt suggestions, picks the ultra-concise output style, and installs guideline rules. Use when setting up Claude Code on a new machine or when asked to run starter setup. Not for permissions.
+description: Opt-in user-scope Claude Code setup that turns off auto memory, workflows, session recap, prompt suggestions and idle compaction, picks the ultra-concise output style, and installs guideline rules. Use when setting up Claude Code on a new machine or when asked to run starter setup. Not for permissions.
 disable-model-invocation: true
 ---
 
 Never write key or rule file for unselected item; unselected items stay untouched, never set to opposite value. Every other settings key stays untouched.
 
-Items, each opt-in, nothing preselected, names exactly as listed. Second question is single-select with options `style` and `leave as is`; neither marked recommended. Third question is multi-select over four guideline items.
+Items, each opt-in, nothing preselected, names exactly as listed. Second question is multi-select over `idlecompact` and `style`. Third question is multi-select over four guideline items.
 
 Item `memory`: sets `autoMemoryEnabled` to false; Claude stops reading and writing auto memory, subagent memory included.
 
@@ -15,6 +15,8 @@ Item `workflows`: sets `disableWorkflows` to true; turns off dynamic workflows a
 Item `recap`: sets `awaySummaryEnabled` to false; no one-line recap on return to terminal.
 
 Item `suggestions`: sets `promptSuggestionEnabled` to false; no grayed-out predictions in prompt.
+
+Item `idlecompact`: sets `idleCompaction` to false; Claude Code stops compacting long conversation while terminal session sits idle. Key needs Claude Code 2.1.290 or later.
 
 Item `style`: sets `outputStyle` to `starter:ultra-concise`, output style this plugin ships; fragments, result first, tables and diagrams over prose, no preamble or recap; errors, warnings, destructive confirmations keep full detail. Applies to main conversation, not to other subagents.
 
@@ -30,7 +32,7 @@ Target is `settings.json` and `rules/` in `CLAUDE_CONFIG_DIR`, else `~/.claude`;
 
 ```mermaid
 flowchart TD
-  ask["AskUserQuestion, three questions in one call: multiSelect memory, workflows, recap, suggestions; single-select style or leave as is; multiSelect advisor, chat, coding, writing"] --> any{"any item selected"}
+  ask["AskUserQuestion, three questions in one call: multiSelect memory, workflows, recap, suggestions; multiSelect idlecompact, style; multiSelect advisor, chat, coding, writing"] --> any{"any item selected"}
   any -->|no| stop["stop, run nothing"]
   any -->|yes| os{"$env:OS is Windows_NT, or uname -s starts with MINGW, MSYS or CYGWIN"}
   os -->|yes| win["Windows command with selected names"]
@@ -49,6 +51,8 @@ After script: report per selected item written or already held; list unselected 
 After `skipped rules`: tell user `CLAUDE.md` already holds core guidelines, so no rule file was written.
 
 After rule item written: tell user each rule file costs input tokens every session (about 350 advisor, 170 chat, 320 coding, 270 writing), loads from next session, and deleting `rules/starter-NAME.md` removes it.
+
+After `idlecompact` written or held: tell user first message after prompt cache expires (about one hour idle) now resends whole conversation uncached, and `/compact` and auto-compact still work.
 
 After `style` written or held: tell user `/output-style` lists it as `starter:ultra-concise`, it loads only while this plugin is enabled, and project settings override user scope.
 
