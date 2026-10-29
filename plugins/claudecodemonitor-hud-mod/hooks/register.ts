@@ -140,8 +140,11 @@ export const register: Register = on => {
     if (e.props.hasSurvey || sessionModel === undefined) return next(e)
     const { Box, Text } = $.ui.resolve(e)
     const dim = (s: string) => Text({ dimColor: true, children: [s] })
-    // What the settings hold, in gray beside the session's value.
-    const saved = (value: string | undefined) => dim(` ${value ?? 'default'}`)
+    // What the settings hold, in a black box beside the session's value.
+    const saved = (value: string | undefined) => Box({
+      flexDirection: 'row',
+      children: [Text({ children: [' '] }), Text({ backgroundColor: 'black', color: 'white', children: [` ${value ?? 'default'} `] })],
+    })
 
     const modelColor = FAMILY_COLORS[family(sessionModel) ?? ''] ?? 'white'
     const level = LEVELS.indexOf(sessionEffort ?? '')
@@ -155,10 +158,10 @@ export const register: Register = on => {
       children: [
         Text({ backgroundColor: modelColor, color: textOn(modelColor), bold: true, children: [` ◆ ${pretty(sessionModel)} `] }),
         saved(configModel && pretty(configModel)),
-        dim('   effort '),
+        dim('  effort '),
         effortWord,
         saved(configEffort),
-        dim('   advisor '),
+        dim('  advisor '),
         advisorModel
           ? Text({ backgroundColor: 'cyan', color: textOn('cyan'), bold: true, children: [` ${pretty(advisorModel)} `] })
           : dim('off'),
