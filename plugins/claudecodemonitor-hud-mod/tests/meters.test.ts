@@ -20,7 +20,7 @@ test('pace bar: used, the gap to the time elapsed, the rest', async () => {
   const resets = new Date(now + 154 * MINUTE).toISOString()
   const behind = paceBar(21, 'five_hour', resets, now)
   expect(behind.used + behind.gap + behind.rest).toBe('━╍╍───')
-  expect(behind.color).toBe('green')
+  expect(behind.color).toBe('greenBright')
   expect(behind.ahead).toBe(false)
   // 75% used at 49% elapsed: ahead by more than 15 points, the gap in red
   const ahead = paceBar(75, 'five_hour', resets, now)

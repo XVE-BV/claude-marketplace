@@ -56,7 +56,7 @@ export function paceBar(percentUsed: number, kind: string, resetsAt: string | un
   const used = toCells(percentUsed)
   const elapsed = toCells(elapsedPct)
   const ahead = percentUsed > elapsedPct
-  const color = percentUsed >= 90 || percentUsed - elapsedPct > PACE_ALERT ? 'red' : ahead ? 'yellow' : 'green'
+  const color = percentUsed >= 90 || percentUsed - elapsedPct > PACE_ALERT ? 'red' : ahead ? 'yellow' : 'greenBright'
   const low = Math.min(used, elapsed)
   const high = Math.max(used, elapsed)
   return { used: '━'.repeat(low), gap: '╍'.repeat(high - low), rest: '─'.repeat(cells - high), color, ahead }
@@ -79,7 +79,7 @@ export function handoff(percent: number, fiveHourRate: number | undefined): { te
   return undefined
 }
 
-export const contextColor = (percent: number) => (percent >= CONTEXT_HANDOFF ? 'red' : percent >= CONTEXT_WARN ? 'yellow' : 'green')
+export const contextColor = (percent: number) => (percent >= CONTEXT_HANDOFF ? 'red' : percent >= CONTEXT_WARN ? 'yellow' : 'greenBright')
 
 export const compact = (n: number) => (n >= 1_000_000 ? `${+(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n))
 

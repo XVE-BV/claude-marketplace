@@ -20,10 +20,10 @@ let advisorModel: string | undefined
 const nonEmpty = (value: unknown) => (typeof value === 'string' && value !== '' ? value : undefined)
 
 const LEVELS = ['low', 'medium', 'high', 'xhigh', 'max']
-const LEVEL_COLORS = ['green', 'cyan', 'yellow', 'magenta', 'red']
+const LEVEL_COLORS = ['greenBright', 'cyan', 'yellow', 'magenta', 'red']
 // White text on the dark backgrounds, black on the light ones.
 const textOn = (bg: string) => (['red', 'magenta', 'blue'].includes(bg) ? 'white' : 'black')
-const FAMILY_COLORS: Record<string, string> = { opus: 'magenta', sonnet: 'blue', haiku: 'green', fable: 'yellow' }
+const FAMILY_COLORS: Record<string, string> = { opus: 'magenta', sonnet: 'blue', haiku: 'greenBright', fable: 'yellow' }
 
 const family = (name: string) => /opus|sonnet|haiku|fable/.exec(name.toLowerCase())?.[0]
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
@@ -192,7 +192,7 @@ export const register: Register = on => {
         const l = reading!.rateLimits.find(x => x.kind === kind)
         if (!l) return []
         const p = paceBar(l.percentUsed, kind, l.resetsAt, now)
-        const usedColor = l.percentUsed >= 90 ? 'red' : l.percentUsed >= 70 ? 'yellow' : 'green'
+        const usedColor = l.percentUsed >= 90 ? 'red' : l.percentUsed >= 70 ? 'yellow' : 'greenBright'
         const reset = resetLabel(l.resetsAt, now)
         return [
           lead,
