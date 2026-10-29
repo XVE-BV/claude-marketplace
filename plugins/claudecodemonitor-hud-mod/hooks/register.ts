@@ -155,7 +155,7 @@ export const register: Register = on => {
       children: [
         Text({ backgroundColor: modelColor, color: textOn(modelColor), bold: true, children: [` ◆ ${pretty(sessionModel)} `] }),
         saved(configModel && pretty(configModel)),
-        dim('   effort'),
+        dim('   effort '),
         effortWord,
         saved(configEffort),
         dim('   advisor '),

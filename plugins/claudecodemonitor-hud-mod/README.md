@@ -3,7 +3,7 @@
 A Claude Code mod that draws one line above the prompt:
 
 ```
- ◆ Opus 5.5  Haiku   effort xhigh xhigh   advisor Fable · 2 calls
+ ◆ Opus 5.5  Haiku   effort  xhigh xhigh   advisor Fable · 2 calls
 ```
 
 Under it, once the session has a reading, the meters line: token-weather-usage's bars with the old status-line HUD's text.
