@@ -22,6 +22,8 @@ const nonEmpty = (value: unknown) => (typeof value === 'string' && value !== '' 
 
 const LEVELS = ['low', 'medium', 'high', 'xhigh', 'max']
 const LEVEL_COLORS = ['green', 'cyan', 'yellow', 'magenta', 'red']
+// White text on the dark backgrounds, black on the light ones.
+const textOn = (bg: string) => (['red', 'magenta', 'blue'].includes(bg) ? 'white' : 'black')
 const FAMILY_COLORS: Record<string, string> = { opus: 'magenta', sonnet: 'blue', haiku: 'green', fable: 'yellow' }
 
 const family = (name: string) => /opus|sonnet|haiku|fable/.exec(name.toLowerCase())?.[0]
@@ -146,19 +148,22 @@ export const register: Register = on => {
     const meter = '▰'.repeat(level + 1) + '▱'.repeat(LEVELS.length - level - 1)
     // An unknown level draws dimmed rather than in a level's color.
     const effortStyle = level >= 0 ? { color: LEVEL_COLORS[level] } : { dimColor: true }
+    const effortWord = level >= 0
+      ? Text({ backgroundColor: LEVEL_COLORS[level], color: textOn(LEVEL_COLORS[level]), bold: true, children: [` ${sessionEffort} `] })
+      : Text({ dimColor: true, bold: true, children: [` ${sessionEffort ?? '—'}`] })
 
     const line = Box({
       flexDirection: 'row',
       children: [
-        Text({ backgroundColor: modelColor, color: modelColor === 'blue' ? 'white' : 'black', bold: true, children: [` ◆ ${pretty(sessionModel)} `] }),
+        Text({ backgroundColor: modelColor, color: textOn(modelColor), bold: true, children: [` ◆ ${pretty(sessionModel)} `] }),
         saved(configModel && pretty(configModel)),
         dim('   effort '),
         Text({ ...effortStyle, children: [meter] }),
-        Text({ ...effortStyle, bold: true, children: [` ${sessionEffort ?? '—'}`] }),
+        effortWord,
         saved(configEffort),
         dim('   advisor '),
         advisorModel
-          ? Text({ color: 'cyan', bold: true, children: [pretty(advisorModel)] })
+          ? Text({ backgroundColor: 'cyan', color: textOn('cyan'), bold: true, children: [` ${pretty(advisorModel)} `] })
           : dim('off'),
         dim(` · ${advisorCalls} ${advisorCalls === 1 ? 'call' : 'calls'}`),
       ],
