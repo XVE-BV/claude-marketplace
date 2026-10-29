@@ -29,13 +29,10 @@ async function band($: any) {
   return ((await ui.findAll({ type: 'Text' })) as any[]).map(t => t.text).join('')
 }
 
-// The engine's answers to the requests, in order: each with this many advisor calls.
-function engineSteps(on: any, advisorCalls: number[]) {
-  let call = 0
+// The engine's answer to each request.
+function engineSteps(on: any) {
   on('turn.step', async function* () {
-    const n = advisorCalls[call++] ?? 0
-    const serverToolUses = Array.from({ length: n }, (_, i) => ({ id: `a${i}`, name: 'advisor', input: {}, startedAt: 0, endedAt: 1 }))
-    return { turnId: 't', index: 0, answer: '', toolUses: [], serverToolUses, stopReason: 'end_turn', usage: null }
+    return { turnId: 't', index: 0, answer: '', toolUses: [], serverToolUses: [], stopReason: 'end_turn', usage: null }
   })
 }
 
@@ -54,7 +51,7 @@ test('shows session and config values before any request', async ($, on) => {
   expect(line).toContain(' Haiku')
   expect(line).toContain('effort  —')
   expect(line).toContain(' default')
-  expect(line).toContain('Fable  · 0 calls')
+  expect(line).toContain('Fable ')
 })
 
 test('colors the model pill by family and boxes the config value', async ($, on) => {
@@ -67,9 +64,9 @@ test('colors the model pill by family and boxes the config value', async ($, on)
   expect(config?.props?.color).toBe('white')
 })
 
-test('takes the effort and advisor calls from main-loop requests only', async ($, on) => {
+test('takes the effort from main-loop requests only', async ($, on) => {
   world(on, { model: 'opus', effortLevel: 'high', advisorModel: 'fable' })
-  engineSteps(on, [1, 3])
+  engineSteps(on)
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   await step($, 'xhigh')
   await step($, 'low', 'subagent-1')
@@ -77,7 +74,6 @@ test('takes the effort and advisor calls from main-loop requests only', async ($
   expect(line).toContain(' ◆ Opus 5.5   Opus ')
   expect(line).toContain('effort  xhigh   high')
   expect(line).not.toContain(' low')
-  expect(line).toContain(' · 1 call')
 })
 
 test('re-reads the effort as soon as /effort is done', async ($, on) => {

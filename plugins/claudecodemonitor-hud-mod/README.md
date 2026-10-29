@@ -3,7 +3,7 @@
 A Claude Code mod that draws one line above the prompt:
 
 ```
- ◆ Opus 5.5  Haiku   effort  xhigh xhigh   advisor Fable · 2 calls
+ ◆ Opus 5.5  Haiku   effort  xhigh xhigh   advisor Fable
 ```
 
 Under it, once the session has a reading, the meters line: token-weather-usage's bars with the old status-line HUD's text.
@@ -25,9 +25,9 @@ The model is a pill colored by family (Opus magenta, Sonnet blue, Haiku green, F
 |------|---------------|--------------|
 | model | The main loop's model, as `/model` shows it | `model` in your settings |
 | effort | What `/effort` set, or the effort the last main-loop request asked for | The session model's `modelSettings.<model>.effortLevel` (where `/effort` saves it), else the top-level `effortLevel` |
-| advisor | How many times the advisor ran this session | `advisorModel` in your settings, or `off` |
+| advisor | The advisor model | `advisorModel` in your settings, or `off` |
 
-Config values are your settings files merged the way Claude Code reads them (user, project, local, managed). `default` means the setting isn't set. The band updates right after `/model`, `/effort` or `/advisor`, and at most a second later otherwise (a settings file edited by hand included), so changes show up while idle. Effort and advisor calls also update after each request. Subagents' requests don't count.
+Config values are your settings files merged the way Claude Code reads them (user, project, local, managed). `default` means the setting isn't set. The band updates right after `/model`, `/effort` or `/advisor`, and at most a second later otherwise (a settings file edited by hand included), so changes show up while idle. Effort also updates after each request. Subagents' requests don't count.
 
 Other mods' bands stay visible under this line.
 

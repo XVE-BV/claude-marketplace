@@ -16,7 +16,6 @@ let sessionEffort: string | undefined
 let configModel: string | undefined
 let configEffort: string | undefined
 let advisorModel: string | undefined
-let advisorCalls = 0
 
 const nonEmpty = (value: unknown) => (typeof value === 'string' && value !== '' ? value : undefined)
 
@@ -78,7 +77,6 @@ async function measure($: EngineInterface, usage: { context: { tokens?: number; 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     sessionEffort = undefined
-    advisorCalls = 0
     const saved = await $.store.get(SAMPLES_KEY).catch(() => undefined)
     if (Array.isArray(saved)) samples = saved as Sample[]
     await refresh($)
@@ -121,16 +119,14 @@ export const register: Register = on => {
     return result
   })
 
-  // Each main-loop request carries the effort it asks for, and lists the
-  // advisor calls the API ran inside it. Subagents' requests are skipped.
+  // Each main-loop request carries the effort it asks for. Subagents' requests
+  // are skipped.
   on('turn.step', async function* ($, e, next) {
     const result = yield* next(e)
     if (e.agentId) return result
     const effort = e.effort === undefined ? undefined : String(e.effort)
-    const calls = (result?.serverToolUses ?? []).filter(use => use.name === 'advisor').length
-    if (effort !== sessionEffort || calls > 0) {
+    if (effort !== sessionEffort) {
       sessionEffort = effort
-      advisorCalls += calls
       $.ui.invalidate('ui.render')
     }
     return result
@@ -165,7 +161,6 @@ export const register: Register = on => {
         advisorModel
           ? Text({ backgroundColor: 'cyan', color: textOn('cyan'), bold: true, children: [` ${pretty(advisorModel)} `] })
           : dim('off'),
-        dim(` · ${advisorCalls} ${advisorCalls === 1 ? 'call' : 'calls'}`),
       ],
     })
 
