@@ -37,8 +37,8 @@
         {
             "name": "claudecodemonitor-hud-mod",
             "source": "./plugins/claudecodemonitor-hud-mod",
-            "description": "Mod: a band above the prompt with the session's model and effort beside the ones your settings set, and the advisor model with its call count.",
-            "version": "0.1.0",
+            "description": "Mod: a band above the prompt with the session's model and effort beside the ones your settings set, and the advisor model.",
+            "version": "0.2.0",
             "author": {
                 "name": "XVE"
             },
