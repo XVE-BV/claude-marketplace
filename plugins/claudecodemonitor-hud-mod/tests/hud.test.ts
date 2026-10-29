@@ -52,7 +52,7 @@ test('shows session and config values before any request', async ($, on) => {
   const line = await band($)
   expect(line).toContain(' ◆ Opus 5.5 ')
   expect(line).toContain(' Haiku')
-  expect(line).toContain('▱▱▱▱▱ —')
+  expect(line).toContain('effort —')
   expect(line).toContain(' default')
   expect(line).toContain('Fable  · 0 calls')
 })
@@ -73,7 +73,7 @@ test('takes the effort and advisor calls from main-loop requests only', async ($
   await step($, 'low', 'subagent-1')
   const line = await band($)
   expect(line).toContain(' ◆ Opus 5.5  Opus')
-  expect(line).toContain('▰▰▰▰▱ xhigh  high')
+  expect(line).toContain('effort xhigh  high')
   expect(line).not.toContain(' low')
   expect(line).toContain(' · 1 call')
 })
@@ -87,7 +87,7 @@ test('re-reads the effort as soon as /effort is done', async ($, on) => {
   })
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   await $.command.run({ command: 'effort', args: 'high' } as any)
-  expect(await band($)).toContain('▰▰▰▱▱ high  high')
+  expect(await band($)).toContain('effort high  high')
 })
 
 test('catches settings that land just after /effort', async ($, on) => {
@@ -98,7 +98,7 @@ test('catches settings that land just after /effort', async ($, on) => {
   await $.command.run({ command: 'effort', args: 'low' } as any)
   settings.effortLevel = 'low'
   await clock.advance(300)
-  expect(await band($)).toContain('▰▱▱▱▱ low  low')
+  expect(await band($)).toContain('effort low  low')
 })
 
 test('draws the Sonnet badge in white on blue', async ($, on) => {
@@ -128,7 +128,7 @@ test('re-reads a settings file edited by hand within a second', async ($, on) =>
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   settings.effortLevel = 'max'
   await clock.advance(1000)
-  expect(await band($)).toContain('▰▰▰▰▰ max  max')
+  expect(await band($)).toContain('effort max  max')
 })
 
 test('reads the effort /effort saves for the session model', async ($, on) => {
@@ -146,12 +146,12 @@ test('keeps the session effort across a model switch', async ($, on) => {
     return {}
   })
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
-  expect(await band($)).toContain('▰▰▰▰▱ xhigh  xhigh')
+  expect(await band($)).toContain('effort xhigh  xhigh')
   await $.command.run({ command: 'model', args: 'fable' } as any)
   await clock.advance(300)
   const line = await band($)
   expect(line).toContain(' ◆ Fable 5.1 ')
-  expect(line).toContain('▰▰▰▰▱ xhigh  high')
+  expect(line).toContain('effort xhigh  high')
 })
 
 test('shows /effort <level> the moment it runs', async ($, on) => {
@@ -159,14 +159,14 @@ test('shows /effort <level> the moment it runs', async ($, on) => {
   on('command.run', () => ({}))
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   await $.command.run({ command: 'effort', args: 'low' } as any)
-  expect(await band($)).toContain('▰▱▱▱▱ low')
+  expect(await band($)).toContain('effort low')
 })
 
 test('shows the configured effort before the first request', async ($, on) => {
   world(on, { effortLevel: 'medium' })
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   const line = await band($)
-  expect(line).toContain('▰▰▱▱▱ medium')
+  expect(line).toContain('effort medium')
   expect(line).not.toContain('—')
 })
 

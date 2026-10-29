@@ -145,9 +145,7 @@ export const register: Register = on => {
 
     const modelColor = FAMILY_COLORS[family(sessionModel) ?? ''] ?? 'white'
     const level = LEVELS.indexOf(sessionEffort ?? '')
-    const meter = '▰'.repeat(level + 1) + '▱'.repeat(LEVELS.length - level - 1)
     // An unknown level draws dimmed rather than in a level's color.
-    const effortStyle = level >= 0 ? { color: LEVEL_COLORS[level] } : { dimColor: true }
     const effortWord = level >= 0
       ? Text({ backgroundColor: LEVEL_COLORS[level], color: textOn(LEVEL_COLORS[level]), bold: true, children: [` ${sessionEffort} `] })
       : Text({ dimColor: true, bold: true, children: [` ${sessionEffort ?? '—'}`] })
@@ -157,8 +155,7 @@ export const register: Register = on => {
       children: [
         Text({ backgroundColor: modelColor, color: textOn(modelColor), bold: true, children: [` ◆ ${pretty(sessionModel)} `] }),
         saved(configModel && pretty(configModel)),
-        dim('   effort '),
-        Text({ ...effortStyle, children: [meter] }),
+        dim('   effort'),
         effortWord,
         saved(configEffort),
         dim('   advisor '),
