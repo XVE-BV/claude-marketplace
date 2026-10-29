@@ -1,6 +1,6 @@
 # claudecodemonitor-hud-mod
 
-A Claude Code mod that draws one line above the prompt:
+A Claude Code mod that draws one line above the prompt, under a rule in the composer's border color:
 
 ```
 model opus 5.5  haiku   effort  xhigh xhigh   advisor fable

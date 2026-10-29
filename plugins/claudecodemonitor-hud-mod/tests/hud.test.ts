@@ -99,6 +99,14 @@ test('catches settings that land just after /effort', async ($, on) => {
   expect(await band($)).toContain('effort  low   low')
 })
 
+test('draws a rule above the band in the composer border color', async ($, on) => {
+  world(on, {})
+  await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
+  const texts = (await (await mount($)).findAll({ type: 'Text' })) as any[]
+  const rule = texts.find(t => t.props?.color === 'promptBorder')
+  expect(rule?.text).toBe('─'.repeat(200))
+})
+
 test('draws the Sonnet badge in white on blue', async ($, on) => {
   world(on, {}, () => 'claude-sonnet-5-5')
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)

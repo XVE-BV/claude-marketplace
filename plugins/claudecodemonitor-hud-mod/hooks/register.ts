@@ -210,6 +210,8 @@ export const register: Register = on => {
     // Keep what the mods after this one draw in the band, under these lines.
     const below = await next(e)
     if (below) rows.push(below)
-    return rows.length === 1 ? line : Box({ flexDirection: 'column', children: rows })
+    // A rule above the band, in the composer's border color.
+    const rule = Text({ color: 'promptBorder', children: ['─'.repeat(e.props.bodyColumns)] })
+    return Box({ flexDirection: 'column', children: [rule, ...rows] })
   })
 }
