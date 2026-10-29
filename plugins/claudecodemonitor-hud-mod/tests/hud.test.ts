@@ -101,6 +101,15 @@ test('catches settings that land just after /effort', async ($, on) => {
   expect(await band($)).toContain('▰▱▱▱▱ low low')
 })
 
+test('draws the Sonnet badge in white on blue', async ($, on) => {
+  world(on, {}, () => 'claude-sonnet-5-5')
+  await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
+  const texts = (await (await mount($)).findAll({ type: 'Text' })) as any[]
+  const badge = texts.find(t => t.text === ' ◆ Sonnet 5.5 ')
+  expect(badge?.props?.backgroundColor).toBe('blue')
+  expect(badge?.props?.color).toBe('white')
+})
+
 test('re-reads a settings file edited by hand within a second', async ($, on) => {
   const settings: Record<string, unknown> = { effortLevel: 'medium' }
   const clock = world(on, settings)

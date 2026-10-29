@@ -150,7 +150,7 @@ export const register: Register = on => {
     const line = Box({
       flexDirection: 'row',
       children: [
-        Text({ backgroundColor: modelColor, color: 'black', bold: true, children: [` ◆ ${pretty(sessionModel)} `] }),
+        Text({ backgroundColor: modelColor, color: modelColor === 'blue' ? 'white' : 'black', bold: true, children: [` ◆ ${pretty(sessionModel)} `] }),
         saved(configModel && pretty(configModel)),
         dim('   effort '),
         Text({ ...effortStyle, children: [meter] }),
