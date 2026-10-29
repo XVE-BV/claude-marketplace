@@ -152,6 +152,7 @@ export const register: Register = on => {
     const line = Box({
       flexDirection: 'row',
       children: [
+        dim('model '),
         Text({ backgroundColor: modelColor, color: textOn(modelColor), bold: true, children: [` ◆ ${pretty(sessionModel)} `] }),
         saved(configModel && pretty(configModel)),
         dim('  effort '),
