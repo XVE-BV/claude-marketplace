@@ -101,13 +101,12 @@ test('catches settings that land just after /effort', async ($, on) => {
   expect(await band($)).toContain('▰▱▱▱▱ low low')
 })
 
-test('re-reads when a settings file changes', async ($, on) => {
+test('re-reads a settings file edited by hand within a second', async ($, on) => {
   const settings: Record<string, unknown> = { effortLevel: 'medium' }
-  world(on, settings)
-  on('classic.ConfigChange', () => ({}))
+  const clock = world(on, settings)
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   settings.effortLevel = 'max'
-  await ($ as any).classic.ConfigChange({ hook_event_name: 'ConfigChange', source: 'user_settings' })
+  await clock.advance(1000)
   expect(await band($)).toContain('▰▰▰▰▰ max max')
 })
 

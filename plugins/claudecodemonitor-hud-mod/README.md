@@ -27,7 +27,7 @@ The model is a pill colored by family (Opus magenta, Sonnet blue, Haiku green, F
 | effort | What `/effort` set, or the effort the last main-loop request asked for | The session model's `modelSettings.<model>.effortLevel` (where `/effort` saves it), else the top-level `effortLevel` |
 | advisor | How many times the advisor ran this session | `advisorModel` in your settings, or `off` |
 
-Config values are your settings files merged the way Claude Code reads them (user, project, local, managed). `default` means the setting isn't set. The band updates right after `/model`, `/effort` or `/advisor`, when a settings file changes, and at most a second later otherwise, so changes show up while idle. Effort and advisor calls also update after each request. Subagents' requests don't count.
+Config values are your settings files merged the way Claude Code reads them (user, project, local, managed). `default` means the setting isn't set. The band updates right after `/model`, `/effort` or `/advisor`, and at most a second later otherwise (a settings file edited by hand included), so changes show up while idle. Effort and advisor calls also update after each request. Subagents' requests don't count.
 
 Other mods' bands stay visible under this line.
 

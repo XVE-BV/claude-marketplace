@@ -107,13 +107,6 @@ export const register: Register = on => {
     return result
   })
 
-  // A settings file changed: /effort saving, or an edit by hand.
-  on('classic.ConfigChange', async ($, e, next) => {
-    const result = await next(e)
-    await refresh($)
-    return result
-  })
-
   // The engine pushes a measurement after each turn and when a limit moves a
   // point; a compaction changes the context at once.
   on('session.measure', async ($, e, next) => {
