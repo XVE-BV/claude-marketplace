@@ -26,14 +26,13 @@ const textOn = (bg: string) => (['red', 'magenta', 'blue'].includes(bg) ? 'white
 const FAMILY_COLORS: Record<string, string> = { opus: 'magenta', sonnet: 'blue', haiku: 'greenBright', fable: 'yellow' }
 
 const family = (name: string) => /opus|sonnet|haiku|fable/.exec(name.toLowerCase())?.[0]
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
 // "claude-opus-5-5[1m]" reads "Opus 5.5 [1m]"; an alias such as "haiku" reads "Haiku".
 function pretty(name: string) {
   const id = /^(?:claude-)?([a-z]+)-(\d+)-(\d+)(.*)$/.exec(name)
-  if (!id) return capitalize(name)
+  if (!id) return name
   const [, base = '', major, minor, rest = ''] = id
-  return `${capitalize(base)} ${major}.${minor}${rest ? ` ${rest}` : ''}`
+  return `${base} ${major}.${minor}${rest ? ` ${rest}` : ''}`
 }
 
 

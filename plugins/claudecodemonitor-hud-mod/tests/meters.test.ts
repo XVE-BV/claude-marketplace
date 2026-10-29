@@ -36,12 +36,12 @@ test('pace bar: used, the gap to the time elapsed, the rest', async () => {
 test('reset label and handoff banner, as the old HUD wrote them', async () => {
   const now = new Date(2026, 9, 9, 12, 0).getTime()
   expect(resetLabel(new Date(2026, 9, 9, 14, 20).toISOString(), now)).toBe('resets 14:20')
-  expect(resetLabel(new Date(2026, 9, 16, 9, 0).toISOString(), now)).toBe('resets Fri 09:00')
+  expect(resetLabel(new Date(2026, 9, 16, 9, 0).toISOString(), now)).toBe('resets fri 09:00')
   expect(resetLabel(undefined, now)).toBe('')
   expect(handoff(40, 50)).toBeUndefined()
   expect(handoff(55, 35)?.text).toBe('● handoff')
   expect(handoff(62, 0)?.text).toBe('● handoff')
-  expect(handoff(86, 0)?.text).toBe('● handoff NOW')
+  expect(handoff(86, 0)?.text).toBe('● handoff now')
 })
 
 const USAGE = {
@@ -75,7 +75,7 @@ test('the meters line: context and limits against the clock', async ($, on) => {
   world(on)
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   const text = await lines($)
-  expect(text).toContain('ctx ━━━─── 47% of 1M · 530k safe')
+  expect(text).toContain('ctx ━━━─── 47% of 1m · 530k safe')
   expect(text).not.toContain('handoff')
   expect(text).toContain(` │ 5h ▸ ━╍╍─── 21% · ${resetLabel(USAGE.rateLimits[0]!.resetsAt, 0)}`)
   expect(text).toContain(`   7d ▸ ━━━─── 58% · ${resetLabel(USAGE.rateLimits[1]!.resetsAt, 0)}`)
@@ -87,7 +87,7 @@ test('the meters line draws in the Desktop app too', async ($, on) => {
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   const ui = await $.ui.mount({ plugin: 'claudecodemonitor-hud-mod', surface: 'desktop', component: 'AbovePrompt', props: { bodyColumns: 120 } as any })
   const text = ((await ui.findAll({ type: 'Text' })) as any[]).map(t => t.text).join('')
-  expect(text).toContain('47% of 1M · 530k safe')
+  expect(text).toContain('47% of 1m · 530k safe')
   expect(text).toContain('5h ▸ ')
 })
 
@@ -102,7 +102,7 @@ test('a fast burn drives the handoff banner, never a rate or run-out segment', a
     changed: ['context', 'rateLimits'],
   } as any)
   const text = await lines($)
-  expect(text).toContain('● handoff NOW')
+  expect(text).toContain('● handoff now')
   expect(text).toContain(`5h ▸ ━━━╍── 61% · ${resetLabel(USAGE.rateLimits[0]!.resetsAt, 10 * MINUTE)}`)
   expect(text).not.toContain('%/h')
   expect(text).not.toContain('limit ~')

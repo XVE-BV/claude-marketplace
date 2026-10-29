@@ -67,13 +67,13 @@ export function resetLabel(iso: string | undefined, now: number): string {
   const at = iso ? Date.parse(iso) : NaN
   if (!Number.isFinite(at)) return ''
   const sameDay = new Date(at).toDateString() === new Date(now).toDateString()
-  const day = new Date(at).toLocaleDateString('en-US', { weekday: 'short' })
+  const day = new Date(at).toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase()
   return `resets ${sameDay ? '' : `${day} `}${clock(at)}`
 }
 
 // The old HUD's handoff banner: soon from 60% (or 50% on a hot 5h burn), now from 85%.
 export function handoff(percent: number, fiveHourRate: number | undefined): { text: string; color: string; bold?: boolean } | undefined {
-  if (percent >= CONTEXT_HANDOFF) return { text: '● handoff NOW', color: 'red', bold: true }
+  if (percent >= CONTEXT_HANDOFF) return { text: '● handoff now', color: 'red', bold: true }
   if (percent >= CONTEXT_WARN) return { text: '● handoff', color: 'yellow' }
   if (percent >= 50 && (fiveHourRate ?? 0) > 30) return { text: '● handoff', color: 'yellow' }
   return undefined
@@ -81,7 +81,7 @@ export function handoff(percent: number, fiveHourRate: number | undefined): { te
 
 export const contextColor = (percent: number) => (percent >= CONTEXT_HANDOFF ? 'red' : percent >= CONTEXT_WARN ? 'yellow' : 'greenBright')
 
-export const compact = (n: number) => (n >= 1_000_000 ? `${+(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n))
+export const compact = (n: number) => (n >= 1_000_000 ? `${+(n / 1_000_000).toFixed(1)}m` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n))
 
 export function clock(at: number): string {
   const d = new Date(at)
