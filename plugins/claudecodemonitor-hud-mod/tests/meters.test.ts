@@ -39,9 +39,9 @@ test('reset label and handoff banner, as the old HUD wrote them', async () => {
   expect(resetLabel(new Date(2026, 9, 16, 9, 0).toISOString(), now)).toBe('resets fri 09:00')
   expect(resetLabel(undefined, now)).toBe('')
   expect(handoff(40, 50)).toBeUndefined()
-  expect(handoff(55, 35)?.text).toBe('● handoff')
-  expect(handoff(62, 0)?.text).toBe('● handoff')
-  expect(handoff(86, 0)?.text).toBe('● handoff now')
+  expect(handoff(55, 35)?.text).toBe('handoff')
+  expect(handoff(62, 0)?.text).toBe('handoff')
+  expect(handoff(86, 0)?.text).toBe('handoff now')
 })
 
 const USAGE = {
@@ -102,7 +102,7 @@ test('a fast burn drives the handoff banner, never a rate or run-out segment', a
     changed: ['context', 'rateLimits'],
   } as any)
   const text = await lines($)
-  expect(text).toContain('● handoff now')
+  expect(text).toContain('handoff now')
   expect(text).toContain(`5h ▸ ━━━╍── 61% · ${resetLabel(USAGE.rateLimits[0]!.resetsAt, 10 * MINUTE)}`)
   expect(text).not.toContain('%/h')
   expect(text).not.toContain('limit ~')
