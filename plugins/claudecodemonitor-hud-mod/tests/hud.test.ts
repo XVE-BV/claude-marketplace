@@ -99,14 +99,6 @@ test('catches settings that land just after /effort', async ($, on) => {
   expect(await band($)).toContain('effort  low   low')
 })
 
-test('draws the advisor in white on cyan', async ($, on) => {
-  world(on, { advisorModel: 'opus' })
-  await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
-  const texts = (await (await mount($)).findAll({ type: 'Text' })) as any[]
-  const advisor = texts.find(t => t.text === ' Opus ' && t.props?.backgroundColor === 'cyan')
-  expect(advisor?.props?.color).toBe('white')
-})
-
 test('draws the Sonnet badge in white on blue', async ($, on) => {
   world(on, {}, () => 'claude-sonnet-5-5')
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
@@ -125,7 +117,7 @@ test('boxes the effort and advisor like the model', async ($, on) => {
   expect(effort?.props?.color).toBe('black')
   const advisor = texts.find(t => t.text === ' Fable ')
   expect(advisor?.props?.backgroundColor).toBe('cyan')
-  expect(advisor?.props?.color).toBe('black')
+  expect(advisor?.props?.color).toBe('white')
 })
 
 test('re-reads a settings file edited by hand within a second', async ($, on) => {
