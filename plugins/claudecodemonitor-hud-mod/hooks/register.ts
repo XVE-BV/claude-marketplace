@@ -159,7 +159,7 @@ export const register: Register = on => {
         saved(configEffort),
         dim('  advisor '),
         advisorModel
-          ? Text({ backgroundColor: 'cyan', color: textOn('cyan'), bold: true, children: [` ${pretty(advisorModel)} `] })
+          ? Text({ backgroundColor: 'cyan', color: 'white', bold: true, children: [` ${pretty(advisorModel)} `] })
           : dim('off'),
       ],
     })

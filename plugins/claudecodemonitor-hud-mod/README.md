@@ -19,7 +19,7 @@ The line wraps when the terminal is too narrow for it.
 
 Readings come from Claude Code after each turn and whenever a limit moves a point; the 5h burn-rate samples behind the handoff banner live in the plugin's store so a reload keeps them. Rate limits appear only on a claude.ai subscription, after the first response.
 
-The model is a pill colored by family (Opus magenta, Sonnet blue, Haiku green, Fable yellow). Effort is a pill colored from green (low) to red (max); the advisor is a cyan pill. Pill text is white on red, magenta and blue, black on the rest. Beside the model and effort, in a black box with white text, is the value your settings hold (`default` when unset).
+The model is a pill colored by family (Opus magenta, Sonnet blue, Haiku green, Fable yellow). Effort is a pill colored from green (low) to red (max); the advisor is a cyan pill with white text. Other pill text is white on red, magenta and blue, black on the rest. Beside the model and effort, in a black box with white text, is the value your settings hold (`default` when unset).
 
 | Part | Session value | Config value |
 |------|---------------|--------------|
