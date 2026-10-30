@@ -1,7 +1,7 @@
 {
     "name": "starter",
-    "description": "Starter settings for Claude Code: setup lets each person opt in to turning off auto memory, dynamic workflows, session recap, prompt suggestions and idle compaction in user-scope settings.json, to the ultra-concise output style this plugin ships, and to four guideline rule files (advisor, chat, coding, writing).",
-    "version": "0.5.1",
+    "description": "Starter settings for Claude Code: setup lets each person opt in to turning off auto memory, dynamic workflows, session recap, prompt suggestions, idle compaction and rating surveys in user-scope settings.json, to the ultra-concise output style this plugin ships, and to four guideline rule files (advisor, chat, coding, writing).",
+    "version": "0.6.0",
     "author": {
         "name": "XVE"
     }

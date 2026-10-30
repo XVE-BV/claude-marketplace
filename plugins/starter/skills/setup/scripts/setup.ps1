@@ -1,15 +1,16 @@
 # Opt-in user-scope Claude Code preferences.
-# Args: workflows memory recap suggestions idlecompact style advisor chat coding writing
+# Args: workflows memory recap suggestions idlecompact survey style advisor chat coding writing
 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Names)
 $ErrorActionPreference = 'Stop'
 
-$list = 'workflows memory recap suggestions idlecompact style advisor chat coding writing'
+$list = 'workflows memory recap suggestions idlecompact survey style advisor chat coding writing'
 $spec = @{
     workflows   = @('disableWorkflows', $true)
     memory      = @('autoMemoryEnabled', $false)
     recap       = @('awaySummaryEnabled', $false)
     suggestions = @('promptSuggestionEnabled', $false)
     idlecompact = @('idleCompaction', $false)
+    survey      = @('env.CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY', '1')
     style       = @('outputStyle', 'starter:ultra-concise')
 }
 $rules = @('advisor', 'chat', 'coding', 'writing')
@@ -73,9 +74,20 @@ foreach ($n in $Names) {
     }
     $key, $val = $spec[$n]
     $shown = "$key=$($val | ConvertTo-Json -Compress)"
-    $cur = $cfg.PSObject.Properties[$key]
+    # A dotted key (env.NAME) sits one level down; a missing or non-object parent becomes {}.
+    $obj = $cfg
+    $leaf = $key
+    if ($key.Contains('.')) {
+        $parent, $leaf = $key -split '\.', 2
+        $p = $cfg.PSObject.Properties[$parent]
+        if (-not $p -or $null -eq $p.Value -or $p.Value.GetType().Name -ne 'PSCustomObject') {
+            $cfg | Add-Member -NotePropertyName $parent -NotePropertyValue ([pscustomobject]@{}) -Force
+        }
+        $obj = $cfg.PSObject.Properties[$parent].Value
+    }
+    $cur = $obj.PSObject.Properties[$leaf]
     if ($cur -and $cur.Value -is $val.GetType() -and $cur.Value -ceq $val) { Write-Output "already $shown"; continue }
-    $cfg | Add-Member -NotePropertyName $key -NotePropertyValue $val -Force
+    $obj | Add-Member -NotePropertyName $leaf -NotePropertyValue $val -Force
     $changed = $true
     Write-Output "written $shown"
 }
