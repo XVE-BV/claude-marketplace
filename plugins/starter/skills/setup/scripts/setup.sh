@@ -1,12 +1,12 @@
 #!/bin/sh
 # Opt-in user-scope Claude Code preferences.
-# Args: workflows memory recap suggestions idlecompact style advisor chat coding writing
+# Args: workflows memory recap suggestions idlecompact survey style advisor chat coding writing
 set -eu
 
 dir=${CLAUDE_CONFIG_DIR:-$HOME/.claude}
 file=$dir/settings.json
 src=$(cd "$(dirname "$0")" && pwd)/../assets/rules
-names="workflows memory recap suggestions idlecompact style advisor chat coding writing"
+names="workflows memory recap suggestions idlecompact survey style advisor chat coding writing"
 
 # settings item: name -> "key value"
 spec_of() {
@@ -16,6 +16,7 @@ spec_of() {
     recap) echo "awaySummaryEnabled false" ;;
     suggestions) echo "promptSuggestionEnabled false" ;;
     idlecompact) echo "idleCompaction false" ;;
+    survey) echo 'env.CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY "1"' ;;
     style) echo 'outputStyle "starter:ultra-concise"' ;;
     *) return 1 ;;
   esac
@@ -34,11 +35,25 @@ rule_of() {
 is_object() {
   python3 -c 'import json,sys; assert isinstance(json.load(open(sys.argv[1], encoding="utf-8-sig")), dict)' "$file" 2>/dev/null
 }
+# KEY may be dotted (env.NAME) for a key one level down; put creates the parent.
 get() {
-  python3 -c 'import json,sys; d=json.load(open(sys.argv[1], encoding="utf-8-sig")); print(json.dumps(d[sys.argv[2]]) if sys.argv[2] in d else "unset")' "$file" "$1"
+  python3 -c 'import json,sys
+d=json.load(open(sys.argv[1], encoding="utf-8-sig"))
+for k in sys.argv[2].split("."):
+    if not isinstance(d, dict) or k not in d: print("unset"); sys.exit()
+    d=d[k]
+print(json.dumps(d))' "$file" "$1"
 }
 put() {
-  python3 -c 'import json,sys; d=json.load(open(sys.argv[1], encoding="utf-8-sig")); d[sys.argv[2]]=json.loads(sys.argv[3]); open(sys.argv[1] + ".tmp", "w", encoding="utf-8", newline="\n").write(json.dumps(d, indent=2, ensure_ascii=False) + "\n")' "$file" "$1" "$2"
+  python3 -c 'import json,sys
+d=json.load(open(sys.argv[1], encoding="utf-8-sig"))
+*parents, leaf=sys.argv[2].split(".")
+o=d
+for k in parents:
+    if not isinstance(o.get(k), dict): o[k]={}
+    o=o[k]
+o[leaf]=json.loads(sys.argv[3])
+open(sys.argv[1] + ".tmp", "w", encoding="utf-8", newline="\n").write(json.dumps(d, indent=2, ensure_ascii=False) + "\n")' "$file" "$1" "$2"
   mv "$file.tmp" "$file"
 }
 
