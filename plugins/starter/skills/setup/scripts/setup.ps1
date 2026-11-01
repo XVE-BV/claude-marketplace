@@ -1,9 +1,9 @@
 # Opt-in user-scope Claude Code preferences.
-# Args: workflows memory recap suggestions idlecompact style advisor chat coding writing
+# Args: workflows memory recap suggestions idlecompact style survey advisor chat coding writing
 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Names)
 $ErrorActionPreference = 'Stop'
 
-$list = 'workflows memory recap suggestions idlecompact style advisor chat coding writing'
+$list = 'workflows memory recap suggestions idlecompact style survey advisor chat coding writing'
 $spec = @{
     workflows   = @('disableWorkflows', $true)
     memory      = @('autoMemoryEnabled', $false)
@@ -11,6 +11,7 @@ $spec = @{
     suggestions = @('promptSuggestionEnabled', $false)
     idlecompact = @('idleCompaction', $false)
     style       = @('outputStyle', 'starter:ultra-concise')
+    survey      = @('env.CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY', '1')
 }
 $rules = @('advisor', 'chat', 'coding', 'writing')
 if (-not $Names) { Write-Output "usage: setup.ps1 $list"; exit 2 }
@@ -73,9 +74,20 @@ foreach ($n in $Names) {
     }
     $key, $val = $spec[$n]
     $shown = "$key=$($val | ConvertTo-Json -Compress)"
-    $cur = $cfg.PSObject.Properties[$key]
+    # Dotted key names a nested key; missing or non-object parents become objects.
+    $parts = $key -split '\.'
+    $obj = $cfg
+    for ($i = 0; $i -lt $parts.Count - 1; $i++) {
+        $p = $obj.PSObject.Properties[$parts[$i]]
+        if (-not $p -or $null -eq $p.Value -or $p.Value.GetType().Name -ne 'PSCustomObject') {
+            $obj | Add-Member -NotePropertyName $parts[$i] -NotePropertyValue ([pscustomobject]@{}) -Force
+        }
+        $obj = $obj.PSObject.Properties[$parts[$i]].Value
+    }
+    $leaf = $parts[-1]
+    $cur = $obj.PSObject.Properties[$leaf]
     if ($cur -and $cur.Value -is $val.GetType() -and $cur.Value -ceq $val) { Write-Output "already $shown"; continue }
-    $cfg | Add-Member -NotePropertyName $key -NotePropertyValue $val -Force
+    $obj | Add-Member -NotePropertyName $leaf -NotePropertyValue $val -Force
     $changed = $true
     Write-Output "written $shown"
 }
