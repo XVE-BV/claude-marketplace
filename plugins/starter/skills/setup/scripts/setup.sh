@@ -1,12 +1,12 @@
 #!/bin/sh
 # Opt-in user-scope Claude Code preferences.
-# Args: workflows memory recap suggestions idlecompact style advisor chat coding writing
+# Args: workflows memory recap suggestions idlecompact style survey advisor chat coding writing
 set -eu
 
 dir=${CLAUDE_CONFIG_DIR:-$HOME/.claude}
 file=$dir/settings.json
 src=$(cd "$(dirname "$0")" && pwd)/../assets/rules
-names="workflows memory recap suggestions idlecompact style advisor chat coding writing"
+names="workflows memory recap suggestions idlecompact style survey advisor chat coding writing"
 
 # settings item: name -> "key value"
 spec_of() {
@@ -17,6 +17,7 @@ spec_of() {
     suggestions) echo "promptSuggestionEnabled false" ;;
     idlecompact) echo "idleCompaction false" ;;
     style) echo 'outputStyle "starter:ultra-concise"' ;;
+    survey) echo 'env.CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY "1"' ;;
     *) return 1 ;;
   esac
 }
@@ -30,15 +31,19 @@ rule_of() {
 }
 
 # is_object: file holds a JSON object. get KEY: current value as JSON, or "unset".
-# put KEY VALUE: rewrite the file with KEY set.
+# put KEY VALUE: rewrite the file with KEY set. Dotted KEY names a nested key; missing parents become objects.
 is_object() {
   python3 -c 'import json,sys; assert isinstance(json.load(open(sys.argv[1], encoding="utf-8-sig")), dict)' "$file" 2>/dev/null
 }
 get() {
-  python3 -c 'import json,sys; d=json.load(open(sys.argv[1], encoding="utf-8-sig")); print(json.dumps(d[sys.argv[2]]) if sys.argv[2] in d else "unset")' "$file" "$1"
+  python3 -c 'import json,sys; d=json.load(open(sys.argv[1], encoding="utf-8-sig"))
+for k in sys.argv[2].split(".")[:-1]: d=d.get(k) if isinstance(d.get(k), dict) else {}
+k=sys.argv[2].split(".")[-1]; print(json.dumps(d[k]) if k in d else "unset")' "$file" "$1"
 }
 put() {
-  python3 -c 'import json,sys; d=json.load(open(sys.argv[1], encoding="utf-8-sig")); d[sys.argv[2]]=json.loads(sys.argv[3]); open(sys.argv[1] + ".tmp", "w", encoding="utf-8", newline="\n").write(json.dumps(d, indent=2, ensure_ascii=False) + "\n")' "$file" "$1" "$2"
+  python3 -c 'import json,sys; r=d=json.load(open(sys.argv[1], encoding="utf-8-sig"))
+for k in sys.argv[2].split(".")[:-1]: d[k]=d[k] if isinstance(d.get(k), dict) else {}; d=d[k]
+d[sys.argv[2].split(".")[-1]]=json.loads(sys.argv[3]); open(sys.argv[1] + ".tmp", "w", encoding="utf-8", newline="\n").write(json.dumps(r, indent=2, ensure_ascii=False) + "\n")' "$file" "$1" "$2"
   mv "$file.tmp" "$file"
 }
 
