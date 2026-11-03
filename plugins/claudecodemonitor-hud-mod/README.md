@@ -3,7 +3,7 @@
 A Claude Code mod that draws one line above the prompt, under a rule in the composer's border color:
 
 ```
-model opus 5.5  haiku   effort  xhigh xhigh   advisor fable
+model opus 5.5  haiku   effort  xhigh xhigh   advisor fable  ⎇ feat/x
 ```
 
 Under it, once the session has a reading, the meters line: token-weather-usage's bars with the old status-line HUD's text.
@@ -26,6 +26,8 @@ The model is a pill colored by family (Opus magenta, Sonnet blue, Haiku green, F
 | model | The main loop's model, as `/model` shows it | `model` in your settings |
 | effort | What `/effort` set, or the effort the last main-loop request asked for | The session model's `modelSettings.<model>.effortLevel` (where `/effort` saves it), else the top-level `effortLevel` |
 | advisor | The advisor model | `advisorModel` in your settings, or `off` |
+
+The branch at the end of the first row is the git branch of the session's directory: a dim `⎇`, then the name in cyan, cut to 34 characters and `…` when it is longer than 35. A detached HEAD shows the short hash, `(abc1234)`. It is absent outside a git repository, when git is not installed, and on any git error. It reads `git branch --show-current` (else `git rev-parse --short HEAD`) in the session's directory, with a 2 s timeout, when the session starts, after each command, and every 3 s, so a branch switch made by a tool shows within a few seconds. A tag follows it when the folder is not a plain repository: a dim `·`, then `skyrift` (a skyrift workspace, found by its `.skyrift-workspace` file), `worktree` (a linked git worktree) or `submodule` in yellow, and the folder's name dim, cut like the branch (`⎇ feat/x · skyrift hudbr-pr`); it is read once per session folder with one `git rev-parse`, not on the 3 s look, and any failure shows the branch alone. The tag needs git 2.31 or newer; an older git shows the branch alone. A lookup that did not answer (git timed out or failed) is not remembered for the folder: the next look, within 3 s, asks again. The band redraws only when the branch or the tag changed.
 
 Config values are your settings files merged the way Claude Code reads them (user, project, local, managed). `default` means the setting isn't set. The band updates right after `/model`, `/effort` or `/advisor`, and at most a second later otherwise (a settings file edited by hand included), so changes show up while idle. Effort also updates after each request. Subagents' requests don't count.
 
