@@ -1,6 +1,6 @@
 import { test, expect } from 'claude-code/testing'
 
-import { branchLabel, clip, kindOf, rowParts, rowText, stdoutOf, KIND_ARGS, MAX_LABEL, SKYRIFT_MARKER } from '../hooks/branch'
+import { branchLabel, clip, kindOf, probeLines, rowParts, rowText, stdoutOf, KIND_ARGS, MAX_LABEL, SKYRIFT_MARKER } from '../hooks/branch'
 
 test('stdout of a git run: trimmed on success, nothing on any failure', async () => {
   expect(stdoutOf({ exitCode: 0, stdout: 'feat/x\n' })).toBe('feat/x')
@@ -100,6 +100,51 @@ test('kind of: a git error or a missing line is no kind, marker or not', async (
     expect(kindOf(['/', '/.git', '/.git'], hasMarker)).toBeUndefined()
     expect(kindOf(['', '/work/repo/.git', '/work/repo/.git'], hasMarker)).toBeUndefined()
   }
+})
+
+test('kind of: git before 2.31 echoes the flag as line 1, which is not a path: no kind, marker or not', async () => {
+  for (const hasMarker of [false, true]) {
+    expect(kindOf(['--path-format=absolute', '/w/r', '.git', '.git'], hasMarker)).toBeUndefined()
+    // in a subdirectory the git dir is absolute, the common dir is not
+    expect(kindOf(['--path-format=absolute', '/w/r', '/w/r/.git', '../../.git'], hasMarker)).toBeUndefined()
+    // any of the first three lines relative: no kind
+    expect(kindOf(['/w/r', '.git', '.git'], hasMarker)).toBeUndefined()
+    expect(kindOf(['/w/r', '/w/r/.git', '../../.git'], hasMarker)).toBeUndefined()
+    expect(kindOf(['w/r', '/w/r/.git', '/w/r/.git'], hasMarker)).toBeUndefined()
+  }
+})
+
+test('kind of: a Windows path, with a drive or a network share, is absolute', async () => {
+  expect(kindOf(['C:\\work\\wt', 'C:\\work\\repo\\.git\\worktrees\\wt', 'C:\\work\\repo\\.git'], false)).toEqual({ kind: 'worktree', name: 'wt' })
+  expect(kindOf(['c:/work/wt', 'c:/work/repo/.git/worktrees/wt', 'c:/work/repo/.git'], false)).toEqual({ kind: 'worktree', name: 'wt' })
+  expect(kindOf(['\\\\server\\share\\repo', '\\\\server\\share\\repo\\.git', '\\\\server\\share\\repo\\.git'], true)).toEqual({ kind: 'skyrift', name: 'repo' })
+})
+
+test('probe lines: a git that answered is exit 0 with three lines or more', async () => {
+  expect(probeLines({ exitCode: 0, stdout: '/work/repo\n/work/repo/.git\n/work/repo/.git\n' })).toEqual(PLAIN)
+  expect(probeLines({ exitCode: 0, stdout: `${SUBMODULE.join('\n')}\n` })).toEqual(SUBMODULE)
+  expect(probeLines({ exitCode: 0, stdout: `${WORKTREE.join('\r\n')}\r\n` })).toEqual(WORKTREE)
+})
+
+test('probe lines: a git that did not answer is a failed exit, a run that never came back, or too little', async () => {
+  // a timeout, a git that cannot start: no run at all
+  expect(probeLines(undefined)).toBeUndefined()
+  // not a repository, a bare repository, an unknown option
+  expect(probeLines({ exitCode: 128, stdout: '' })).toBeUndefined()
+  expect(probeLines({ exitCode: 129, stdout: `${PLAIN.join('\n')}\n` })).toBeUndefined()
+  // a stdout that is not text
+  expect(probeLines({ exitCode: 0, stdout: undefined as unknown as string })).toBeUndefined()
+  // exit 0 with less than the three lines every git prints
+  expect(probeLines({ exitCode: 0, stdout: '' })).toBeUndefined()
+  expect(probeLines({ exitCode: 0, stdout: '\n' })).toBeUndefined()
+  expect(probeLines({ exitCode: 0, stdout: '/work/repo\n/work/repo/.git\n' })).toBeUndefined()
+})
+
+test('probe lines: answered is not the same as recognized, git before 2.31 answers with lines kindOf refuses', async () => {
+  // exit 0 and four lines: answered (the folder is not asked again), though the lines are shifted
+  const old = probeLines({ exitCode: 0, stdout: '--path-format=absolute\n/w/r\n.git\n.git\n' })
+  expect(old).toEqual(['--path-format=absolute', '/w/r', '.git', '.git'])
+  expect(kindOf(old!, false)).toBeUndefined()
 })
 
 test('row: the branch alone when there is no kind', async () => {

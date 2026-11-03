@@ -1,6 +1,6 @@
 import type { EngineInterface, Register } from 'claude-code'
 
-import { branchLabel, KIND_ARGS, kindOf, rowParts, rowText, SKYRIFT_MARKER, stdoutOf } from './branch'
+import { branchLabel, KIND_ARGS, kindOf, probeLines, rowParts, rowText, SKYRIFT_MARKER, stdoutOf } from './branch'
 import type { Kind } from './branch'
 import { addSample, burnRate, compact, contextColor, handoff, paceBar, resetLabel, PACE_CELLS } from './meters'
 import type { Reading, Sample } from './meters'
@@ -23,13 +23,17 @@ let advisorModel: string | undefined
 // the reads so one that lands after a newer one began is dropped.
 let branch: string | undefined
 let branchSeq = 0
+// How many looks are under way.
+let looks = 0
 const GIT_TIMEOUT_MS = 2000
 const BRANCH_EVERY_MS = 3000
 
 // The kind of checkout (skyrift workspace, linked worktree, submodule), read for
-// the folder `kindCwd` and kept until the session folder changes.
+// the folder `kindCwd` and kept until the session folder changes. `kindCwd` is
+// set only once git has answered for the folder.
 let kind: Kind | undefined
 let kindCwd: string | undefined
+type KindRead = { kind: Kind | undefined; answered: boolean }
 // How the parts of the branch row are drawn.
 const TONES = { branch: { color: 'cyan' }, dim: { dimColor: true }, kind: { color: 'yellow' } } as const
 
@@ -96,19 +100,25 @@ async function readBranch($: EngineInterface, cwd: string) {
   }
 }
 
-// What kind of checkout `cwd` is: one rev-parse, then the skyrift marker in the
-// toplevel it printed (`$.fs.exists`, in the mod's process, no spawn). Any
-// failure (git, an unreadable marker, a line missing) reads as no kind; this
+// What kind of checkout `cwd` is, and whether git answered: one rev-parse, then
+// the skyrift marker in the toplevel it printed (`$.fs.exists`, in the mod's
+// process, no spawn). A probe that did not answer (a timeout, a failed exit,
+// too little printed) is not an answer: `answered` is false and the caller asks
+// again at the next look. A marker that cannot be read is no marker. This
 // never throws.
-async function readKind($: EngineInterface, cwd: string) {
+async function readKind($: EngineInterface, cwd: string): Promise<KindRead> {
   try {
-    const printed = stdoutOf(await $.process.run(['git', '-C', cwd, '--no-optional-locks', ...KIND_ARGS], { timeoutMs: GIT_TIMEOUT_MS }))
-    const lines = printed?.split(/\r?\n/)
-    const top = lines?.[0]
-    if (!lines || lines.length < 3 || !top) return undefined
-    return kindOf(lines, await $.fs.exists(`${top}/${SKYRIFT_MARKER}`))
+    const lines = probeLines(await $.process.run(['git', '-C', cwd, '--no-optional-locks', ...KIND_ARGS], { timeoutMs: GIT_TIMEOUT_MS }))
+    if (!lines) return { kind: undefined, answered: false }
+    let hasMarker = false
+    try {
+      hasMarker = await $.fs.exists(`${lines[0]}/${SKYRIFT_MARKER}`)
+    } catch {
+      // an unreadable marker reads as no marker
+    }
+    return { kind: kindOf(lines, hasMarker), answered: true }
   } catch {
-    return undefined
+    return { kind: undefined, answered: false }
   }
 }
 
@@ -118,25 +128,37 @@ const labelOf = (name: string | undefined, of: Kind | undefined) => (name === un
 // Nothing tells this mod when a tool switches branch, so it looks: redraws
 // only when the whole label moved. The kind is read once per folder, when the
 // session folder differs from the one it was read for, never on the tick alone;
-// outside a repository there is no branch and so no kind to ask for.
-async function refreshBranch($: EngineInterface) {
+// outside a repository there is no branch and so no kind to ask for. A probe
+// that did not answer leaves the folder unread, so the next look asks again;
+// until then the old folder's tag does not stay on screen.
+async function lookBranch($: EngineInterface) {
   const seq = ++branchSeq
   const cwd = await sessionCwd($)
   let next: string | undefined
-  let nextKind = kind
+  let read: KindRead | undefined
   if (cwd !== undefined) {
     next = await readBranch($, cwd)
-    if (next !== undefined && cwd !== kindCwd) nextKind = await readKind($, cwd)
+    if (next !== undefined && cwd !== kindCwd) read = await readKind($, cwd)
   }
   if (seq !== branchSeq) return
   const before = labelOf(branch, kind)
   branch = next
-  if (next !== undefined) {
-    kind = nextKind
-    kindCwd = cwd
+  if (read) {
+    kind = read.kind
+    kindCwd = read.answered ? cwd : undefined
   }
   if (labelOf(branch, kind) === before) return
   $.ui.invalidate('ui.render')
+}
+
+// A look, counted while it is under way (`looks`), so the tick can leave it be.
+async function refreshBranch($: EngineInterface) {
+  looks++
+  try {
+    await lookBranch($)
+  } finally {
+    looks--
+  }
 }
 
 // Takes a measurement into the reading and the samples, and redraws.
@@ -161,7 +183,8 @@ export const register: Register = on => {
     const saved = await $.store.get(SAMPLES_KEY).catch(() => undefined)
     if (Array.isArray(saved)) samples = saved as Sample[]
     await refresh($)
-    await refreshBranch($)
+    // The branch shows when git answers; a process must not delay the session start.
+    void refreshBranch($).catch(() => {})
     const usage = await $.session.usage().catch(() => undefined)
     if (usage) await measure($, usage)
     // The countdowns and the burn rate move with the clock.
@@ -169,8 +192,12 @@ export const register: Register = on => {
     // A safety net for anything the two hooks below miss. Both reads are
     // in-process and cheap, and refresh redraws only when a value moved.
     $.clock.every(1000, () => refresh($))
-    // git is a process: look every few seconds, not every second.
-    $.clock.every(BRANCH_EVERY_MS, () => refreshBranch($))
+    // git is a process: look every few seconds, not every second. The tick
+    // skips while a look is under way: a look slower than the tick would be
+    // superseded by the next one before it landed, again and again, and
+    // nothing would show. The session start and a command start a look
+    // whatever is under way, as they carry fresher intent.
+    $.clock.every(BRANCH_EVERY_MS, () => (looks === 0 ? refreshBranch($) : undefined))
     return next(e)
   })
 
@@ -188,8 +215,9 @@ export const register: Register = on => {
       // The settings may reach the engine a moment after the command saved them.
       $.clock.after(250, () => refresh($))
     }
-    // A command may have switched branch (a worktree, a checkout).
-    await refreshBranch($)
+    // A command may have switched branch (a worktree, a checkout). Looked up
+    // unawaited: a process must not delay a command.
+    void refreshBranch($).catch(() => {})
     return result
   })
 
@@ -237,6 +265,8 @@ export const register: Register = on => {
 
     const line = Box({
       flexDirection: 'row',
+      // narrow terminals: the branch drops to the next line whole, as the meters row does
+      flexWrap: 'wrap',
       children: [
         dim('model '),
         Text({ backgroundColor: modelColor, color: textOn(modelColor), bold: true, children: [` ${pretty(sessionModel)} `] }),
@@ -248,7 +278,8 @@ export const register: Register = on => {
         advisorModel
           ? Text({ backgroundColor: 'cyan', color: 'white', bold: true, children: [` ${pretty(advisorModel)} `] })
           : dim('off'),
-        ...(branch ? [dim('  ⎇ '), ...rowParts(branch, kind).map(({ text, tone }) => Text({ ...TONES[tone], children: [text] }))] : []),
+        // one item for the wrap: the glyph, the name and the tag drop to the next line together
+        ...(branch ? [Box({ flexDirection: 'row', children: [dim('  ⎇ '), ...rowParts(branch, kind).map(({ text, tone }) => Text({ ...TONES[tone], children: [text] }))] })] : []),
       ],
     })
 

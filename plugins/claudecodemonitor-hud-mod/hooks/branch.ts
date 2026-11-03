@@ -45,15 +45,32 @@ export const KIND_ARGS = ['rev-parse', '--path-format=absolute', '--show-topleve
 // this file at its toplevel tells.
 export const SKYRIFT_MARKER = '.skyrift-workspace'
 
+// What KIND_ARGS printed, as lines, when git answered: it exited 0 and printed
+// the toplevel, the git dir and the common dir, three lines or more. What the
+// lines say is kindOf's to read. undefined when git did not answer (a timeout,
+// a failed exit, too little printed): the caller asks again at the next look.
+export function probeLines(run: { exitCode: number; stdout: string } | undefined): string[] | undefined {
+  if (!run || run.exitCode !== 0 || typeof run.stdout !== 'string') return undefined
+  const lines = run.stdout.trim().split(/\r?\n/)
+  return lines.length >= 3 ? lines : undefined
+}
+
 const baseName = (path: string) => path.replace(/[\\/]+$/, '').split(/[\\/]/).pop() ?? ''
+
+// A path that starts at a root: `/`, a drive letter, or the `\\` of a share.
+// git before 2.31 does not know `--path-format=absolute` and prints the flag
+// back as the first line, shifting the rest: lines that are not paths are not
+// the ones asked for.
+const isAbsolute = (line: string) => /^(?:[A-Za-z]:)?[\\/]/.test(line)
 
 // `lines` is what KIND_ARGS printed, `hasMarker` whether SKYRIFT_MARKER exists
 // in the toplevel (lines[0]). A skyrift marker beats a linked worktree (the git
 // dir is not the common dir), which beats a submodule (a 4th line). A line that
-// is missing, or a toplevel with no name, reads as no kind.
+// is missing or not a path, or a toplevel with no name, reads as no kind.
 export function kindOf(lines: string[], hasMarker: boolean): Kind | undefined {
   const [top, gitDir, commonDir, superproject] = lines
   if (!top || !gitDir || !commonDir) return undefined
+  if (![top, gitDir, commonDir].every(line => isAbsolute(line))) return undefined
   const name = baseName(top)
   if (name === '') return undefined
   if (hasMarker) return { kind: 'skyrift', name }
