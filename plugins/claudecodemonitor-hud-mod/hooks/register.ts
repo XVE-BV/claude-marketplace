@@ -1,5 +1,6 @@
 import type { EngineInterface, Register } from 'claude-code'
 
+import { branchLabel, stdoutOf } from './branch'
 import { addSample, burnRate, compact, contextColor, handoff, paceBar, resetLabel, PACE_CELLS } from './meters'
 import type { Reading, Sample } from './meters'
 
@@ -16,6 +17,13 @@ let sessionEffort: string | undefined
 let configModel: string | undefined
 let configEffort: string | undefined
 let advisorModel: string | undefined
+
+// The git branch, or undefined where there is none to show. branchSeq numbers
+// the reads so one that lands after a newer one began is dropped.
+let branch: string | undefined
+let branchSeq = 0
+const GIT_TIMEOUT_MS = 2000
+const BRANCH_EVERY_MS = 3000
 
 const nonEmpty = (value: unknown) => (typeof value === 'string' && value !== '' ? value : undefined)
 
@@ -57,6 +65,31 @@ async function refresh($: EngineInterface) {
   $.ui.invalidate('ui.render')
 }
 
+// The branch of the session's directory: `branch --show-current`, else the
+// short hash of a detached HEAD. Any failure (no repository, no git, a run
+// that times out) reads as no branch; this never throws.
+async function readBranch($: EngineInterface) {
+  try {
+    const cwd = await $.session.cwd()
+    const git = (...args: string[]) => $.process.run(['git', '-C', cwd, '--no-optional-locks', ...args], { timeoutMs: GIT_TIMEOUT_MS })
+    const current = stdoutOf(await git('branch', '--show-current'))
+    const head = current === '' ? stdoutOf(await git('rev-parse', '--short', 'HEAD')) : undefined
+    return branchLabel(current, head)
+  } catch {
+    return undefined
+  }
+}
+
+// Nothing tells this mod when a tool switches branch, so it looks: redraws
+// only when the branch moved.
+async function refreshBranch($: EngineInterface) {
+  const seq = ++branchSeq
+  const next = await readBranch($)
+  if (seq !== branchSeq || next === branch) return
+  branch = next
+  $.ui.invalidate('ui.render')
+}
+
 // Takes a measurement into the reading and the samples, and redraws.
 async function measure($: EngineInterface, usage: { context: { tokens?: number; window: number; percent?: number }; rateLimits: readonly { kind: string; percentUsed: number; resetsAt?: string }[] }) {
   const now = await $.clock.now()
@@ -79,6 +112,7 @@ export const register: Register = on => {
     const saved = await $.store.get(SAMPLES_KEY).catch(() => undefined)
     if (Array.isArray(saved)) samples = saved as Sample[]
     await refresh($)
+    await refreshBranch($)
     const usage = await $.session.usage().catch(() => undefined)
     if (usage) await measure($, usage)
     // The countdowns and the burn rate move with the clock.
@@ -86,6 +120,8 @@ export const register: Register = on => {
     // A safety net for anything the two hooks below miss. Both reads are
     // in-process and cheap, and refresh redraws only when a value moved.
     $.clock.every(1000, () => refresh($))
+    // git is a process: look every few seconds, not every second.
+    $.clock.every(BRANCH_EVERY_MS, () => refreshBranch($))
     return next(e)
   })
 
@@ -103,6 +139,8 @@ export const register: Register = on => {
       // The settings may reach the engine a moment after the command saved them.
       $.clock.after(250, () => refresh($))
     }
+    // A command may have switched branch (a worktree, a checkout).
+    await refreshBranch($)
     return result
   })
 
@@ -161,6 +199,7 @@ export const register: Register = on => {
         advisorModel
           ? Text({ backgroundColor: 'cyan', color: 'white', bold: true, children: [` ${pretty(advisorModel)} `] })
           : dim('off'),
+        ...(branch ? [dim('  ⎇ '), Text({ color: 'cyan', children: [branch] })] : []),
       ],
     })
 
