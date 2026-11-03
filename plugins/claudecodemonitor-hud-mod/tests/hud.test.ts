@@ -36,6 +36,16 @@ async function band($: any) {
   return ((await ui.findAll({ type: 'Text' })) as any[]).map(t => t.text).join('')
 }
 
+// The branch row's text: what follows the glyph on the first row, up to the
+// meters row ('ctx ' starts it). undefined when the row draws no branch.
+async function branchRow($: any) {
+  const line = await band($)
+  const from = line.indexOf('⎇ ')
+  if (from < 0) return undefined
+  const to = line.indexOf('ctx ', from)
+  return line.slice(from + 2, to < 0 ? undefined : to)
+}
+
 // The engine's answer to each request.
 function engineSteps(on: any) {
   on('turn.step', async function* () {
@@ -204,6 +214,8 @@ test('shows the advisor as off when no advisor model is set', async ($, on) => {
 // returns the run. Every call is kept.
 type GitRun = { exitCode: number; stdout: string }
 const GIT = ['git', '-C', '/repo', '--no-optional-locks']
+// The one call that tells the kind of checkout, asked once per session folder.
+const PROBE = ['rev-parse', '--path-format=absolute', '--show-toplevel', '--git-dir', '--git-common-dir', '--show-superproject-working-tree']
 
 function gitWorld(on: any, answer: (subcommand: string) => GitRun) {
   const calls: { argv: string[]; timeoutMs?: number }[] = []
@@ -230,8 +242,8 @@ test('ends the first row with the branch: a dim glyph, the name in cyan', async 
   expect(line.indexOf('⎇')).toBeLessThan(line.indexOf('ctx '))
   expect(texts.find(t => t.text === '  ⎇ ')?.props?.dimColor).toBe(true)
   expect(texts.find(t => t.text === 'feat/x')?.props?.color).toBe('cyan')
-  // one run on a branch, by argv, with a timeout
-  expect(calls.map(c => c.argv)).toEqual([[...GIT, 'branch', '--show-current']])
+  // the branch by argv with a timeout, then the one kind probe (this fake git does not know it)
+  expect(calls.map(c => c.argv)).toEqual([[...GIT, 'branch', '--show-current'], [...GIT, ...PROBE]])
   expect(calls[0]!.timeoutMs).toBeGreaterThan(0)
   expect(calls[0]!.timeoutMs).toBeLessThanOrEqual(5000)
 })
@@ -258,7 +270,8 @@ test('shows a detached HEAD as the short hash in parentheses', async ($, on) => 
   const calls = gitWorld(on, subcommand => ({ exitCode: 0, stdout: subcommand === 'branch --show-current' ? '\n' : 'abc1234\n' }))
   await $.session.start({ source: 'startup', cwd: '/repo' } as any)
   expect(await band($)).toContain('advisor off  ⎇ (abc1234)')
-  expect(calls.map(c => c.argv)).toEqual([[...GIT, 'branch', '--show-current'], [...GIT, 'rev-parse', '--short', 'HEAD']])
+  // the kind probe follows the branch lookups, once
+  expect(calls.map(c => c.argv)).toEqual([[...GIT, 'branch', '--show-current'], [...GIT, 'rev-parse', '--short', 'HEAD'], [...GIT, ...PROBE]])
 })
 
 test('draws no branch outside a git repository', async ($, on) => {
@@ -370,4 +383,225 @@ test('draws the branch in the Desktop app too', async ($, on) => {
   const ui = await $.ui.mount({ plugin: 'claudecodemonitor-hud-mod', surface: 'desktop', component: 'AbovePrompt', props: { bodyColumns: 200 } as any })
   const line = ((await ui.findAll({ type: 'Text' })) as any[]).map(t => t.text).join('')
   expect(line).toContain('advisor off  ⎇ feat/x')
+})
+
+// ── what kind of checkout the folder is ──
+// The line `rev-parse` prints for a plain repository, a linked worktree and a
+// submodule, in the order the probe asks: toplevel, git dir, common dir, and a
+// 4th line (the superproject) only inside a submodule.
+const PLAIN = ['/work/repo', '/work/repo/.git', '/work/repo/.git']
+const WORKTREE = ['/work/wt', '/work/repo/.git/worktrees/wt', '/work/repo/.git']
+const SUBMODULE = ['/work/super/subm', '/work/super/.git/modules/subm', '/work/super/.git/modules/subm', '/work/super']
+const MARKER = '.skyrift-workspace'
+
+type Folder = { branch: string; probe: string[] | 'fail'; markers?: string[] | 'unreadable' }
+
+// Folders by path: what git answers in each, and which marker files exist. The
+// session folder is `state.cwd`; `probes` keeps the folder of every kind probe
+// and `looked` every marker path asked about.
+function folderWorld(on: any, folders: Record<string, Folder>, cwd: string) {
+  const state = { cwd }
+  const probes: string[] = []
+  const looked: string[] = []
+  const calls: { argv: string[]; timeoutMs?: number }[] = []
+  on('session.cwd', () => ({ value: state.cwd }))
+  on('command.run', () => ({}))
+  on('process.run', (_$: any, e: any) => {
+    calls.push({ argv: e.argv, timeoutMs: e.init?.timeoutMs })
+    const folder = folders[e.argv[2]]
+    const subcommand = e.argv.slice(4).join(' ')
+    const done = (run: GitRun) => ({ value: { stderr: '', isStdoutTruncated: false, isStderrTruncated: false, ...run } })
+    if (!folder) return done({ exitCode: 128, stdout: '' })
+    if (subcommand === 'branch --show-current') return done({ exitCode: 0, stdout: folder.branch === '' ? '\n' : `${folder.branch}\n` })
+    if (subcommand === 'rev-parse --short HEAD') return done({ exitCode: 0, stdout: 'abc1234\n' })
+    if (subcommand === PROBE.join(' ')) {
+      probes.push(e.argv[2])
+      return folder.probe === 'fail' ? done({ exitCode: 128, stdout: '' }) : done({ exitCode: 0, stdout: `${folder.probe.join('\n')}\n` })
+    }
+    return done({ exitCode: 1, stdout: '' })
+  })
+  on('fs.exists', (_$: any, e: any) => {
+    looked.push(e.path)
+    if (Object.values(folders).some(f => f.markers === 'unreadable')) return { deny: 'EACCES' }
+    return { value: Object.values(folders).some(f => Array.isArray(f.markers) && f.markers.includes(e.path)) }
+  })
+  return { state, probes, looked, calls }
+}
+
+test('says skyrift and the folder name after the branch: a dim dot, the kind in yellow, the name dim', async ($, on) => {
+  world(on, {})
+  const folders = { '/repo': { branch: 'feat/x', probe: PLAIN, markers: [`/work/repo/${MARKER}`] } }
+  const { calls, looked } = folderWorld(on, folders, '/repo')
+  await $.session.start({ source: 'startup', cwd: '/repo' } as any)
+  const texts = (await (await mount($)).findAll({ type: 'Text' })) as any[]
+  expect(texts.map(t => t.text).join('')).toContain('advisor off  ⎇ feat/x · skyrift repo')
+  expect(texts.find(t => t.text === 'feat/x')?.props?.color).toBe('cyan')
+  expect(texts.find(t => t.text === ' · ')?.props?.dimColor).toBe(true)
+  expect(texts.find(t => t.text === 'skyrift')?.props?.color).toBe('yellow')
+  expect(texts.find(t => t.text === ' repo')?.props?.dimColor).toBe(true)
+  // the marker is looked for at the toplevel git printed
+  expect(looked).toEqual([`/work/repo/${MARKER}`])
+  // one probe, by argv, with a timeout, after the branch
+  expect(calls.map(c => c.argv)).toEqual([[...GIT, 'branch', '--show-current'], [...GIT, ...PROBE]])
+  expect(calls[1]!.timeoutMs).toBeGreaterThan(0)
+  expect(calls[1]!.timeoutMs).toBeLessThanOrEqual(5000)
+})
+
+test('says worktree for a linked worktree', async ($, on) => {
+  world(on, {})
+  folderWorld(on, { '/repo': { branch: 'main', probe: WORKTREE } }, '/repo')
+  await $.session.start({ source: 'startup', cwd: '/repo' } as any)
+  expect(await band($)).toContain('advisor off  ⎇ main · worktree wt')
+})
+
+test('says submodule for a submodule', async ($, on) => {
+  world(on, {})
+  folderWorld(on, { '/repo': { branch: 'main', probe: SUBMODULE } }, '/repo')
+  await $.session.start({ source: 'startup', cwd: '/repo' } as any)
+  expect(await band($)).toContain('advisor off  ⎇ main · submodule subm')
+})
+
+test('a skyrift marker wins over a worktree', async ($, on) => {
+  world(on, {})
+  folderWorld(on, { '/repo': { branch: 'main', probe: WORKTREE, markers: [`/work/wt/${MARKER}`] } }, '/repo')
+  await $.session.start({ source: 'startup', cwd: '/repo' } as any)
+  const line = await band($)
+  expect(line).toContain('⎇ main · skyrift wt')
+  expect(line).not.toContain('worktree')
+})
+
+test('a plain repository shows the branch alone', async ($, on) => {
+  world(on, {})
+  folderWorld(on, { '/repo': { branch: 'feat/x', probe: PLAIN } }, '/repo')
+  await $.session.start({ source: 'startup', cwd: '/repo' } as any)
+  expect(await branchRow($)).toBe('feat/x')
+})
+
+test('a detached HEAD keeps its hash and gets the kind too', async ($, on) => {
+  world(on, {})
+  folderWorld(on, { '/repo': { branch: '', probe: WORKTREE } }, '/repo')
+  await $.session.start({ source: 'startup', cwd: '/repo' } as any)
+  expect(await band($)).toContain('advisor off  ⎇ (abc1234) · worktree wt')
+})
+
+test('keeps a folder name of exactly 35 characters whole', async ($, on) => {
+  world(on, {})
+  const edge = 'e'.repeat(35)
+  folderWorld(on, { '/a': { branch: 'main', probe: [`/work/${edge}`, '/x/.git/worktrees/w', '/x/.git'] } }, '/a')
+  await $.session.start({ source: 'startup', cwd: '/a' } as any)
+  expect(await band($)).toContain(`⎇ main · worktree ${edge}`)
+  expect(await band($)).not.toContain('…')
+})
+
+test('cuts a folder name over 35 characters', async ($, on) => {
+  world(on, {})
+  folderWorld(on, { '/b': { branch: 'main', probe: [`/work/${'n'.repeat(60)}`, '/x/.git/worktrees/w', '/x/.git'] } }, '/b')
+  await $.session.start({ source: 'startup', cwd: '/b' } as any)
+  expect(await band($)).toContain(`⎇ main · worktree ${'n'.repeat(34)}…`)
+  expect(await band($)).not.toContain('n'.repeat(35))
+})
+
+test('any failure to learn the kind shows the branch alone and throws nothing', async ($, on) => {
+  world(on, {})
+  // git says no to the probe: the marker is not even looked for
+  const { looked } = folderWorld(on, { '/repo': { branch: 'feat/x', probe: 'fail' } }, '/repo')
+  await $.session.start({ source: 'startup', cwd: '/repo' } as any)
+  expect(await branchRow($)).toBe('feat/x')
+  expect(looked).toEqual([])
+})
+
+test('a marker that cannot be read shows the branch alone', async ($, on) => {
+  world(on, {})
+  folderWorld(on, { '/repo': { branch: 'feat/x', probe: WORKTREE, markers: 'unreadable' } }, '/repo')
+  await $.session.start({ source: 'startup', cwd: '/repo' } as any)
+  expect(await branchRow($)).toBe('feat/x')
+})
+
+test('a probe that prints too little shows the branch alone', async ($, on) => {
+  world(on, {})
+  folderWorld(on, { '/repo': { branch: 'feat/x', probe: ['/work/repo', '/work/repo/.git'], markers: [`/work/repo/${MARKER}`] } }, '/repo')
+  await $.session.start({ source: 'startup', cwd: '/repo' } as any)
+  expect(await branchRow($)).toBe('feat/x')
+})
+
+test('outside a repository there is no row and no probe', async ($, on) => {
+  world(on, {})
+  const { probes, looked } = folderWorld(on, {}, '/nowhere')
+  await $.session.start({ source: 'startup', cwd: '/nowhere' } as any)
+  expect(await band($)).not.toContain('⎇')
+  expect(probes).toEqual([])
+  expect(looked).toEqual([])
+})
+
+test('looks up the kind once per folder, not on the 3 s tick', async ($, on) => {
+  const clock = world(on, {})
+  const folders: Record<string, Folder> = {
+    '/a': { branch: 'main', probe: WORKTREE },
+    '/b': { branch: 'main', probe: SUBMODULE },
+  }
+  const { state, probes, looked } = folderWorld(on, folders, '/a')
+  await $.session.start({ source: 'startup', cwd: '/a' } as any)
+  expect(probes).toEqual(['/a'])
+  // the branch is read on every tick, the kind is not
+  for (let i = 0; i < 4; i++) await clock.advance(3000)
+  await $.command.run({ command: 'anything', args: '' } as any)
+  expect(probes).toEqual(['/a'])
+  expect(looked).toHaveLength(1)
+  // the folder changes: looked up again, at the next look
+  state.cwd = '/b'
+  await clock.advance(3000)
+  expect(probes).toEqual(['/a', '/b'])
+  expect(await band($)).toContain('⎇ main · submodule subm')
+  await clock.advance(3000)
+  expect(probes).toEqual(['/a', '/b'])
+})
+
+test('redraws only when the whole label changed, a kind change included', async ($, on) => {
+  const clock = world(on, {})
+  const folders: Record<string, Folder> = {
+    '/a': { branch: 'main', probe: WORKTREE },
+    '/b': { branch: 'main', probe: [...SUBMODULE] },
+    // another folder with the same name and kind: the same label
+    '/c': { branch: 'main', probe: ['/elsewhere/wt', '/elsewhere/.git/worktrees/wt', '/elsewhere/.git'] },
+    '/d': { branch: 'main', probe: PLAIN },
+  }
+  const { state } = folderWorld(on, folders, '/a')
+  await $.session.start({ source: 'startup', cwd: '/a' } as any)
+  expect(await band($)).toContain('⎇ main · worktree wt')
+  const drawn = invalidations
+
+  // the same label at the next looks: nothing redraws
+  await clock.advance(3000)
+  await clock.advance(3000)
+  expect(invalidations).toBe(drawn)
+
+  // the kind changes under the same branch: one redraw
+  state.cwd = '/b'
+  await clock.advance(3000)
+  expect(invalidations).toBe(drawn + 1)
+  expect(await band($)).toContain('⎇ main · submodule subm')
+
+  // a folder that reads the same as the one before it: no redraw
+  state.cwd = '/a'
+  await clock.advance(3000)
+  expect(invalidations).toBe(drawn + 2)
+  state.cwd = '/c'
+  await clock.advance(3000)
+  expect(invalidations).toBe(drawn + 2)
+  expect(await band($)).toContain('⎇ main · worktree wt')
+
+  // the kind goes away: one redraw, the branch alone
+  state.cwd = '/d'
+  await clock.advance(3000)
+  expect(invalidations).toBe(drawn + 3)
+  expect(await branchRow($)).toBe('main')
+
+  // the branch changes and the kind stays: one redraw, no new probe needed
+  state.cwd = '/a'
+  await clock.advance(3000)
+  expect(invalidations).toBe(drawn + 4)
+  folders['/a']!.branch = 'feat/y'
+  await clock.advance(3000)
+  expect(invalidations).toBe(drawn + 5)
+  expect(await band($)).toContain('⎇ feat/y · worktree wt')
 })

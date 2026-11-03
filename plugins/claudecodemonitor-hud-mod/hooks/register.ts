@@ -1,6 +1,7 @@
 import type { EngineInterface, Register } from 'claude-code'
 
-import { branchLabel, stdoutOf } from './branch'
+import { branchLabel, KIND_ARGS, kindOf, rowParts, rowText, SKYRIFT_MARKER, stdoutOf } from './branch'
+import type { Kind } from './branch'
 import { addSample, burnRate, compact, contextColor, handoff, paceBar, resetLabel, PACE_CELLS } from './meters'
 import type { Reading, Sample } from './meters'
 
@@ -24,6 +25,13 @@ let branch: string | undefined
 let branchSeq = 0
 const GIT_TIMEOUT_MS = 2000
 const BRANCH_EVERY_MS = 3000
+
+// The kind of checkout (skyrift workspace, linked worktree, submodule), read for
+// the folder `kindCwd` and kept until the session folder changes.
+let kind: Kind | undefined
+let kindCwd: string | undefined
+// How the parts of the branch row are drawn.
+const TONES = { branch: { color: 'cyan' }, dim: { dimColor: true }, kind: { color: 'yellow' } } as const
 
 const nonEmpty = (value: unknown) => (typeof value === 'string' && value !== '' ? value : undefined)
 
@@ -65,12 +73,20 @@ async function refresh($: EngineInterface) {
   $.ui.invalidate('ui.render')
 }
 
-// The branch of the session's directory: `branch --show-current`, else the
-// short hash of a detached HEAD. Any failure (no repository, no git, a run
-// that times out) reads as no branch; this never throws.
-async function readBranch($: EngineInterface) {
+// The session's directory, or undefined where the engine has none to give.
+async function sessionCwd($: EngineInterface) {
   try {
-    const cwd = await $.session.cwd()
+    return await $.session.cwd()
+  } catch {
+    return undefined
+  }
+}
+
+// The branch of `cwd`: `branch --show-current`, else the short hash of a
+// detached HEAD. Any failure (no repository, no git, a run that times out)
+// reads as no branch; this never throws.
+async function readBranch($: EngineInterface, cwd: string) {
+  try {
     const git = (...args: string[]) => $.process.run(['git', '-C', cwd, '--no-optional-locks', ...args], { timeoutMs: GIT_TIMEOUT_MS })
     const current = stdoutOf(await git('branch', '--show-current'))
     const head = current === '' ? stdoutOf(await git('rev-parse', '--short', 'HEAD')) : undefined
@@ -80,13 +96,46 @@ async function readBranch($: EngineInterface) {
   }
 }
 
+// What kind of checkout `cwd` is: one rev-parse, then the skyrift marker in the
+// toplevel it printed (`$.fs.exists`, in the mod's process, no spawn). Any
+// failure (git, an unreadable marker, a line missing) reads as no kind; this
+// never throws.
+async function readKind($: EngineInterface, cwd: string) {
+  try {
+    const printed = stdoutOf(await $.process.run(['git', '-C', cwd, '--no-optional-locks', ...KIND_ARGS], { timeoutMs: GIT_TIMEOUT_MS }))
+    const lines = printed?.split(/\r?\n/)
+    const top = lines?.[0]
+    if (!lines || lines.length < 3 || !top) return undefined
+    return kindOf(lines, await $.fs.exists(`${top}/${SKYRIFT_MARKER}`))
+  } catch {
+    return undefined
+  }
+}
+
+// The text of the whole label, branch and kind, or undefined with no branch.
+const labelOf = (name: string | undefined, of: Kind | undefined) => (name === undefined ? undefined : rowText(name, of))
+
 // Nothing tells this mod when a tool switches branch, so it looks: redraws
-// only when the branch moved.
+// only when the whole label moved. The kind is read once per folder, when the
+// session folder differs from the one it was read for, never on the tick alone;
+// outside a repository there is no branch and so no kind to ask for.
 async function refreshBranch($: EngineInterface) {
   const seq = ++branchSeq
-  const next = await readBranch($)
-  if (seq !== branchSeq || next === branch) return
+  const cwd = await sessionCwd($)
+  let next: string | undefined
+  let nextKind = kind
+  if (cwd !== undefined) {
+    next = await readBranch($, cwd)
+    if (next !== undefined && cwd !== kindCwd) nextKind = await readKind($, cwd)
+  }
+  if (seq !== branchSeq) return
+  const before = labelOf(branch, kind)
   branch = next
+  if (next !== undefined) {
+    kind = nextKind
+    kindCwd = cwd
+  }
+  if (labelOf(branch, kind) === before) return
   $.ui.invalidate('ui.render')
 }
 
@@ -199,7 +248,7 @@ export const register: Register = on => {
         advisorModel
           ? Text({ backgroundColor: 'cyan', color: 'white', bold: true, children: [` ${pretty(advisorModel)} `] })
           : dim('off'),
-        ...(branch ? [dim('  ⎇ '), Text({ color: 'cyan', children: [branch] })] : []),
+        ...(branch ? [dim('  ⎇ '), ...rowParts(branch, kind).map(({ text, tone }) => Text({ ...TONES[tone], children: [text] }))] : []),
       ],
     })
 
