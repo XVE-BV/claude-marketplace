@@ -41,9 +41,8 @@ const nonEmpty = (value: unknown) => (typeof value === 'string' && value !== '' 
 
 const LEVELS = ['low', 'medium', 'high', 'xhigh', 'max']
 const LEVEL_COLORS = ['greenBright', 'cyan', 'yellow', 'magenta', 'red']
-// White text on the dark backgrounds, black on the light ones.
-const textOn = (bg: string) => (['red', 'magenta', 'blue'].includes(bg) ? 'white' : 'black')
-const FAMILY_COLORS: Record<string, string> = { opus: 'magenta', sonnet: 'blue', haiku: 'greenBright', fable: 'yellow' }
+// Pill text is white throughout. Opus is a hex purple: the ANSI magenta reads pink on many themes.
+const FAMILY_COLORS: Record<string, string> = { opus: '#7c3aed', sonnet: 'blue', haiku: 'green', fable: 'yellow' }
 
 const family = (name: string) => /opus|sonnet|haiku|fable/.exec(name.toLowerCase())?.[0]
 
@@ -256,11 +255,11 @@ export const register: Register = on => {
       children: [Text({ children: [' '] }), Text({ backgroundColor: 'black', color: 'white', children: [` ${value ?? 'default'} `] })],
     })
 
-    const modelColor = FAMILY_COLORS[family(sessionModel) ?? ''] ?? 'white'
+    const modelColor = FAMILY_COLORS[family(sessionModel) ?? ''] ?? 'gray'
     const level = LEVELS.indexOf(sessionEffort ?? '')
     // An unknown level draws dimmed rather than in a level's color.
     const effortWord = level >= 0
-      ? Text({ backgroundColor: LEVEL_COLORS[level], color: textOn(LEVEL_COLORS[level]), bold: true, children: [` ${sessionEffort} `] })
+      ? Text({ backgroundColor: LEVEL_COLORS[level], color: 'white', bold: true, children: [` ${sessionEffort} `] })
       : Text({ dimColor: true, bold: true, children: [` ${sessionEffort ?? '—'}`] })
 
     const line = Box({
@@ -269,7 +268,7 @@ export const register: Register = on => {
       flexWrap: 'wrap',
       children: [
         dim('model '),
-        Text({ backgroundColor: modelColor, color: textOn(modelColor), bold: true, children: [` ${pretty(sessionModel)} `] }),
+        Text({ backgroundColor: modelColor, color: 'white', bold: true, children: [` ${pretty(sessionModel)} `] }),
         saved(configModel && pretty(configModel)),
         dim('  effort '),
         effortWord,

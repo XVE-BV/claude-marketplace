@@ -1,7 +1,7 @@
 {
     "name": "claudecodemonitor-hud-mod",
     "description": "Mod: a band above the prompt with the session's model and effort beside the ones your settings set, the advisor model, and the git branch.",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "author": {
         "name": "XVE"
     }
