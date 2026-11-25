@@ -73,6 +73,52 @@
                 "review",
                 "jira"
             ]
+        },
+        {
+            "name": "atlassian",
+            "source": {
+                "source": "github",
+                "repo": "atlassian/atlassian-mcp-server",
+                "sha": "eb9a5956a7ac6380c731c725a8382da53ad6d980"
+            },
+            "description": "Atlassian's own plugin: the Atlassian MCP server for Jira and Confluence plus Atlassian's skills, pinned to the commit the Anthropic plugin directory reviewed.",
+            "author": {
+                "name": "Atlassian"
+            },
+            "tags": [
+                "jira",
+                "confluence"
+            ]
+        },
+        {
+            "name": "sentry",
+            "source": {
+                "source": "github",
+                "repo": "getsentry/plugin-claude",
+                "sha": "2ef2d3db82199f2763a4c2f07d0408224f58a314"
+            },
+            "description": "Sentry's own plugin: the Sentry MCP server plus Sentry's debugging skills, pinned to the commit the Anthropic plugin directory reviewed.",
+            "author": {
+                "name": "Sentry"
+            },
+            "tags": [
+                "sentry",
+                "monitoring"
+            ]
+        },
+        {
+            "name": "core",
+            "source": "./plugins/core",
+            "description": "Plugins every XVE developer runs: installs the vendors' own Atlassian (Jira, Confluence) and Sentry plugins, MCP servers and skills, pinned to the commits the Anthropic plugin directory reviewed.",
+            "version": "0.1.0",
+            "author": {
+                "name": "XVE"
+            },
+            "tags": [
+                "core",
+                "jira",
+                "sentry"
+            ]
         }
     ]
 }
