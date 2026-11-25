@@ -1,0 +1,12 @@
+{
+    "name": "core",
+    "description": "Plugins every XVE developer runs: installs the vendors' own Atlassian (Jira, Confluence) and Sentry plugins, MCP servers and skills, pinned to the commits the Anthropic plugin directory reviewed.",
+    "version": "0.1.0",
+    "author": {
+        "name": "XVE"
+    },
+    "dependencies": [
+        "atlassian",
+        "sentry"
+    ]
+}
