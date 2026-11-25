@@ -1,0 +1,8 @@
+{
+    "name": "provided-by-team",
+    "description": "Skills written by XVE team members: robbe-review-skill reviews a PR or branch against its Jira ticket, business logic first, with an optional strict code check.",
+    "version": "0.1.0",
+    "author": {
+        "name": "XVE"
+    }
+}
