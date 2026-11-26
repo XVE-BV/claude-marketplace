@@ -1,7 +1,7 @@
 {
     "name": "provided-by-team",
-    "description": "Skills written by XVE team members: robbe-review-skill reviews a PR or branch against its Jira ticket, business logic first, with an optional strict code check.",
-    "version": "0.1.0",
+    "description": "Skills written by XVE team members: robbe-review-skill reviews a PR or branch against its Jira ticket, business logic first, with an optional strict code check; daily-standup-skill writes the daily standup message from yesterday's Kimai entries, read in Chrome.",
+    "version": "0.2.1",
     "author": {
         "name": "XVE"
     }
