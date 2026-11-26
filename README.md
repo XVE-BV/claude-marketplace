@@ -25,6 +25,20 @@ claude plugin install provided-by-team@xve-claude-marketplace
 claude plugin install core@xve-claude-marketplace
 ```
 
+Turn on auto-update so Claude Code pulls new versions of this marketplace and its plugins when it starts. It is off by default for marketplaces outside Anthropic's own. Run `/plugin`, open Marketplaces, pick `xve-claude-marketplace` and enable auto-update, or merge this into `~/.claude/settings.json`:
+
+```json
+"extraKnownMarketplaces": {
+    "xve-claude-marketplace": {
+        "source": {
+            "source": "git",
+            "url": "https://github.com/XVE-BV/claude-marketplace.git"
+        },
+        "autoUpdate": true
+    }
+}
+```
+
 Already installed Atlassian or Sentry from the Anthropic plugin directory? Remove those first, so each MCP server is installed once: `claude plugin uninstall atlassian-mcp@anthropic-plugin-directory` and `claude plugin uninstall sentry@anthropic-plugin-directory`, or use `/plugin`. Both servers ask you to sign in the first time; run `/mcp` in Claude Code. To move to a newer vendor version, change the `sha` in that plugin's entry in `.claude-plugin/marketplace.json`.
 
 Skills in `destructive` never trigger on their own (`disable-model-invocation: true`). Run `/destructive:purge-user-scope` or `/destructive:uninstall-cli`. Claude asks you to confirm, then gives you one command to paste into a terminal after you quit Claude Code. The delete can't run from inside Claude Code: Windows won't delete a running `claude.exe`, and a running session keeps writing to `~/.claude`.
