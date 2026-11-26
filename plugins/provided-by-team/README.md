@@ -14,6 +14,8 @@ provided-by-team/
 │   ├── rubrics.md             team rubric: Jira site, what makes a ticket complete
 │   └── code.md                team code rules, used by strict reviews
 └── skills/
+    ├── daily-standup-skill/
+    │   └── SKILL.md
     └── robbe-review-skill/
         ├── SKILL.md
         └── scripts/
@@ -37,6 +39,12 @@ Optional per-user and per-repo context:
 
 - `~/.claude/xve-personal.md`: authors listed there always get a strict review.
 - `.claude/client.md` in the reviewed repo: client-specific rules, read at the start.
+
+## daily-standup-skill
+
+Run `/provided-by-team:daily-standup-skill`, or ask Claude for your standup. It opens Kimai (`clockit.xve-web.eu`) in a new Chrome tab, goes to Calendar, switches to the day view and steps back to yesterday, or to Friday on a Monday. It turns that day's entries into the team's standup format: one line per Jira key with a short Dutch summary, `Review` in front when an entry says review, then empty `Today`, `Blockers` and `PR` headings for you to fill in. It prints the message in a code block to paste into the Teams channel. It changes nothing in Kimai and posts nothing.
+
+Needs the Claude in Chrome extension, with Chrome signed in to Kimai. Kimai's calendar doesn't show an entry's activity, so a review only gets `Review` when its description says so.
 
 ## Rubrics status
 
